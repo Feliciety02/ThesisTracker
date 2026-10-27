@@ -19,9 +19,20 @@
  * ============================================================
  */
 
-/** Visiting the URL in a browser just shows that the API is running. */
+/** Opening the API link in a browser shows a friendly page that points to the app. */
+const APP_URL = 'https://feliciety02.github.io/ThesisTracker/';
 function doGet() {
-  return json_({ ok: true, service: 'Banana Thesis Tracker API', note: 'Open the app on GitHub Pages to use the tracker.' });
+  const html =
+    '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f5e8;font-family:Arial,sans-serif;color:#1f3b33}' +
+    '.c{background:#fff;border-radius:18px;padding:28px 24px;max-width:360px;margin:16px;text-align:center;box-shadow:0 8px 24px rgba(31,59,51,.1)}' +
+    'h1{font-size:24px;margin:8px 0}p{color:#5f6f66;font-size:14px}' +
+    'a{display:block;background:#1f4b3a;color:#fff;text-decoration:none;font-weight:bold;padding:14px;border-radius:12px;margin-top:16px}</style></head>' +
+    '<body><div class="c"><div style="font-size:40px">🍌</div><h1>Banana Thesis Tracker</h1>' +
+    '<p>✅ The tracker server is running. This link is only the connection to the Google Sheet. Open the app to use the tracker.</p>' +
+    '<a href="' + APP_URL + '" target="_top">Open the tracker app</a></div></body></html>';
+  return HtmlService.createHtmlOutput(html).setTitle('Banana Thesis Tracker')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 /** The app sends {user, fn, args} as text/plain JSON (avoids a CORS preflight). */
