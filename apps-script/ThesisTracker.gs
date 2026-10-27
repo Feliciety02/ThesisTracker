@@ -157,6 +157,8 @@ const SUPPLIES = [
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('🍌 Thesis Tracker')
     .addItem('📷 Connect photo folder', 'setupPhotoFolder')
+    .addItem('📦 Export RCPC-validated photos to class folders', 'exportValidatedDatasetMenu')
+    .addItem('💾 Back up this sheet now', 'backupNow')
     .addItem('📧 Email each member their open tasks', 'emailOpenTasks')
     .addItem('⏰ Turn ON daily 8 AM email reminders', 'enableDailyReminder')
     .addItem('🔕 Turn OFF daily reminders', 'disableDailyReminder')
@@ -175,9 +177,15 @@ function onEdit(e) {
   for (let i = 0; i < rows; i++) {
     const r = e.range.getRow() + i;
     const status = sh.getRange(r, 5).getValue();
-    const stamp = sh.getRange(r, 9);
-    if (status === 'Done' && !stamp.getValue()) stamp.setValue(new Date());
-    if (status !== 'Done') stamp.clearContent();
+    const stamp = sh.getRange(r, 9), by = sh.getRange(r, 10);
+    if (status === 'Done') {
+      if (!stamp.getValue()) stamp.setValue(new Date());
+      if (!by.getValue()) {
+        let email = ''; try { email = Session.getActiveUser().getEmail(); } catch (err) {}
+        const m = CFG.members.find(x => x.email === email);
+        if (m) by.setValue(m.tab);
+      }
+    } else { stamp.clearContent(); by.clearContent(); }
   }
 }
 
@@ -224,6 +232,8 @@ function setupTracker() {
   upgradeSamplesTab_(ss);
   upgradeExpensesTab_(ss);
   upgradeLists_(ss);
+  upgradeDoneByColumns_(ss);
+  ensureWeeklyBackup_();
 
   // summary tabs: always refreshed (they only hold formulas)
   [['Links', buildLinks_], ['All Open Tasks', buildOpenTasks_], ['Dashboard', buildDashboard_]].forEach(([name, build]) => replaceTab_(ss, name, build));
@@ -290,6 +300,43 @@ function upgradeLists_(ss) {
   sh.getRange(1, 7).setFontWeight('bold');
 }
 
+/** older tabs: add "Done By" (tasks, panel items) and GPS (samples) headers, never touching rows */
+function upgradeDoneByColumns_(ss) {
+  const head = (sh, row, col, text) => { const c = sh.getRange(row, col); if (!c.getValue()) c.setValue(text).setBackground('#37474f').setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center'); };
+  CFG.members.forEach(m => { const sh = ss.getSheetByName(m.tab); if (sh) head(sh, 3, 10, 'Done By'); });
+  const rev = ss.getSheetByName('Panel Revisions'); if (rev) head(rev, 3, 9, 'Done By');
+  const smp = ss.getSheetByName('DA RCPC Samples'); if (smp) head(smp, 3, 16, 'GPS (lat, lng)');
+}
+
+/* ---------- weekly backup: a dated copy of this spreadsheet, newest 8 kept ---------- */
+function backupFolder_() {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('BACKUP_FOLDER_ID');
+  if (id) { try { const f = DriveApp.getFolderById(id); if (!f.isTrashed()) return f; } catch (e) {} }
+  const f = DriveApp.createFolder('Banana Thesis – Backups');
+  props.setProperty('BACKUP_FOLDER_ID', f.getId());
+  return f;
+}
+function runBackup_() {
+  const ss = SpreadsheetApp.getActive();
+  const folder = backupFolder_();
+  const name = 'Tracker backup ' + Utilities.formatDate(new Date(), CFG.timezone, 'yyyy-MM-dd HH-mm');
+  DriveApp.getFileById(ss.getId()).makeCopy(name, folder);
+  const files = []; const it = folder.getFiles();
+  while (it.hasNext()) { const f = it.next(); if (f.getName().indexOf('Tracker backup ') === 0) files.push(f); }
+  files.sort((a, b) => b.getDateCreated() - a.getDateCreated()).slice(8).forEach(f => f.setTrashed(true));
+  return { name: name, url: folder.getUrl() };
+}
+function weeklyBackup() { runBackup_(); }
+function backupNow() {
+  const r = runBackup_();
+  SpreadsheetApp.getUi().alert('Backed up 💾', r.name + '\n' + r.url + '\n\nA backup also runs automatically every Sunday; the newest 8 are kept.', SpreadsheetApp.getUi().ButtonSet.OK);
+}
+function ensureWeeklyBackup_() {
+  if (ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'weeklyBackup')) return;
+  ScriptApp.newTrigger('weeklyBackup').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(21).inTimezone(CFG.timezone).create();
+}
+
 /** older Samples tabs: add the photo columns the app needs, without touching any rows */
 function upgradeSamplesTab_(ss) {
   const sh = ss.getSheetByName('DA RCPC Samples');
@@ -342,7 +389,7 @@ function linkFormula_(key) {
 function buildMemberTab_(ss, m) {
   const sh = ss.insertSheet(m.tab);
   sh.setTabColor(m.color);
-  const H = ['ID', 'Task', 'Category', 'Priority', 'Status', 'Due Date', 'Link', 'Notes', 'Completed On'];
+  const H = ['ID', 'Task', 'Category', 'Priority', 'Status', 'Due Date', 'Link', 'Notes', 'Completed On', 'Done By'];
   const n = CFG.maxRows;
 
   banner_(sh, 1, '  ' + m.name + '  ·  ' + m.role, H.length, m.color, 16);
@@ -358,6 +405,8 @@ function buildMemberTab_(ss, m) {
     sh.getRange(4, 8, data.length, 1).setValues(data.map(t => [t[7]]));
     const today = new Date();
     sh.getRange(4, 9, data.length, 1).setValues(data.map(t => [t[4] === 'Done' ? today : '']));
+    // who did the already-finished ones: paper work was done by Fe Anne, the rest by the task's owner
+    sh.getRange(4, 10, data.length, 1).setValues(data.map(t => [t[4] === 'Done' ? (t[2] === 'Paper' ? 'Fe Anne' : m.tab) : '']));
   }
 
   sh.getRange(4, 3, n, 1).setDataValidation(listRule_(ss, 3));
@@ -373,7 +422,7 @@ function buildMemberTab_(ss, m) {
   sh.getRange(4, 1, n, 1).setHorizontalAlignment('center').setFontColor('#757575');
   sh.getRange(4, 4, n, 3).setHorizontalAlignment('center');
 
-  [70, 380, 120, 85, 115, 110, 170, 260, 115].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  [70, 380, 120, 85, 115, 110, 170, 260, 115, 100].forEach((w, i) => sh.setColumnWidth(i + 1, w));
   sh.setFrozenRows(3);
   sh.getRange(3, 1, n + 1, H.length).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, true, false);
 
@@ -436,7 +485,7 @@ function buildOpenTasks_(ss) {
 function buildRevisions_(ss) {
   const sh = ss.insertSheet('Panel Revisions');
   sh.setTabColor('#ef6c00');
-  const H = ['Item', 'Section', 'Panel Comment (Outline Defense, Sep 22, 2026)', 'Owner', 'Status', 'Page No. if Complied', 'Adviser Signed', 'Notes'];
+  const H = ['Item', 'Section', 'Panel Comment (Outline Defense, Sep 22, 2026)', 'Owner', 'Status', 'Page No. if Complied', 'Adviser Signed', 'Notes', 'Done By'];
   banner_(sh, 1, '  Panel Revisions — Accepted with Major Revision', H.length, '#ef6c00', 15);
   sh.getRange(2, 1, 1, H.length).merge()
     .setValue('  Status: C = Complied · NC = Not Complied · NA = Not Applicable.   Adviser: Ms. Barbosa · Panel: Mr. Aborde, Mr. Hernando, Ms. Yara')
@@ -451,7 +500,7 @@ function buildRevisions_(ss) {
   sh.getRange(4, 8, n, 1).setWrap(true);
   sh.getRange(4, 1, n, 1).setHorizontalAlignment('center').setFontWeight('bold');
   sh.getRange(4, 4, n, 4).setHorizontalAlignment('center');
-  [50, 190, 430, 110, 70, 100, 90, 220].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  [50, 190, 430, 110, 70, 100, 90, 220, 100].forEach((w, i) => sh.setColumnWidth(i + 1, w));
   sh.setFrozenRows(3);
   const st = sh.getRange(4, 5, n, 1);
   const all = sh.getRange(4, 1, n, H.length);
@@ -472,7 +521,7 @@ function buildSamples_(ss) {
   sh.setTabColor('#2e7d32');
   const H = ['Sample ID', 'Suspected Disease', 'Date Collected', 'Collection Site (farm / barangay)', 'Collected By', 'No. of Photos',
              'Expected Photo File Names', 'Wrapped in Cotton', 'Bagged & Labeled', 'Submitted to RCPC', 'RCPC Validated Class', 'Match?', 'Notes',
-             'Photo Folder', 'Angles Taken'];
+             'Photo Folder', 'Angles Taken', 'GPS (lat, lng)'];
   const n = CFG.sampleRows;
   banner_(sh, 1, '  DA RCPC Davao — Fresh Leaf Sample Log', H.length, '#2e7d32', 15);
   sh.getRange(2, 1, 1, H.length).merge()
@@ -494,7 +543,7 @@ function buildSamples_(ss) {
   sh.getRange(4, 1, n, 1).setFontWeight('bold').setHorizontalAlignment('center');
   sh.getRange(4, 8, n, 2).insertCheckboxes();
   sh.getRange(4, 6, n, 1).setHorizontalAlignment('center');
-  [80, 140, 110, 220, 100, 80, 230, 85, 85, 110, 150, 85, 220, 120, 90].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  [80, 140, 110, 220, 100, 80, 230, 85, 85, 110, 150, 85, 220, 120, 90, 170].forEach((w, i) => sh.setColumnWidth(i + 1, w));
   sh.setFrozenRows(3);
   const lcol = sh.getRange(4, 12, n, 1);
   sh.setConditionalFormatRules([

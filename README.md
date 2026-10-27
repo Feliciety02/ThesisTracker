@@ -59,6 +59,20 @@ The first time, each member taps their name. The app remembers them on that devi
 - Tap **📷 Receipt** on an expense to photograph the receipt. It's saved to the Drive folder **Banana Thesis – Receipts** (shared with the team, kept out of the dataset folder) and linked in the sheet. Works offline too.
 - The page shows the total spent, what's still to buy, and how much each person has paid.
 
+## Who does what
+- Every task and panel item shows **Assigned to** (who is supposed to do it) and, once finished, **✓ Done by** (who actually did it). Anyone can complete anyone's item; the app fills in *Done by* automatically, and ✏️ lets you correct it.
+- **Panel Revisions:** tick items (or ☑ *Select all shown*) and tap **✓ Mark complied · done by me**. The **Defense readiness** card counts items complied, with a page number, and signed by the adviser.
+- **Tasks:** if anything is overdue, a red bar lets you move all of them to a new date in one tap.
+
+## For the paper and for training
+- **📄 Numbers for the paper** (DA RCPC Samples page): per-class sample and image counts, collection dates and site, and a ready-to-paste paragraph for *2.1.2 Local Test Set*, based on RCPC results once they're in.
+- **📦 Export validated photos**: copies every RCPC-validated sample's photos into class folders in **RCPC Validated Local Set** (outside the curated dataset folder, so it never adds a fake class). Safe to run again. Also in the sheet menu.
+- **Photo quality check:** the camera warns when a photo looks blurry, too dark, or washed out, so you can retake it while the leaf is still there.
+- **Location:** each new sample saves its GPS position (works without signal) with a 📍 map link.
+
+## Backups
+A dated copy of the tracker sheet is saved to **Banana Thesis – Backups** every Sunday night (newest 8 kept). **🍌 Thesis Tracker → 💾 Back up this sheet now** makes one any time.
+
 ## Everyone is an admin
 All three members can add, edit and delete tasks (✏️ on a task) and expenses (＋ Add, edit any field, 🗑 delete), and edit any sample. Every change is logged with who made it on the sheet's **Activity** tab.
 

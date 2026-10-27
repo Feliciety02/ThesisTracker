@@ -19,6 +19,8 @@
  * ============================================================
  */
 
+let CURRENT_USER = '';   // set per request; used to fill "Done by"
+
 /** Opening the API link in a browser shows a friendly page that points to the app. */
 const APP_URL = 'https://feliciety02.github.io/ThesisTracker/';
 function doGet() {
@@ -40,13 +42,15 @@ function doPost(e) {
   try {
     const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     const user = String(req.user || '');
+    CURRENT_USER = user;
     if (!CFG.members.some(m => m.tab === user)) {
       return json_({ ok: false, auth: true, error: 'Please pick who you are.' });
     }
     const actions = {
       getData: getData, updateTask: updateTask, addTask: addTask, updateRevision: updateRevision,
       updateSample: updateSample, updateSupply: updateSupply, setRcpcDate: setRcpcDate,
-      uploadPhoto: uploadPhoto, createSample: createSample,
+      uploadPhoto: uploadPhoto, createSample: createSample, exportValidatedDataset: exportValidatedDataset,
+      updateRevisions: updateRevisions, rescheduleTasks: rescheduleTasks,
       deleteTask: deleteTask, addSupply: addSupply, deleteSupply: deleteSupply, uploadReceipt: uploadReceipt,
     };
     const fn = actions[req.fn];
@@ -99,6 +103,9 @@ function describe_(fn, a) {
     return 'panel item "' + short_(c, 50) + '": ' + a[1] + ' → ' + show(a[2]);
   }
   if (fn === 'updateSample') return 'sample ' + a[0] + ': ' + a[1] + ' → ' + show(a[2]);
+  if (fn === 'updateRevisions') return 'marked ' + (a[0] || []).length + ' panel item(s) ' + (a[1] === 'C' ? 'complied' : a[1]) + (a[2] ? ' · done by ' + a[2] : '');
+  if (fn === 'rescheduleTasks') return 'moved ' + (a[0] || []).length + ' overdue task(s) to ' + a[1];
+  if (fn === 'exportValidatedDataset') return 'exported the RCPC-validated photos into class folders';
   if (fn === 'createSample') return 'started new sample ' + a[0];
   if (fn === 'deleteTask') {
     const r = ss.getSheetByName(a[0]).getRange(Number(a[1]), 1, 1, 2).getValues()[0];
@@ -180,14 +187,14 @@ function getData() {
     const sh = ss.getSheetByName(m.tab);
     const tasks = [];
     if (sh && sh.getLastRow() >= 4) {
-      const rng = sh.getRange(4, 1, sh.getLastRow() - 3, 9);
+      const rng = sh.getRange(4, 1, sh.getLastRow() - 3, 10);
       const v = rng.getValues(), f = rng.getFormulas();
       v.forEach((r, i) => {
         if (!r[1]) return;
         tasks.push({
           row: i + 4, id: String(r[0]), task: String(r[1]), category: String(r[2] || ''),
           priority: String(r[3] || ''), status: String(r[4] || 'Not Started'), due: fmtDate_(r[5], tz),
-          link: parseLink_(f[i][6], r[6]), notes: String(r[7] || ''), completed: fmtDate_(r[8], tz),
+          link: parseLink_(f[i][6], r[6]), notes: String(r[7] || ''), completed: fmtDate_(r[8], tz), doneBy: String(r[9] || ''),
         });
       });
     }
@@ -197,11 +204,11 @@ function getData() {
   const revisions = [];
   const rev = ss.getSheetByName('Panel Revisions');
   if (rev && rev.getLastRow() >= 4) {
-    rev.getRange(4, 1, rev.getLastRow() - 3, 8).getValues().forEach((r, i) => {
+    rev.getRange(4, 1, rev.getLastRow() - 3, 9).getValues().forEach((r, i) => {
       if (!r[2]) return;
       revisions.push({
         row: i + 4, item: String(r[0]), section: String(r[1]), comment: String(r[2]), owner: String(r[3]),
-        status: String(r[4] || 'NC'), page: String(r[5] || ''), signed: r[6] === true, notes: String(r[7] || ''),
+        status: String(r[4] || 'NC'), page: String(r[5] || ''), signed: r[6] === true, notes: String(r[7] || ''), doneBy: String(r[8] || ''),
       });
     });
   }
@@ -209,7 +216,7 @@ function getData() {
   const samples = [];
   const smp = ss.getSheetByName('DA RCPC Samples');
   if (smp && smp.getLastRow() >= 4) {
-    const srng = smp.getRange(4, 1, smp.getLastRow() - 3, 15);
+    const srng = smp.getRange(4, 1, smp.getLastRow() - 3, 16);
     const sf = srng.getFormulas();
     srng.getValues().forEach((r, i) => {
       if (!r[0]) return;
@@ -217,6 +224,7 @@ function getData() {
       samples.push({
         folder: fl ? fl.url : '',
         angles: String(r[14] || '').split(/[^0-9]+/).filter(String).map(Number),
+        gps: String(r[15] || ''),
         row: i + 4, id: String(r[0]), disease: String(r[1] || ''), date: fmtDate_(r[2], tz), site: String(r[3] || ''),
         by: String(r[4] || ''), photos: r[5] === '' ? '' : Number(r[5]), cotton: r[7] === true, bagged: r[8] === true,
         submitted: fmtDate_(r[9], tz), validated: String(r[10] || ''), notes: String(r[12] || ''),
@@ -257,6 +265,8 @@ function getData() {
     activity: readActivity_(tz),
     photoFolderUrl: folderUrl_('PHOTO_FOLDER_ID_V2'),
     receiptFolderUrl: folderUrl_('RECEIPT_FOLDER_ID'),
+    exportFolderUrl: folderUrl_('EXPORT_FOLDER_ID'),
+    backupFolderUrl: folderUrl_('BACKUP_FOLDER_ID'),
     photoAngles: CFG.photoAngles,
     links: Object.keys(LINKS).map(k => LINKS[k]),
     lists: { expenseCategories: CFG.expenseCategories, statuses: CFG.statuses, priorities: CFG.priorities, categories: CFG.categories, classes, revStatuses: CFG.revStatuses },
@@ -270,13 +280,15 @@ function updateTask(tab, row, field, value) {
     const sh = memberSheet_(tab);
     row = Number(row);
     if (row < 4) throw new Error('Bad row');
-    const col = { task: 2, category: 3, priority: 4, status: 5, due: 6, notes: 8 }[field];
+    const col = { task: 2, category: 3, priority: 4, status: 5, due: 6, notes: 8, doneBy: 10 }[field];
     if (!col) throw new Error('Field not editable: ' + field);
     sh.getRange(row, col).setValue(field === 'due' ? parseDate_(value) : value);
     if (field === 'status') {
-      const stamp = sh.getRange(row, 9);
-      if (value === 'Done') { if (!stamp.getValue()) stamp.setValue(new Date()); }
-      else stamp.clearContent();
+      const stamp = sh.getRange(row, 9), by = sh.getRange(row, 10);
+      if (value === 'Done') {
+        if (!stamp.getValue()) stamp.setValue(new Date());
+        if (!by.getValue() && CURRENT_USER) by.setValue(CURRENT_USER);   // whoever marked it done
+      } else { stamp.clearContent(); by.clearContent(); }
     }
     return true;
   });
@@ -312,14 +324,42 @@ function deleteTask(tab, row) {
   });
 }
 
+/** Bulk: set many panel items' status at once (e.g. "mark complied · done by me"). */
+function updateRevisions(rows, status, doneBy) {
+  if (CFG.revStatuses.indexOf(status) < 0) throw new Error('Bad status');
+  return withLock_(() => {
+    const sh = sheet_('Panel Revisions');
+    (rows || []).map(Number).filter(r => r >= 4).forEach(r => {
+      sh.getRange(r, 5).setValue(status);
+      sh.getRange(r, 9).setValue(status === 'C' ? (doneBy || CURRENT_USER || '') : '');
+    });
+    return true;
+  });
+}
+
+/** Bulk: move many tasks' due date (e.g. everything overdue to next Friday). items = [{tab,row}] */
+function rescheduleTasks(items, iso) {
+  const d = parseDate_(iso);
+  if (!d) throw new Error('Pick a date');
+  return withLock_(() => {
+    (items || []).forEach(it => { const sh = memberSheet_(it.tab), r = Number(it.row); if (r >= 4) sh.getRange(r, 6).setValue(d); });
+    return true;
+  });
+}
+
 function updateRevision(row, field, value) {
   return withLock_(() => {
     const sh = sheet_('Panel Revisions');
     row = Number(row);
     if (row < 4) throw new Error('Bad row');
-    const col = { status: 5, page: 6, signed: 7, notes: 8 }[field];
+    const col = { status: 5, page: 6, signed: 7, notes: 8, doneBy: 9 }[field];
     if (!col) throw new Error('Field not editable: ' + field);
     sh.getRange(row, col).setValue(value);
+    if (field === 'status') {
+      const by = sh.getRange(row, 9);
+      if (value === 'C') { if (!by.getValue() && CURRENT_USER) by.setValue(CURRENT_USER); }
+      else by.clearContent();
+    }
     return true;
   });
 }
@@ -356,7 +396,7 @@ function createSample(id) {
 }
 
 function updateSample(id, field, value) {
-  const col = { disease: 2, date: 3, site: 4, by: 5, photos: 6, cotton: 8, bagged: 9, submitted: 10, validated: 11, notes: 13 }[field];
+  const col = { disease: 2, date: 3, site: 4, by: 5, photos: 6, cotton: 8, bagged: 9, submitted: 10, validated: 11, notes: 13, gps: 16 }[field];
   if (!col) throw new Error('Field not editable: ' + field);
   if (field === 'date' || field === 'submitted') value = parseDate_(value);
   createSample(id);                       // in case it was started offline on another path
@@ -535,4 +575,59 @@ function uploadReceipt(row, b64) {
     sh.getRange(row, 11).setFormula('=HYPERLINK("' + file.getUrl() + '","Receipt ↗")');
     return { receipt: file.getUrl() };
   });
+}
+
+/* ---------- dataset export for training / the paper ---------- */
+/**
+ * Copies the photos of every RCPC-validated sample into class folders, OUTSIDE the curated dataset folder:
+ *   RCPC Validated Local Set / Black Sigatoka / FA-003_01.jpg …
+ * Safe to run again: only new or re-classified photos are copied; a sample whose RCPC class changed is moved.
+ */
+function exportValidatedDataset() {
+  const sh = sheet_('DA RCPC Samples');
+  const props = PropertiesService.getScriptProperties();
+  let root = null;
+  const rid = props.getProperty('EXPORT_FOLDER_ID');
+  if (rid) { try { root = DriveApp.getFolderById(rid); if (root.isTrashed()) root = null; } catch (e) { root = null; } }
+  if (!root) {
+    root = DriveApp.createFolder('RCPC Validated Local Set');
+    props.setProperty('EXPORT_FOLDER_ID', root.getId());
+    const me = Session.getEffectiveUser().getEmail();
+    CFG.members.forEach(m => { if (m.email && m.email !== me) { try { root.addEditor(m.email); } catch (e) {} } });
+  }
+  const classes = CFG.classes.filter(c => !/unsure|unknown/i.test(c));
+  const folders = {};
+  classes.forEach(c => { const it = root.getFoldersByName(c); folders[c] = it.hasNext() ? it.next() : root.createFolder(c); });
+  const existing = {};   // file name -> {cls, file}
+  classes.forEach(c => { const it = folders[c].getFiles(); while (it.hasNext()) { const f = it.next(); existing[f.getName()] = { cls: c, file: f }; } });
+
+  const photos = photoFolder_();
+  const last = sh.getLastRow();
+  const rows = last >= 4 ? sh.getRange(4, 1, last - 3, 11).getValues() : [];
+  const counts = {}; classes.forEach(c => { counts[c] = { samples: 0, images: 0 }; });
+  let copied = 0;
+  rows.forEach(r => {
+    const id = String(r[0] || ''), cls = String(r[10] || '');
+    if (!id || classes.indexOf(cls) < 0) return;
+    let any = false;
+    for (let n = 1; n <= CFG.photoAngles.length; n++) {
+      const name = id + '_' + ('0' + n).slice(-2) + '.jpg';
+      const src = photos.getFilesByName(name);
+      if (!src.hasNext()) continue;
+      any = true; counts[cls].images++;
+      const have = existing[name];
+      if (have && have.cls === cls) continue;
+      if (have) have.file.setTrashed(true);            // RCPC class changed: move it
+      src.next().makeCopy(name, folders[cls]); copied++;
+    }
+    if (any) counts[cls].samples++;
+  });
+  return { folder: root.getUrl(), copied: copied, counts: counts };
+}
+
+function exportValidatedDatasetMenu() {
+  const r = exportValidatedDataset();
+  SpreadsheetApp.getUi().alert('Export done 📦', 'Copied ' + r.copied + ' new photo(s).\n\n' +
+    Object.keys(r.counts).map(c => c + ': ' + r.counts[c].samples + ' samples, ' + r.counts[c].images + ' images').join('\n') +
+    '\n\nFolder: ' + r.folder, SpreadsheetApp.getUi().ButtonSet.OK);
 }

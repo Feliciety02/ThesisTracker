@@ -297,6 +297,25 @@ tr.filled td.id{color:var(--ok)}
 @media (max-width:720px){.task-edit{grid-template-columns:1fr 1fr}.task-edit .wide{grid-column:1/-1}}
 .t-tools{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
 
+/* readiness, bulk bars, paper numbers, photo check */
+.ready{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 14px}
+.ready div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ready b{display:block;font-family:var(--hfont);font-size:24px;color:var(--brand)}
+.ready span{font-size:12px;color:var(--muted)}
+.bulk{position:sticky;top:0;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--brand);color:#fff;border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.bulk .btn{background:#fff;color:var(--brand)}
+.bulk .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.45)}
+.rev .pick{width:20px;height:20px}
+.rev{grid-template-columns:24px minmax(0,1fr) 170px 120px 70px}
+@media (max-width:720px){.rev{grid-template-columns:24px 1fr 1fr}.rev .rc{grid-column:2/-1}.rev .seg{grid-column:2/-1;justify-self:start}.rev input[type=text]{grid-column:2}}
+.doneby{color:var(--ok);font-weight:700}
+.resched{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--red-soft);color:var(--red);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:600}
+.paper{white-space:pre-wrap;background:var(--soft);border-radius:10px;padding:12px;font-size:14px;line-height:1.55}
+details.card summary{cursor:pointer;font-weight:700;list-style:none}
+details.card summary::-webkit-details-marker{display:none}
+.checkwarn{background:var(--amber-soft);color:var(--amber);border:2px solid var(--amber);border-radius:16px;padding:14px;margin-top:12px;display:flex;gap:12px;align-items:center}
+.checkwarn img{width:84px;height:84px;object-fit:cover;border-radius:10px;flex:none}
+
 /* toast + loading */
 #toast{visibility:hidden;position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;font-size:13.5px;transition:transform .25s;z-index:9;max-width:calc(100% - 32px)}
 #toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
@@ -492,9 +511,9 @@ const Demo = (() => {
   ].map((x, i) => ({ row: i + 4, item: x[0], section: x[1], comment: x[2], owner: x[3], status: x[4], page: x[4] === 'C' ? '1' : '', signed: false, notes: '' }));
   const blankS = (id, who) => ({ row: 0, id, disease: '', date: '', site: '', by: who, photos: '', cotton: false, bagged: false, submitted: '', validated: '', notes: '', folder: '', angles: [] });
   const samples = [
-    Object.assign(blankS('FA-001', 'Fe Anne'), { row: 4, disease: 'Black Sigatoka', date: iso(-1), site: 'Manuel Guianga, Tugbok', photos: 4, angles: [1, 2, 3, 4], cotton: true, bagged: true, folder: 'https://drive.google.com/' }),
+    Object.assign(blankS('FA-001', 'Fe Anne'), { row: 4, disease: 'Black Sigatoka', date: iso(-1), site: 'Manuel Guianga, Tugbok', photos: 4, angles: [1, 2, 3, 4], cotton: true, bagged: true, folder: 'https://drive.google.com/', submitted: iso(0), validated: 'Black Sigatoka', gps: '7.120412, 125.464812 (±8 m)' }),
     Object.assign(blankS('FA-002', 'Fe Anne'), { row: 5, disease: 'Cordana Leaf Spot', date: iso(-1), site: 'Manuel Guianga, Tugbok', photos: 2, angles: [1, 2] }),
-    Object.assign(blankS('RJ-001', 'Rho'), { row: 6, disease: 'Healthy', date: iso(-1), site: 'Manuel Guianga, Tugbok', photos: 3, angles: [1, 2, 3], cotton: true, bagged: true }),
+    Object.assign(blankS('RJ-001', 'Rho'), { row: 6, disease: 'Healthy', date: iso(-1), site: 'Manuel Guianga, Tugbok', photos: 3, angles: [1, 2, 3], cotton: true, bagged: true, submitted: iso(0), validated: 'Cordana Leaf Spot' }),
   ];
   const supplies = [
     ['Cotton','Wrap cut leaf ends (slightly damp) to keep samples fresh',1,45,'Fe Anne',true],
@@ -528,6 +547,8 @@ const Demo = (() => {
   };
   return {
     getData: () => JSON.parse(JSON.stringify(data)),
+    exportValidatedDataset: () => ({ folder: 'https://drive.google.com/', copied: 7, counts: {} }),
+    updateRevisions: () => true, rescheduleTasks: () => true,
     createSample: id => ({ id, row: 100 + S.data.samples.length }),
     deleteTask: () => true,
     deleteSupply: () => true,
@@ -550,7 +571,7 @@ const Demo = (() => {
 /* =========================================================
    State + helpers
    ========================================================= */
-const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {} };
+const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {} };
 const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Expenses'],['links','Links']];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
@@ -840,13 +861,18 @@ function renderTaskList() {
     (!q || (t.task + ' ' + t.notes + ' ' + t.id + ' ' + t.category).toLowerCase().indexOf(q) > -1));
   list.sort((a, b) => (a.status === 'Done') - (b.status === 'Done') || byDue(a, b));
   const sts = S.data.lists.statuses;
-  el.innerHTML = list.length ? list.map(t => {
+  const overdue = allTasks().filter(t => (S.member === 'All' || t.tab === S.member) && !t.tempId && dueState(t) === 'overdue');
+  const nextWeek = (() => { const d = new Date(); d.setDate(d.getDate() + 7); return localDay(d); })();
+  const resched = overdue.length ? '<div class="resched">⚠ ' + overdue.length + ' overdue' + (S.member === 'All' ? '' : ' for ' + esc(S.member)) +
+    ' · move them all to <input type="date" id="reschedDate" value="' + nextWeek + '" aria-label="New due date"><button class="btn" data-action="reschedule">Move</button></div>' : '';
+  el.innerHTML = resched + (list.length ? list.map(t => {
     const st = dueState(t);
     return '<div class="task ' + st + (t.status === 'Done' ? ' done' : '') + '" style="--c:' + t.color + '">' +
       '<select class="status s-' + slug(t.status) + '" data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="status" aria-label="Status"' + (t.tempId ? ' disabled' : '') + '>' +
       sts.map(s => '<option' + (s === t.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select>' +
       '<div class="t-main"><div class="t-title">' + esc(t.task) + '</div><div class="t-meta">' +
-      '<span class="who">' + esc(t.tab) + '</span><span>' + (t.tempId ? '⏳ waiting to sync' : esc(t.id)) + '</span>' +
+      '<span class="who">Assigned: ' + esc(t.tab) + '</span><span>' + (t.tempId ? '⏳ waiting to sync' : esc(t.id)) + '</span>' +
+      (t.status === 'Done' && t.doneBy ? '<span class="doneby">✓ Done by ' + esc(t.doneBy) + (t.doneBy !== t.tab ? ' (helped)' : '') + '</span>' : '') +
       (t.category ? '<span class="tag">' + esc(t.category) + '</span>' : '') +
       (t.priority ? '<span class="p-' + esc(t.priority) + '">' + esc(t.priority) + '</span>' : '') +
       (t.link ? '<a href="' + esc(t.link.url) + '" target="_blank" rel="noopener">' + esc(t.link.label) + ' ↗</a>' : '') +
@@ -856,7 +882,7 @@ function renderTaskList() {
       '<div class="due-lbl">' + dueText(t) + '</div>' +
       (t.tempId ? '' : '<div class="t-tools"><button class="iconbtn" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" title="Edit" aria-label="Edit task">✏️</button></div>') + '</div>' +
       (S.editTask === t.tab + '_' + t.row ? taskEditor(t) : '') + '</div>';
-  }).join('') : '<div class="empty">No tasks match these filters.</div>';
+  }).join('') : '<div class="empty">No tasks match these filters.</div>');
 }
 
 function taskEditor(t) {
@@ -867,6 +893,7 @@ function taskEditor(t) {
     '<label>Category<select ' + at + ' data-field="category"><option value=""></option>' + opt(L.categories, t.category) + '</select></label>' +
     '<label>Priority<select ' + at + ' data-field="priority">' + opt(L.priorities, t.priority) + '</select></label>' +
     '<label class="wide">Notes<input type="text" value="' + esc(t.notes) + '" ' + at + ' data-field="notes"></label>' +
+    '<label>Done by<select ' + at + ' data-field="doneBy"><option value="">—</option>' + opt(TEAM.map(m => m.tab), t.doneBy) + '</select></label>' +
     '<div class="row"><button class="btn ghost" data-action="delTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '">🗑 Delete</button>' +
     '<button class="btn" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '">Done</button></div></div>';
 }
@@ -884,17 +911,31 @@ function vRevisions() {
   const body = groups.length ? groups.map(g => '<div class="rgroup"><div class="rhead"><span class="rnum">' + esc(g.item) + '</span><h3 style="margin:0">' + esc(g.rows[0].section.split(' – ')[0]) + '</h3></div>' +
     g.rows.map(r => {
       const warn = r.comment.charAt(0) === '⚠';
-      return '<div class="rev ' + esc(r.status) + '"><div class="rc"><div class="' + (warn ? 'warn' : '') + '">' + esc(r.comment) + '</div>' +
-        '<div class="small muted">' + esc(r.section) + ' · <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span></div></div>' +
+      return '<div class="rev ' + esc(r.status) + '"><input type="checkbox" class="pick" data-change="revsel" data-row="' + r.row + '"' + (S.revSel[r.row] ? ' checked' : '') + ' aria-label="Select item">' +
+        '<div class="rc"><div class="' + (warn ? 'warn' : '') + '">' + esc(r.comment) + '</div>' +
+        '<div class="small muted">' + esc(r.section) + ' · Assigned: <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span>' +
+        (r.status === 'C' && r.doneBy ? ' · <span class="doneby">✓ Done by ' + esc(r.doneBy) + '</span>' : '') + '</div></div>' +
         '<div class="seg">' + d.lists.revStatuses.map(s => '<button class="' + s + (r.status === s ? ' on' : '') + '" data-action="rev" data-row="' + r.row + '" data-v="' + s + '">' + s + '</button>').join('') + '</div>' +
         '<input type="text" placeholder="Page no." value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page" aria-label="Page number">' +
         '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Signed</label></div>';
     }).join('') + '</div>').join('') : '<div class="empty">No revision items match these filters.</div>';
 
+  const withPage = applic.filter(r => r.status === 'C' && r.page).length, signed = applic.filter(r => r.status === 'C' && r.signed).length;
+  const ready = applic.length && withPage === applic.length && signed === applic.length;
+  const openBy = d.members.map(m => m.tab + ' ' + applic.filter(r => r.status !== 'C' && r.owner.indexOf(m.tab) > -1).length).join(' · ');
+  const nSel = Object.keys(S.revSel).length;
+  const bulk = nSel ? '<div class="bulk"><b>' + nSel + ' selected</b><span class="sp"></span>' +
+      '<button class="btn" data-action="revBulk" data-v="C">✓ Mark complied · done by me</button>' +
+      '<button class="btn ghost" data-action="revBulk" data-v="NC">Not complied</button>' +
+      '<button class="btn ghost" data-action="revSelClear">Clear</button></div>' : '';
   return '<div class="row" style="margin-bottom:6px"><h2 style="margin:0">Panel Revisions</h2><div class="sp"></div><b>' + c + ' / ' + applic.length + ' complied</b></div>' +
     '<div class="small muted" style="margin-bottom:10px">' + esc(d.panel.defense) + ' · Adviser: ' + esc(d.panel.adviser) + ' · Panel: ' + esc(d.panel.members.join(', ')) + '</div>' +
-    '<div class="bar" style="--c:var(--ok);margin:0 0 16px"><i style="width:' + pct(c, applic.length) + '%"></i></div>' +
-    '<div class="row" style="margin-bottom:14px"><div class="chips">' + ownerChips + '</div><div class="sp"></div><div class="chips">' + stChips + '</div></div>' + body;
+    '<div class="card" style="padding:14px 16px"><h3 style="margin:0">' + (ready ? '✅ Ready to ask ' + esc(d.panel.adviser) + ' for endorsement' : 'Defense readiness') + '</h3>' +
+      '<div class="ready"><div><b>' + c + '/' + applic.length + '</b><span>complied</span></div><div><b>' + withPage + '/' + applic.length + '</b><span>with page no.</span></div><div><b>' + signed + '/' + applic.length + '</b><span>signed by adviser</span></div></div>' +
+      '<div class="small muted">Still open, by who it\'s assigned to: ' + esc(openBy) + '. Anyone can complete any item; the app records who did.</div></div>' +
+    '<div class="row" style="margin:14px 0"><div class="chips">' + ownerChips + '</div><div class="sp"></div><div class="chips">' + stChips + '</div></div>' +
+    '<div class="row" style="margin-bottom:10px"><button class="btn ghost" data-action="revSelAll">☑ Select all shown (' + list.length + ')</button></div>' +
+    bulk + body;
 }
 
 /* ---------- Samples ---------- */
@@ -919,11 +960,51 @@ function nextLabel(tab) {
   const max = samplesOf(tab).reduce((a, s) => Math.max(a, labelNum(s.id)), 0);
   return m.prefix + '-' + String(max + 1).padStart(3, '0');
 }
+/** Saves where the sample was taken. GPS works without signal; the save waits in the outbox if offline. */
+function captureGps(id) {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(pos => {
+    const v = pos.coords.latitude.toFixed(6) + ', ' + pos.coords.longitude.toFixed(6) + ' (±' + Math.round(pos.coords.accuracy) + ' m)';
+    if (sampleById(id)) save('updateSample', [id, 'gps', v], () => { sampleById(id).gps = v; });
+  }, () => {}, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
+}
+function gpsLink(g) { const m = String(g || '').match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/); return m ? 'https://www.google.com/maps?q=' + m[1] + ',' + m[2] : ''; }
+
+/** Numbers + a ready-to-paste paragraph for section 2.1.2 (Local Test Set), from the sample log. */
+function paperNumbers() {
+  const d = S.data, cls = d.lists.classes.filter(c => !/unsure|unknown/i.test(c));
+  const validated = d.samples.filter(x => cls.indexOf(x.validated) > -1);
+  const useVal = validated.length > 0;
+  const set = useVal ? validated : d.samples.filter(x => x.date && (x.angles || []).length >= MIN_ANGLES);
+  const key = x => useVal ? x.validated : x.disease;
+  const per = cls.map(c => { const xs = set.filter(x => key(x) === c); return { c, n: xs.length, img: xs.reduce((a, x) => a + (x.angles || []).length, 0) }; });
+  const imgs = per.reduce((a, p) => a + p.img, 0);
+  const dates = Array.from(new Set(set.map(x => x.date).filter(Boolean))).sort();
+  const sites = Array.from(new Set(set.map(x => (x.site || '').trim()).filter(Boolean)));
+  const graded = validated.filter(x => x.disease);
+  const agree = graded.filter(x => x.disease === x.validated).length;
+  const mon = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dd = dates.map(s => { const [y, m, day] = s.split('-').map(Number); return { y, m, day }; });
+  let when = '[collection dates]';
+  if (dd.length) {
+    const parts = []; dd.forEach((t, i) => { const prev = dd[i - 1]; parts.push((prev && prev.m === t.m && prev.y === t.y) ? String(t.day) : mon[t.m - 1] + ' ' + t.day); });
+    when = (parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1] : parts[0]) + ', ' + dd[dd.length - 1].y;
+  }
+  const lc = c => /healthy/i.test(c) ? 'healthy' : c.replace(/Leaf Spot/, 'leaf spot');
+  const list = per.map(p => p.n + ' ' + lc(p.c));
+  const text = 'The local test set consists of ' + set.length + ' banana leaf samples (' + imgs.toLocaleString('en-US') + ' images) collected from ' +
+    (sites.length ? sites.join(', ') : '[farm / barangay]') + ' on ' + when + ': ' + list.slice(0, -1).join(', ') + ', and ' + list[list.length - 1] + ' samples. ' +
+    'Each sample was photographed from three to five angles and submitted fresh to the DA Regional Crop Protection Center (RCPC) Davao' +
+    (useVal ? ', which confirmed its class' + (graded.length ? ' (agreeing with the researchers\' initial label for ' + agree + ' of ' + graded.length + ' samples)' : '') + '.' : ' for validation [RCPC results pending].');
+  return { useVal, per, imgs, n: set.length, text, dates, sites };
+}
+
 function newSample() {
   const id = nextLabel(S.user);
   S.data.samples.push({ row: 0, id, disease: '', date: localDay(), site: '', by: S.user, photos: '',
     cotton: false, bagged: false, submitted: '', validated: '', notes: '', folder: '', angles: [] });
   S.sampleFilter = S.user;
+  captureGps(id);
   save('createSample', [id]).then(r => { if (r && sampleById(id)) sampleById(id).row = r.row; });
   openCam(id);
 }
@@ -954,8 +1035,22 @@ function vSamples() {
       '<b>Copy that label onto masking tape</b> on the bag, then take 3–5 photos. Photos are named from the label automatically. Wrap the cut end in damp cotton and submit <b>fresh</b>.</div>' +
     '<div class="row" style="margin-bottom:12px"><div class="chips">' + chips + '</div><div class="sp"></div>' +
       (qn ? '<span class="qchip">⏳ ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') + '</div>' +
+    paperCard() +
     '<div class="scards">' + (rows.map(sampleCard).join('') ||
       '<div class="empty" style="grid-column:1/-1">No samples yet. At the farm, tap <b>＋ New sample</b> for each leaf.</div>') + '</div>';
+}
+
+function paperCard() {
+  const p = paperNumbers(), d = S.data;
+  const rows = p.per.map(r => '<tr><td>' + esc(r.c) + '</td><td style="text-align:right">' + r.n + '</td><td style="text-align:right">' + r.img + '</td></tr>').join('');
+  return '<details class="card" style="margin-bottom:14px"' + (S.paperOpen ? ' open' : '') + ' data-action="paperToggle"><summary>📄 Numbers for the paper (2.1.2 Local Test Set) · ' + p.n + ' samples, ' + p.imgs + ' images ' +
+      (p.useVal ? '<span class="doneby">· RCPC-validated</span>' : '<span class="small muted">· suspected classes until RCPC results are in</span>') + '</summary>' +
+    '<table style="width:100%;min-width:0;margin:10px 0"><thead><tr><th>Class</th><th style="text-align:right">Samples</th><th style="text-align:right">Images</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="paper" id="paperText">' + esc(p.text) + '</div>' +
+    '<div class="row" style="margin-top:10px"><button class="btn" data-action="copyPaper">📋 Copy paragraph</button>' +
+    (p.useVal ? '<button class="btn ghost" data-action="exportSet">📦 Export validated photos for training</button>' : '') +
+    (d.exportFolderUrl ? '<a href="' + esc(d.exportFolderUrl) + '" target="_blank" rel="noopener">Open exported set ↗</a>' : '') + '</div>' +
+    '<p class="small muted" style="margin:8px 0 0">Still fill in by hand: phone model, and the RCPC validator\'s name and position.</p></details>';
 }
 
 function sampleCard(x) {
@@ -981,6 +1076,7 @@ function sampleCard(x) {
       '<label class="ck"><input type="checkbox" ' + (x.cotton ? 'checked' : '') + ' data-change="sample" ' + at + ' data-field="cotton">Cotton</label>' +
       '<label class="ck"><input type="checkbox" ' + (x.bagged ? 'checked' : '') + ' data-change="sample" ' + at + ' data-field="bagged">Bagged &amp; labeled</label>' +
       match + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">Photos in Drive ↗</a>' : '') +
+      (gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">📍 Location</a>' : '') +
     '</div>' +
     '<div class="sc-notes"><input type="text" value="' + esc(x.notes) + '" placeholder="Notes" aria-label="Notes" data-change="sample" ' + at + ' data-field="notes"></div>' +
   '</div>';
@@ -1019,6 +1115,13 @@ function renderCam() {
   document.getElementById('camBody').innerHTML = S.cam.stage === 'finish' ? camFinishHtml(x) : camShootHtml(x);
 }
 function camShootHtml(x) {
+  if (S.cam.check) {
+    const k = S.cam.check, nm = angleNames()[k.job.angle - 1];
+    return '<div class="cam-head"><div><div class="eyebrow">Photo ' + k.job.angle + ' · ' + esc(nm) + '</div><div class="cam-id">' + esc(x.id) + '</div></div></div>' +
+      '<div class="checkwarn"><img src="' + k.thumb + '" alt=""><div><b>This photo ' + esc(k.issues.join(' and ')) + '.</b><div class="small">Blurry, dark or washed-out photos get excluded from the dataset. Retake it while the leaf is still here?</div></div></div>' +
+      '<button class="btn bigcam" data-action="camRetake">📷 Retake photo</button>' +
+      '<button class="btn bigcam ghost" data-action="camKeep">Use it anyway</button>';
+  }
   const names = angleNames(), n = takenSet(x).size, nx = nextAngle(x), need = Math.max(0, MIN_ANGLES - n);
   const target = nx && (nx <= MIN_ANGLES || S.cam.more) ? nx : 0;
   const title = need ? 'Photo ' + (n + 1) + ' of ' + MIN_ANGLES : n >= 5 ? 'All 5 angles done' : n + ' photos · that\'s enough';
@@ -1073,6 +1176,29 @@ function takeShot(angle) {
   inp.value = '';
   inp.click();
 }
+/** Quick quality check (paper: blurred, overexposed or dark images are excluded). Returns plain-language issues. */
+function photoIssues(src) {
+  try {
+    const w = 256, h = Math.max(1, Math.round(src.height * w / src.width));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); g.drawImage(src, 0, 0, w, h);
+    const px = g.getImageData(0, 0, w, h).data, y = new Float32Array(w * h);
+    let sum = 0, clip = 0;
+    for (let i = 0, j = 0; i < px.length; i += 4, j++) { const v = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; y[j] = v; sum += v; if (v > 250) clip++; }
+    const mean = sum / (w * h);
+    let ls = 0, lq = 0, n = 0;
+    for (let r = 1; r < h - 1; r++) for (let q = 1; q < w - 1; q++) {
+      const k = r * w + q, L = 4 * y[k] - y[k - 1] - y[k + 1] - y[k - w] - y[k + w];
+      ls += L; lq += L * L; n++;
+    }
+    const sharp = lq / n - (ls / n) * (ls / n);
+    const out = [];
+    if (mean < 45) out.push('is too dark');
+    else if (sharp < 25) out.push('looks blurry');   // a dark photo always looks soft, so only mention the darkness
+    if (mean > 215 || clip / (w * h) > 0.3) out.push('is too bright / washed out');
+    return out;
+  } catch (e) { return []; }
+}
 function shrinkPhoto(file) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file), img = new Image();
@@ -1083,10 +1209,11 @@ function shrinkPhoto(file) {
       c.getContext('2d').drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
       const full = c.toDataURL('image/jpeg', 0.85);
+      const issues = photoIssues(c);
       const t = document.createElement('canvas'), tk = 160 / Math.max(w, h);
       t.width = Math.round(w * tk); t.height = Math.round(h * tk);
       t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
-      resolve({ full, thumb: t.toDataURL('image/jpeg', 0.7) });
+      resolve({ full, thumb: t.toDataURL('image/jpeg', 0.7), issues });
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read that photo.')); };
     img.src = url;
@@ -1164,6 +1291,13 @@ async function flushPhotos() {
   return uploadChain;
 }
 
+async function acceptShot(job, thumb) {
+  S.thumbs[job.id + '_' + job.angle] = thumb;
+  await PhotoQ.put(job.id + '_' + job.angle, job);  // kept on the phone until Drive confirms
+  queueUpload(job);
+  if (S.cam && job.angle > MIN_ANGLES) S.cam.more = false;
+  renderCam();
+}
 document.getElementById('camInput').addEventListener('change', async e => {
   const file = e.target.files && e.target.files[0];
   if (!file || !S.cam) return;
@@ -1172,12 +1306,9 @@ document.getElementById('camInput').addEventListener('change', async e => {
   try {
     const p = await shrinkPhoto(file);
     delete S.preparing[key];
-    S.thumbs[id + '_' + angle] = p.thumb;
     const job = { id, angle, b64: p.full.split(',')[1], at: Date.now() };
-    await PhotoQ.put(id + '_' + angle, job);  // kept on the phone until Drive confirms
-    queueUpload(job);
-    if (angle > MIN_ANGLES) S.cam.more = false;
-    renderCam();
+    if (p.issues.length) { S.cam.check = { job, thumb: p.thumb, issues: p.issues }; renderCam(); return; }   // ask: retake or keep
+    await acceptShot(job, p.thumb);
   } catch (err) { delete S.preparing[key]; renderCam(); toast(err.message || String(err), 4000, true); }
 });
 
@@ -1274,6 +1405,8 @@ function vLinks() {
     card(d.sheetUrl, 'Tracker Google Sheet', 'Same data as this website', 'sheet') +
     (d.photoFolderUrl ? card(d.photoFolderUrl, 'DA RCPC Sample Photos', 'Every sample photo, named by label', 'folder') : '') +
     (d.receiptFolderUrl ? card(d.receiptFolderUrl, 'Expense receipts', 'Receipt photos from the Expenses page', 'folder') : '') +
+    (d.exportFolderUrl ? card(d.exportFolderUrl, 'RCPC Validated Local Set', 'Validated photos sorted into class folders', 'folder') : '') +
+    (d.backupFolderUrl ? card(d.backupFolderUrl, 'Weekly backups', 'Dated copies of the tracker sheet', 'folder') : '') +
     d.links.map(l => card(l.url, l.label, /drive\.google/.test(l.url) ? 'Google Drive folder' : 'Thesis Google Doc', /drive\.google/.test(l.url) ? 'folder' : 'doc')).join('') +
     '</div><div class="section"><h2>Team</h2><div class="links">' +
     d.members.map(m => card('mailto:' + m.email, m.name, m.role + ' · ' + m.email, 'mail')).join('') + '</div></div>';
@@ -1305,6 +1438,41 @@ document.addEventListener('click', e => {
   }
   else if (a === 'camShot') { takeShot(+v); }
   else if (a === 'camMore') { S.cam.more = true; renderCam(); }
+  else if (a === 'camRetake') { const ang = S.cam.check.job.angle; S.cam.check = null; renderCam(); takeShot(ang); }
+  else if (a === 'camKeep') { const k = S.cam.check; S.cam.check = null; acceptShot(k.job, k.thumb); }
+  else if (a === 'copyPaper') {
+    const t = document.getElementById('paperText').textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied ✓', 1500), () => toast('Select the text and copy it', 2500));
+  }
+  else if (a === 'exportSet') {
+    toast('Exporting validated photos… this can take a minute');
+    call('exportValidatedDataset').then(r => {
+      if (r && r.folder) S.data.exportFolderUrl = r.folder;
+      toast('Exported ✓ ' + (r ? r.copied : 0) + ' new photos', 3000); render();
+    }).catch(e => toast(e.network ? 'Needs signal: try again when online.' : 'Export failed: ' + e.message, 4000, true));
+  }
+  else if (a === 'revSelAll') {
+    const list = S.data.revisions.filter(r => (S.revOwner === 'All' || r.owner.indexOf(S.revOwner) > -1) && (S.revStatus === 'All' || r.status === S.revStatus));
+    list.forEach(r => { S.revSel[r.row] = true; }); render();
+  }
+  else if (a === 'revSelClear') { S.revSel = {}; render(); }
+  else if (a === 'revBulk') {
+    const rows = Object.keys(S.revSel).map(Number), st = v, me = S.user;
+    if (!rows.length) return;
+    if (st === 'C' && !confirm('Mark ' + rows.length + ' item(s) as complied, done by ' + me + '?')) return;
+    S.revSel = {};
+    save('updateRevisions', [rows, st, st === 'C' ? me : ''], () => {
+      rows.forEach(r => { const x = S.data.revisions.find(y => y.row === r); if (x) { x.status = st; x.doneBy = st === 'C' ? me : ''; } });
+    });
+  }
+  else if (a === 'reschedule') {
+    const date = (document.getElementById('reschedDate') || {}).value;
+    if (!date) return toast('Pick a date first', 2000, true);
+    const items = allTasks().filter(t => (S.member === 'All' || t.tab === S.member) && !t.tempId && dueState(t) === 'overdue');
+    save('rescheduleTasks', [items.map(t => ({ tab: t.tab, row: t.row })), date], () => {
+      items.forEach(t => { const x = member(t.tab).tasks.find(y => y.row === t.row); if (x) x.due = date; });
+    }).then(() => toast('Moved ' + items.length + ' task(s) to ' + fmt(date), 2200));
+  }
   else if (a === 'camFinish') { S.cam.stage = 'finish'; renderCam(); }
   else if (a === 'camDone') { closeCam(); }
   else if (a === 'camNextSample') { closeCam(); newSample(); }
@@ -1324,12 +1492,12 @@ document.addEventListener('click', e => {
   else if (a === 'expFilter') { S.expFilter = v; render(); }
   else if (a === 'delSupply') {
     const row = +el.dataset.row, x = S.data.supplies.find(s => s.row === row);
-    if (!confirm('Delete "' + x.item + '" from supplies?')) return;
+    if (!confirm('Delete "' + x.item + '" from expenses?')) return;
     save('deleteSupply', [row], () => { S.data.supplies = S.data.supplies.filter(s => s.row !== row); });
   }
   else if (a === 'rev') {
     const row = +el.dataset.row;
-    save('updateRevision', [row, 'status', v], () => { S.data.revisions.find(r => r.row === row).status = v; });
+    save('updateRevision', [row, 'status', v], () => { const x = S.data.revisions.find(r => r.row === row); x.status = v; x.doneBy = v === 'C' ? (x.doneBy || S.user) : ''; });
   }
 });
 
@@ -1343,8 +1511,11 @@ document.addEventListener('change', e => {
     save('updateTask', [tab, row, field, val], () => {
       const t = member(tab).tasks.find(x => x.row === row);
       t[field] = val;
-      if (field === 'status') t.completed = val === 'Done' ? localDay() : '';
+      if (field === 'status') { t.completed = val === 'Done' ? localDay() : ''; t.doneBy = val === 'Done' ? (t.doneBy || S.user) : ''; }
     });
+  } else if (k === 'revsel') {
+    if (el.checked) S.revSel[row] = true; else delete S.revSel[row];
+    render();
   } else if (k === 'rev') {
     save('updateRevision', [row, field, val], () => { S.data.revisions.find(r => r.row === row)[field] = val; });
   } else if (k === 'sample') {
@@ -1357,6 +1528,7 @@ document.addEventListener('change', e => {
   }
 });
 
+document.addEventListener('toggle', e => { if (e.target.matches && e.target.matches('details[data-action=paperToggle]')) S.paperOpen = e.target.open; }, true);
 document.addEventListener('input', e => {
   if (e.target.id === 'q') { S.q = e.target.value; renderTaskList(); }
 });
