@@ -316,6 +316,37 @@ details.card summary::-webkit-details-marker{display:none}
 .checkwarn{background:var(--amber-soft);color:var(--amber);border:2px solid var(--amber);border-radius:16px;padding:14px;margin-top:12px;display:flex;gap:12px;align-items:center}
 .checkwarn img{width:84px;height:84px;object-fit:cover;border-radius:10px;flex:none}
 
+/* ---------- phone layout: slim header + bottom tab bar ---------- */
+.bnav{display:none}
+.addtoggle{display:none}
+@media (max-width:720px){
+  .hd{padding:10px 0;gap:10px;flex-wrap:nowrap}
+  .brand{gap:10px}
+  .logo{width:36px;height:36px;border-radius:10px}
+  .brand .eyebrow,#thesis,#countPill{display:none}
+  .brand h1{font-size:21px;white-space:nowrap}
+  .me{padding:4px}
+  .me .me-name{display:none}
+  .me .av{width:32px;height:32px;font-size:14px}
+  .hd-right{flex-wrap:nowrap}
+  .install{padding:6px 10px;font-size:12px}
+  header .leaves{display:none}
+  #nav{display:none}
+  main{padding:16px 0 calc(84px + env(safe-area-inset-bottom))}
+  footer{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+  #toast{bottom:calc(80px + env(safe-area-inset-bottom))}
+  .bnav{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;z-index:12;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(31,59,51,.08)}
+  .bnav button{position:relative;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;font-size:10.5px;font-weight:700;color:var(--muted);cursor:pointer;min-height:48px}
+  .bnav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .bnav button.on{color:var(--brand)}
+  .bnav button.on svg{stroke-width:2.4}
+  .bnav button.on::before{content:"";position:absolute;top:-6px;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--leaf)}
+  .bnav .count{position:absolute;top:0;left:calc(50% + 6px);font-size:10px;background:var(--leaf);color:#fff;border-radius:999px;padding:0 5px;line-height:16px}
+  .addtoggle{display:block;width:100%;margin-bottom:12px}
+  .addwrap:not(.open) form{display:none}
+  .sample-tip{font-size:13.5px}
+}
+
 /* toast + loading */
 #toast{visibility:hidden;position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;font-size:13.5px;transition:transform .25s;z-index:9;max-width:calc(100% - 32px)}
 #toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
@@ -395,6 +426,7 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
 
 <main><div class="wrap" id="app"><div class="loading"><div class="spinner"></div>Loading tracker…</div></div></main>
 <footer class="wrap" id="foot">BSCS Capstone · University of Mindanao · College of Computing Education<br><span id="syncInfo"></span> · <button class="linkbtn" data-action="switch">Switch user</button></footer>
+<nav id="bnav" class="bnav" aria-label="Sections"></nav>
 <div id="toast"></div>
 <div id="cam" class="cam" hidden>
   <div class="cam-sheet" role="dialog" aria-modal="true" aria-label="Sample photos"><div id="camBody"></div></div>
@@ -571,7 +603,7 @@ const Demo = (() => {
 /* =========================================================
    State + helpers
    ========================================================= */
-const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {} };
+const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {} };
 const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Expenses'],['links','Links']];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
@@ -667,7 +699,8 @@ function signIn(tab) {
   const m = TEAM.find(x => x.tab === tab);
   const me = document.getElementById('meChip');
   me.style.setProperty('--c', m.color);
-  me.innerHTML = '<span class="av">' + esc(tab.charAt(0)) + '</span>' + esc(tab);
+  me.innerHTML = '<span class="av">' + esc(tab.charAt(0)) + '</span><span class="me-name">' + esc(tab) + '</span>';
+  me.setAttribute('aria-label', 'Logged in as ' + tab + '. Tap to switch user');
   me.hidden = false;
   if (S.data) render();
   else document.getElementById('app').innerHTML = '<div class="loading"><div class="spinner"></div>Opening tracker…</div>';
@@ -761,6 +794,19 @@ function render() {
     '<button data-view="' + k + '" class="' + (S.view === k ? 'on' : '') + '">' + label +
     (k === 'tasks' && openTasks ? '<span class="count">' + openTasks + '</span>' : '') +
     (k === 'revisions' && openRev ? '<span class="count">' + openRev + '</span>' : '') + '</button>').join('');
+  const ICONS = {
+    overview: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
+    tasks: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 12l3 3 5-6"/>',
+    revisions: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 12h6M9 16h4"/>',
+    samples: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"/>',
+    supplies: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+    links: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  };
+  const SHORT = { overview: 'Home', tasks: 'Tasks', revisions: 'Panel', samples: 'Samples', supplies: 'Expenses', links: 'Links' };
+  document.getElementById('bnav').innerHTML = VIEWS.map(([k]) =>
+    '<button data-view="' + k + '" class="' + (S.view === k ? 'on' : '') + '"' + (S.view === k ? ' aria-current="page"' : '') + '><svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[k] + '</svg>' + SHORT[k] +
+    (k === 'tasks' && openTasks ? '<span class="count">' + openTasks + '</span>' : '') +
+    (k === 'revisions' && openRev ? '<span class="count">' + openRev + '</span>' : '') + '</button>').join('');
   const fn = { overview: vOverview, tasks: vTasks, revisions: vRevisions, samples: vSamples, supplies: vSupplies, links: vLinks }[S.view];
   document.getElementById('app').innerHTML = fn();
   if (S.view === 'tasks') renderTaskList();
@@ -841,13 +887,14 @@ function vTasks() {
 
   return '<div class="row" style="margin-bottom:14px"><h2 style="margin:0">Tasks</h2><div class="sp"></div>' +
     '<input type="search" id="q" placeholder="Search tasks…" value="' + esc(S.q) + '" style="width:220px"></div>' +
+    '<div class="addwrap' + (S.addTaskOpen ? ' open' : '') + '"><button class="btn ' + (S.addTaskOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddTask">' + (S.addTaskOpen ? 'Close' : '＋ Add task') + '</button>' +
     '<form class="add card" id="addForm" style="padding:12px">' +
     '<select name="tab" aria-label="Member">' + d.members.map(m => '<option' + (m.tab === defMember ? ' selected' : '') + '>' + esc(m.tab) + '</option>').join('') + '</select>' +
     '<input class="wide" type="text" name="task" placeholder="Add a new task…" required>' +
     '<select name="category" aria-label="Category">' + opt(L.categories, 'DA RCPC') + '</select>' +
     '<select name="priority" aria-label="Priority">' + opt(L.priorities, 'Medium') + '</select>' +
     '<input type="date" name="due" aria-label="Due date">' +
-    '<button class="btn" type="submit">Add</button></form>' +
+    '<button class="btn" type="submit">Add</button></form></div>' +
     '<div class="row" style="margin-bottom:12px"><div class="chips">' + memberChips + '</div><div class="sp"></div><div class="chips">' + statusChips + '</div></div>' +
     '<div class="tasks" id="taskList"></div>';
 }
@@ -1032,8 +1079,7 @@ function vSamples() {
       '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' so far · ' + withPhotos + ' with 3+ photos</div></div>' +
       '<div class="sp"></div>' +
       '<button class="btn newsample" data-action="newSample">＋ New sample 📷</button></div>' +
-    '<div class="rule">Tap <b>＋ New sample</b> for each leaf. The app gives it the next label (' + esc(meM.prefix) + '-001, ' + esc(meM.prefix) + '-002 …). ' +
-      '<b>Copy that label onto masking tape</b> on the bag, then take 3–5 photos. Photos are named from the label automatically. Wrap the cut end in damp cotton and submit <b>fresh</b>.</div>' +
+    '<div class="rule sample-tip"><b>How it works:</b> ＋ New sample → take 3–5 photos → copy the label (' + esc(meM.prefix) + '-###) onto masking tape. The app names every photo for you.</div>' +
     '<div class="row" style="margin-bottom:12px"><div class="chips">' + chips + '</div><div class="sp"></div>' +
       (qn ? '<span class="qchip">⏳ ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') + '</div>' +
     paperCard() +
@@ -1358,6 +1404,7 @@ function vSupplies() {
       '<div class="stat"><div class="k">Still to buy</div><div class="v">' + peso(sum(toBuy)) + '</div><div class="small muted">' + toBuy.length + ' item' + (toBuy.length === 1 ? '' : 's') + '</div></div>' +
       '<div class="stat" style="grid-column:span 2"><div class="k">Paid by each of you</div><div class="chips" style="margin-top:8px">' + perPerson + '</div></div>' +
     '</div>' +
+    '<div class="addwrap' + (S.addExpOpen ? ' open' : '') + '"><button class="btn ' + (S.addExpOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddExp">' + (S.addExpOpen ? 'Close' : '＋ Add expense') + '</button>' +
     '<form id="addSupply" class="card addsup">' +
       '<input type="text" name="item" placeholder="What did you buy? (e.g. Printing, 3 copies)" required aria-label="Item">' +
       sel(cats, 'Printing', 'name="category" aria-label="Category"') +
@@ -1366,7 +1413,7 @@ function vSupplies() {
       sel(ppl, S.user, 'name="assigned" aria-label="Paid by"') +
       '<input type="date" name="date" value="' + localDay() + '" aria-label="Date">' +
       '<label class="ck"><input type="checkbox" name="bought" checked>Already paid</label>' +
-      '<button class="btn" type="submit">＋ Add</button></form>' +
+      '<button class="btn" type="submit">＋ Add</button></form></div>' +
     '<div class="row" style="margin-bottom:12px"><div class="chips">' + chips + '</div></div>' +
     '<div class="scards">' + (items.map(card).join('') || '<div class="empty" style="grid-column:1/-1">Nothing here yet. Add your first expense above.</div>') + '</div>';
 }
@@ -1419,7 +1466,7 @@ function vLinks() {
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-view],[data-action]');
   if (!el) return;
-  if (el.dataset.view) { S.view = el.dataset.view; render(); window.scrollTo(0, 0); return; }
+  if (el.dataset.view) { S.view = el.dataset.view; S.addTaskOpen = S.addExpOpen = false; render(); window.scrollTo(0, 0); return; }
   const a = el.dataset.action, v = el.dataset.v;
   if (a === 'install') { doInstall(); return; }
   if (a === 'switch') { lock(); return; }
@@ -1429,6 +1476,8 @@ document.addEventListener('click', e => {
   else if (a === 'status') { S.status = v; render(); }
   else if (a === 'revOwner') { S.revOwner = v; render(); }
   else if (a === 'revStatus') { S.revStatus = v; render(); }
+  else if (a === 'toggleAddTask') { S.addTaskOpen = !S.addTaskOpen; render(); if (S.addTaskOpen) { const i = document.querySelector('#addForm [name=task]'); if (i) i.focus(); } }
+  else if (a === 'toggleAddExp') { S.addExpOpen = !S.addExpOpen; render(); if (S.addExpOpen) { const i = document.querySelector('#addSupply [name=item]'); if (i) i.focus(); } }
   else if (a === 'sampleFilter') { S.sampleFilter = v; render(); }
   else if (a === 'newSample') { newSample(); }
   else if (a === 'cam') { openCam(el.dataset.id); }
@@ -1550,7 +1599,7 @@ document.addEventListener('submit', e => {
       return { tempId, tab };
     }).then(task => {
       if (!task) return;
-      member(tab).tasks.push(task); persist(); render();
+      member(tab).tasks.push(task); S.addTaskOpen = false; persist(); render();
       toast('Task added to ' + tab, 1600);
     });
   } else if (f.id === 'addSupply') {
@@ -1565,7 +1614,7 @@ document.addEventListener('submit', e => {
       return { tempId };
     }).then(res => {
       if (!res) return;
-      S.data.supplies.push(res); persist(); render();
+      S.data.supplies.push(res); S.addExpOpen = false; persist(); render();
       toast('Added ' + res.item, 1400);
     });
   }
