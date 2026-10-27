@@ -1,6 +1,6 @@
 // Service worker: lets the app install and open offline.
 // Bump VERSION whenever you change index.html so phones pick up the update.
-const VERSION = 'bt-v11';
+const VERSION = 'bt-v12';
 const SHELL = [
   './', './index.html', './config.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png',

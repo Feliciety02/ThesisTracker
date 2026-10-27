@@ -113,7 +113,7 @@ h3{font-family:var(--hfont);font-size:18px;margin:0 0 10px;font-weight:700;lette
 .chip{border:1px solid var(--line);background:var(--card);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer}
 .chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
 .chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:6px}
-input[type=text],input[type=search],input[type=number],input[type=date],select,textarea{
+input:not([type]),input[type=text],input[type=search],input[type=number],input[type=date],input[type=email],input[type=password],input[type=tel],input[type=url],select,textarea{
   background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
 input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--brand) 40%,transparent);outline-offset:1px;border-color:var(--brand)}
 .btn{border:0;background:var(--brand);color:var(--brand-ink);padding:9px 16px;border-radius:10px;font-weight:700;cursor:pointer}
@@ -122,7 +122,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(
 
 /* tasks */
 .tasks{display:flex;flex-direction:column;gap:8px}
-.task{display:grid;grid-template-columns:150px minmax(0,1fr) 150px;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;padding:12px 14px}
+.task{display:grid;grid-template-columns:150px minmax(0,1fr) 150px 40px;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;padding:12px 14px}
 .task.overdue{background:var(--red-soft)}
 .task.soon{background:var(--amber-soft)}
 .task.done{opacity:.6}
@@ -132,20 +132,23 @@ input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(
 .t-meta .who{color:var(--c);font-weight:700}
 .tag{background:var(--soft);border-radius:6px;padding:1px 8px;font-weight:600}
 .p-High{color:var(--red);font-weight:700}
-.due-lbl{font-size:11.5px;font-weight:700;margin-top:3px;text-align:right}
-.overdue .due-lbl{color:var(--red)}
-.soon .due-lbl{color:var(--amber)}
+.due-pill{font-weight:700;border-radius:6px;padding:1px 8px;background:var(--soft)}
+.overdue .due-pill{color:var(--red);background:color-mix(in srgb,var(--red) 12%,transparent)}
+.soon .due-pill{color:var(--amber);background:color-mix(in srgb,var(--amber) 14%,transparent)}
+.task .iconbtn{width:40px;height:40px}
+.task-edit{grid-column:1/-1}
 .status{font-weight:700;width:100%}
 .s-done{background:var(--ok-soft);color:var(--ok)}
 .s-in-progress{background:var(--blue-soft);color:var(--blue)}
 .s-waiting{background:var(--amber-soft);color:var(--amber)}
 @media (max-width:720px){
-  .task{grid-template-columns:1fr 1fr;gap:10px}
+  .task{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px;gap:10px}
   .task .t-main{grid-column:1/-1;order:-1}
-  .due-lbl{text-align:left}
 }
 .empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
-form.add{display:grid;grid-template-columns:140px minmax(0,1fr) 150px 120px 150px auto;gap:8px;align-items:center;margin-bottom:14px}
+form.add{display:grid;grid-template-columns:minmax(0,2fr) 130px 150px 150px 120px auto;gap:10px;align-items:end;margin-bottom:14px}
+.fl{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.fl input,.fl select{width:100%;text-transform:none;letter-spacing:0;font-weight:500;font-size:14px;color:var(--ink)}
 @media (max-width:900px){form.add{grid-template-columns:1fr 1fr} form.add .wide{grid-column:1/-1}}
 
 /* urgent list */
@@ -178,7 +181,8 @@ form.add{display:grid;grid-template-columns:140px minmax(0,1fr) 150px 120px 150p
 .seg button.on.C{background:var(--ok);color:#fff}
 .seg button.on.NC{background:var(--red);color:#fff}
 .seg button.on.NA{background:var(--muted);color:var(--card)}
-.rev input[type=text]{width:100%}
+.pgl{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted)}
+.pgl input{width:100%;min-width:0}
 label.ck{display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600;cursor:pointer}
 @media (max-width:720px){.rev{grid-template-columns:1fr 1fr}.rev .rc{grid-column:1/-1}}
 
@@ -237,6 +241,15 @@ tr.filled td.id{color:var(--ok)}
 .sc-grid input,.sc-grid select,.sc-notes input{width:100%;text-transform:none;letter-spacing:0;font-weight:500;font-size:14px;color:var(--ink)}
 .sc-grid .wide{grid-column:1/-1}
 .sc-foot{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13px}
+.sc-sum{display:flex;flex-direction:column;gap:6px;cursor:pointer;border-radius:8px;margin:-4px;padding:4px}
+.sc-sum:hover{background:var(--soft)}
+.sc-sum .ttl{font-weight:700;font-size:15px}
+.sc-sum .meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px;color:var(--muted)}
+.pill{background:var(--soft);border-radius:999px;padding:2px 9px;font-weight:600;font-size:12px;color:var(--ink)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--amber-soft);color:var(--amber)}
+.morebtn{margin-left:auto;background:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;color:var(--ink);cursor:pointer}
+.morebtn:hover{background:var(--soft)}
 .qchip{display:inline-flex;align-items:center;gap:6px;background:var(--amber-soft);color:var(--amber);border-radius:999px;padding:4px 10px;font-weight:700;font-size:12.5px}
 
 /* camera sheet */
@@ -284,16 +297,19 @@ tr.filled td.id{color:var(--ok)}
 .newsample{font-size:16px;padding:14px 20px;border-radius:14px}
 .batch .newsample{background:#fff;color:var(--brand)}
 .iconbtn{border:1px solid var(--line);background:var(--card);border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:15px;flex:none}
+.iconbtn.on{border-color:var(--brand);background:var(--soft)}
 .iconbtn:hover{border-color:var(--red)}
 .iconbtn:disabled{opacity:.4;cursor:default}
 .ck.big{font-size:14px;font-weight:700}
 .ck.big input{width:20px;height:20px}
-.addsup{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) 64px 100px 110px 140px auto auto;gap:8px;align-items:center;padding:12px;margin-bottom:14px}
-@media (max-width:980px){.addsup{grid-template-columns:1fr 1fr}.addsup input[name=item]{grid-column:1/-1}}
+.addsup{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) 150px 70px 100px 130px auto auto;gap:10px;align-items:end;padding:14px;margin-bottom:14px}
+@media (max-width:980px){.addsup{grid-template-columns:1fr 1fr}.addsup .wide{grid-column:1/-1}}
 .rcpt{font-weight:700;text-decoration:none;background:var(--ok-soft);color:var(--ok);border-radius:999px;padding:6px 12px}
 .task-edit{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,2fr) 1fr 1fr minmax(0,2fr) auto;gap:8px;align-items:end;border-top:1px dashed var(--line);padding-top:10px}
 .task-edit label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .task-edit input,.task-edit select{width:100%;text-transform:none;letter-spacing:0;font-weight:500;font-size:14px;color:var(--ink)}
+.task-edit .row{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;margin-top:4px}
+.task-edit .row .btn{min-width:110px}
 @media (max-width:720px){.task-edit{grid-template-columns:1fr 1fr}.task-edit .wide{grid-column:1/-1}}
 .t-tools{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
 
@@ -307,7 +323,7 @@ tr.filled td.id{color:var(--ok)}
 .bulk .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.45)}
 .rev .pick{width:20px;height:20px}
 .rev{grid-template-columns:24px minmax(0,1fr) 170px 120px 70px}
-@media (max-width:720px){.rev{grid-template-columns:24px 1fr 1fr}.rev .rc{grid-column:2/-1}.rev .seg{grid-column:2/-1;justify-self:start}.rev input[type=text]{grid-column:2}}
+@media (max-width:720px){.rev{grid-template-columns:24px 1fr 1fr}.rev .rc{grid-column:2/-1}.rev .seg{grid-column:2/-1;justify-self:start}.rev .pgl{grid-column:2}}
 .doneby{color:var(--ok);font-weight:700}
 .resched{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--red-soft);color:var(--red);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:600}
 .paper{white-space:pre-wrap;background:var(--soft);border-radius:10px;padding:12px;font-size:14px;line-height:1.55}
@@ -351,6 +367,9 @@ details.card summary::-webkit-details-marker{display:none}
 .tap:hover{border-color:var(--leaf)}
 .tap:active{transform:scale(.99)}
 .filters{position:sticky;top:0;z-index:4;background:var(--bg);padding:8px 0;margin:0 0 10px!important}
+@media (max-width:720px){.filters{flex-direction:column;align-items:stretch;gap:8px}.filters .sp{display:none}
+  .filters .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.filters .chips::-webkit-scrollbar{display:none}
+  .filters .chip{flex:none}}
 
 /* toast + loading */
 #toast{visibility:hidden;position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;font-size:13.5px;transition:transform .25s;z-index:9;max-width:calc(100% - 32px)}
@@ -359,6 +378,11 @@ details.card summary::-webkit-details-marker{display:none}
 .loading{padding:80px 0;text-align:center;color:var(--muted)}
 .spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.spin-i{display:inline-block;width:.95em;height:.95em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-.15em;margin-right:6px;animation:spin .7s linear infinite;flex:none}
+.is-busy{pointer-events:none;opacity:.85}
+.btn[aria-busy=true],.linkbtn[aria-busy=true]{opacity:.92;cursor:progress}
+.tile .badge .spin-i{margin:0;width:.8em;height:.8em}
+@media (prefers-reduced-motion:reduce){.spin-i{animation-duration:2s}}
 .demo{background:var(--brand);color:#fff;text-align:center;font-size:12.5px;font-weight:700;padding:6px 16px}
 /* app chrome */
 header{padding-top:env(safe-area-inset-top)}
@@ -369,12 +393,25 @@ header{padding-top:env(safe-area-inset-top)}
 @media (prefers-color-scheme: dark){.login{background:linear-gradient(120deg,#121a15,#1a2a1f)}}
 .login[hidden]{display:none}
 .login-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:28px 24px;display:flex;flex-direction:column;gap:12px}
-.login-card h2{margin:6px 0 0;font-size:28px}
+.login-card h2{margin:4px 0 0;font-size:28px;line-height:1.1}
+.login-card .sub{margin:-6px 0 4px;color:var(--muted);font-size:14px}
+.login-card .btn{width:100%;display:inline-flex;align-items:center;justify-content:center;min-height:48px}
+#authBody{display:flex;flex-direction:column;gap:14px}
+.card-top{display:flex;align-items:center;justify-content:space-between;min-height:56px}
+.backbtn{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border:0;border-radius:999px;padding:8px 14px 8px 10px;font-weight:700;font-size:13.5px;color:var(--ink);cursor:pointer;min-height:36px}
+.backbtn:hover{background:var(--line)}
+.backbtn[hidden]{display:none}
+.acct-pill{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:12px;padding:10px 12px;font-weight:600;font-size:14px;overflow:hidden}
+.acct-pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-pill .av{width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;flex:none}
+.auth-links{display:flex;justify-content:center;gap:18px;margin-top:-2px}
+.auth-links .linkbtn{font-size:13.5px;padding:6px 2px;display:inline-flex;align-items:center}
+.login-err:empty{display:none}
+.login-err{background:var(--red-soft,#fdecea);border-radius:10px;padding:10px 12px}
 .login-card label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--muted)}
 .login-card label input{color:var(--ink);font-weight:500}
-.authrow{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .login-card input{padding:12px 14px;font-size:16px}
-.login-card .btn{padding:12px;font-size:15px}
+.login-card .btn{padding:12px 16px;font-size:15px}
 .who-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
 .who-btn{display:flex;gap:12px;align-items:center;text-align:left;width:100%;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:14px;padding:12px 14px;cursor:pointer;transition:transform .12s,border-color .12s}
 .who-btn:hover,.who-btn:focus-visible{transform:translateY(-1px);border-color:var(--c)}
@@ -395,19 +432,21 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
 </head>
 <body>
 <div id="install" class="login" hidden>
-  <div class="login-card" style="text-align:center;align-items:center">
-    <div class="logo" style="width:72px;height:72px;border-radius:18px"><img src="icons/favicon.svg" alt="" width="72" height="72"></div>
+  <div class="login-card">
+    <div class="card-top"><div class="logo" style="width:56px;height:56px"><img src="icons/favicon.svg" alt="" width="56" height="56"></div></div>
     <h2>Get the app</h2>
-    <p class="muted" style="margin:0">Works offline on the farm.</p>
-    <button class="btn" style="width:100%" data-action="installNow" id="installNow">⬇ Install</button>
+    <p class="sub">Works offline on the farm.</p>
+    <button class="btn" data-action="installNow" id="installNow">⬇ Install</button>
     <p class="small muted" id="iosHint" hidden style="margin:0">Tap <b>Share</b> <span aria-hidden="true">⬆</span> then <b>Add to Home Screen</b>.</p>
-    <button class="linkbtn" data-action="installSkip">Not now</button>
+    <div class="auth-links"><button class="linkbtn" data-action="installSkip">Not now</button></div>
   </div>
 </div>
 <div id="login" class="login" hidden>
   <form id="authForm" class="login-card" autocomplete="on" novalidate>
-    <div class="logo" style="width:56px;height:56px"><img src="icons/favicon.svg" alt="" width="56" height="56"></div>
-    <h2>Sign in</h2>
+    <div class="card-top"><div class="logo" style="width:56px;height:56px"><img src="icons/favicon.svg" alt="" width="56" height="56"></div>
+      <button type="button" class="backbtn" id="authBackBtn" data-action="authBack" hidden>← Back</button></div>
+    <h2 id="authTitle">Sign in</h2>
+    <p class="sub" id="authSub"></p>
     <div id="authBody"></div>
     <p class="login-err" id="loginErr" role="alert"></p>
   </form>
@@ -626,7 +665,7 @@ const Demo = (() => {
 /* =========================================================
    State + helpers
    ========================================================= */
-const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {} };
+const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {}, open: {} };
 const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Expenses'],['links','Links']];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
@@ -717,22 +756,29 @@ function lock(msg) {               // show sign-in (also used when the server sa
 function renderAuth(err) {
   const a = S.auth, f = document.getElementById('authBody');
   const field = (label, html) => '<label>' + label + html + '</label>';
+  const pill = '<div class="acct-pill"><span class="av">' + esc((a.email || '?')[0].toUpperCase()) + '</span><span>' + esc(a.email) + '</span></div>' +
+    '<input type="email" name="email" autocomplete="username" value="' + esc(a.email) + '" hidden>';
+  const title = document.getElementById('authTitle'), sub = document.getElementById('authSub');
+  // Back: from password/code → email; from email → the install screen (only if it was offered)
+  const back = document.getElementById('authBackBtn');
+  back.hidden = a.step === 'email' && (isStandalone || !S.cameFromInstall);
   if (a.step === 'email') {
-    f.innerHTML = field('Email', '<input type="email" name="email" autocomplete="username" required value="' + esc(a.email) + '">') +
-      '<button class="btn" type="submit"' + (a.busy ? ' disabled' : '') + '>' + (a.busy ? '…' : 'Continue') + '</button>';
+    title.textContent = 'Sign in'; sub.textContent = 'Use your team email.';
+    f.innerHTML = field('Email', '<input type="email" name="email" autocomplete="username" inputmode="email" placeholder="you@umindanao.edu.ph" required value="' + esc(a.email) + '">') +
+      '<button class="btn" type="submit"' + busyBtn(a.busy, 'Continue', 'Checking…') + '</button>';
   } else if (a.step === 'password') {
-    f.innerHTML = '<div class="authrow"><b>' + esc(a.email) + '</b><button type="button" class="linkbtn" data-action="authBack">Change</button></div>' +
-      '<input type="email" name="email" autocomplete="username" value="' + esc(a.email) + '" hidden>' +
+    title.textContent = 'Welcome back'; sub.textContent = 'Enter your password.';
+    f.innerHTML = pill +
       field('Password', '<input type="password" name="pw" autocomplete="current-password" required>') +
-      '<button class="btn" type="submit"' + (a.busy ? ' disabled' : '') + '>' + (a.busy ? '…' : 'Log in') + '</button>' +
-      '<button type="button" class="linkbtn" data-action="authForgot">Forgot password?</button>';
+      '<button class="btn" type="submit"' + busyBtn(a.busy, 'Log in', 'Logging in…') + '</button>' +
+      '<div class="auth-links"><button type="button" class="linkbtn" data-action="authForgot"' + busyBtn(a.sending, 'Forgot password?', 'Sending code…') + '</button></div>';
   } else {
-    f.innerHTML = '<div class="authrow"><span class="small">Code sent to <b>' + esc(a.email) + '</b></span><button type="button" class="linkbtn" data-action="authBack">Change</button></div>' +
-      '<input type="email" name="email" autocomplete="username" value="' + esc(a.email) + '" hidden>' +
-      field('6-digit code', '<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>') +
-      field('New password (8+ characters)', '<input type="password" name="pw" autocomplete="new-password" minlength="8" required>') +
-      '<button class="btn" type="submit"' + (a.busy ? ' disabled' : '') + '>' + (a.busy ? '…' : 'Set password') + '</button>' +
-      '<button type="button" class="linkbtn" data-action="authResend">Send a new code</button>';
+    title.textContent = 'Set your password'; sub.textContent = 'We emailed you a 6-digit code.';
+    f.innerHTML = pill +
+      field('6-digit code', '<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" required>') +
+      field('New password', '<input type="password" name="pw" autocomplete="new-password" minlength="8" placeholder="8+ characters" required>') +
+      '<button class="btn" type="submit"' + busyBtn(a.busy, 'Set password', 'Saving…') + '</button>' +
+      '<div class="auth-links"><button type="button" class="linkbtn" data-action="authResend"' + busyBtn(a.sending, 'Send a new code', 'Sending…') + '</button></div>';
   }
   document.getElementById('loginErr').textContent = err || '';
   const first = f.querySelector('input:not([hidden])'); if (first) setTimeout(() => first.focus(), 30);
@@ -805,17 +851,21 @@ function queueWrite(fn, args, meta) {
   setOutbox(a);
   toast('Saved on this phone ✓ Will sync when there\'s signal.', 2200);
 }
+const SPIN = '<span class="spin-i" aria-hidden="true"></span>';
+// button label while waiting: spinner + short text, and the button can't be tapped twice
+const busyBtn = (busy, label, busyLabel) => busy ? ' disabled aria-busy="true">' + SPIN + busyLabel : '>' + label;
 function updateSyncChip() {
   const n = outbox().length + Object.keys(S.queued).length + Object.keys(S.waiting).length + Object.keys(S.uploading).length;
   const el = document.getElementById('syncChip');
   if (!el) return;
   el.hidden = !n;
-  el.textContent = '⏳ ' + n + ' to sync';
+  if (navigator.onLine && (flushing || Object.keys(S.uploading).length)) el.innerHTML = SPIN + 'Syncing ' + n;
+  else el.textContent = '⏳ ' + n + ' to sync';
 }
 function flushOutbox() {
   if (flushing) return flushing;
   if (DEMO || !navigator.onLine || !outbox().length) return Promise.resolve();
-  flushing = (async () => {
+  flushing = (async () => { updateSyncChip();
     let synced = 0;
     while (outbox().length) {
       const job = outbox()[0];
@@ -837,7 +887,7 @@ function flushOutbox() {
       const a = outbox(); a.shift(); setOutbox(a);
     }
     if (synced) { persist(); toast('Synced ' + synced + ' change' + (synced > 1 ? 's' : '') + ' ✓', 1800); }
-  })().finally(() => { flushing = null; });
+  })().finally(() => { flushing = null; updateSyncChip(); });
   return flushing;
 }
 
@@ -968,14 +1018,14 @@ function vTasks() {
 
   return '<div class="row" style="margin-bottom:14px"><h2 style="margin:0">Tasks</h2><div class="sp"></div>' +
     '<input type="search" id="q" placeholder="Search" value="' + esc(S.q) + '" style="width:220px"></div>' +
-    '<div class="addwrap' + (S.addTaskOpen ? ' open' : '') + '"><button class="btn ' + (S.addTaskOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddTask">' + (S.addTaskOpen ? 'Close' : '＋ Add task') + '</button>' +
+    '<div class="addwrap' + (S.addTaskOpen ? ' open' : '') + '"><button class="btn ' + (S.addTaskOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddTask">' + (S.addTaskOpen ? '✕ Cancel' : '＋ Add task') + '</button>' +
     '<form class="add card" id="addForm" style="padding:12px">' +
-    '<select name="tab" aria-label="Member">' + d.members.map(m => '<option' + (m.tab === defMember ? ' selected' : '') + '>' + esc(m.tab) + '</option>').join('') + '</select>' +
-    '<input class="wide" type="text" name="task" placeholder="New task" required>' +
-    '<select name="category" aria-label="Category">' + opt(L.categories, 'DA RCPC') + '</select>' +
-    '<select name="priority" aria-label="Priority">' + opt(L.priorities, 'Medium') + '</select>' +
-    '<input type="date" name="due" aria-label="Due date">' +
-    '<button class="btn" type="submit">Add</button></form></div>' +
+    '<label class="fl wide">Task<input type="text" name="task" placeholder="What needs doing?" required></label>' +
+    '<label class="fl">For<select name="tab">' + d.members.map(m => '<option' + (m.tab === defMember ? ' selected' : '') + '>' + esc(m.tab) + '</option>').join('') + '</select></label>' +
+    '<label class="fl">Due<input type="date" name="due"></label>' +
+    '<label class="fl">Category<select name="category">' + opt(L.categories, 'DA RCPC') + '</select></label>' +
+    '<label class="fl">Priority<select name="priority">' + opt(L.priorities, 'Medium') + '</select></label>' +
+    '<button class="btn wide" type="submit">＋ Add task</button></form></div>' +
     '<div class="row filters"><div class="chips">' + memberChips + '</div><div class="sp"></div><div class="chips">' + statusChips + '</div></div>' +
     '<div class="tasks" id="taskList"></div>';
 }
@@ -998,6 +1048,7 @@ function renderTaskList() {
       '<select class="status s-' + slug(t.status) + '" data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="status" aria-label="Status"' + (t.tempId ? ' disabled' : '') + '>' +
       sts.map(s => '<option' + (s === t.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select>' +
       '<div class="t-main"><div class="t-title">' + esc(t.task) + '</div><div class="t-meta">' +
+      (t.status !== 'Done' && t.due ? '<span class="due-pill">' + dueText(t) + '</span>' : '') +
       '<span class="who">Assigned: ' + esc(t.tab) + '</span><span>' + (t.tempId ? '⏳ waiting to sync' : esc(t.id)) + '</span>' +
       (t.status === 'Done' && t.doneBy ? '<span class="doneby">✓ Done by ' + esc(t.doneBy) + (t.doneBy !== t.tab ? ' (helped)' : '') + '</span>' : '') +
       (t.category ? '<span class="tag">' + esc(t.category) + '</span>' : '') +
@@ -1005,9 +1056,8 @@ function renderTaskList() {
       (t.link ? '<a href="' + esc(t.link.url) + '" target="_blank" rel="noopener">' + esc(t.link.label) + ' ↗</a>' : '') +
       (t.notes ? '<span>' + esc(t.notes) + '</span>' : '') +
       (t.completed ? '<span>Done ' + fmt(t.completed) + '</span>' : '') + '</div></div>' +
-      '<div><input type="date" value="' + esc(t.due) + '" data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="due" aria-label="Due date" style="width:100%"' + (t.tempId ? ' disabled' : '') + '>' +
-      '<div class="due-lbl">' + dueText(t) + '</div>' +
-      (t.tempId ? '' : '<div class="t-tools"><button class="iconbtn" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" title="Edit" aria-label="Edit task">✏️</button></div>') + '</div>' +
+      '<input type="date" value="' + esc(t.due) + '" data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="due" aria-label="Due date" style="width:100%"' + (t.tempId ? ' disabled' : '') + '>' +
+      (t.tempId ? '<span></span>' : '<button class="iconbtn' + (S.editTask === t.tab + '_' + t.row ? ' on' : '') + '" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" title="Edit" aria-label="Edit task">✏️</button>') +
       (S.editTask === t.tab + '_' + t.row ? taskEditor(t) : '') + '</div>';
   }).join('') : '<div class="empty">No tasks match these filters.</div>');
 }
@@ -1020,9 +1070,9 @@ function taskEditor(t) {
     '<label>Category<select ' + at + ' data-field="category"><option value=""></option>' + opt(L.categories, t.category) + '</select></label>' +
     '<label>Priority<select ' + at + ' data-field="priority">' + opt(L.priorities, t.priority) + '</select></label>' +
     '<label class="wide">Notes<input type="text" value="' + esc(t.notes) + '" ' + at + ' data-field="notes"></label>' +
-    '<label>Done by<select ' + at + ' data-field="doneBy"><option value="">—</option>' + opt(TEAM.map(m => m.tab), t.doneBy) + '</select></label>' +
-    '<div class="row"><button class="btn ghost" data-action="delTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '">🗑 Delete</button>' +
-    '<button class="btn" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '">Done</button></div></div>';
+    '<label>Done by<select ' + at + ' data-field="doneBy"><option value="">—</option>' + opt(TEAM.map(m => m.tab), t.doneBy) + '</select></label><span></span>' +
+    '<div class="row"><button class="btn ghost" data-action="delTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" style="color:var(--red)">🗑 Delete</button>' +
+    '<button class="btn" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '">✓ Done</button></div></div>';
 }
 
 /* ---------- Panel revisions ---------- */
@@ -1044,7 +1094,7 @@ function vRevisions() {
         (r.status === 'C' && r.doneBy ? ' · <span class="doneby">✓ Done by ' + esc(r.doneBy) + '</span>' : '') + '</div>' +
         (r.notes ? '<div class="small" style="margin-top:4px;color:var(--ink)">' + esc(r.notes) + '</div>' : '') + '</div>' +
         '<div class="seg">' + d.lists.revStatuses.map(s => '<button class="' + s + (r.status === s ? ' on' : '') + '" data-action="rev" data-row="' + r.row + '" data-v="' + s + '">' + s + '</button>').join('') + '</div>' +
-        '<input type="text" placeholder="Page no." value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page" aria-label="Page number">' +
+        '<label class="pgl">Page<input type="text" inputmode="numeric" placeholder="—" value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page"></label>' +
         '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Signed</label></div>';
     }).join('') + '</div>').join('') : '<div class="empty">No revision items match these filters.</div>';
 
@@ -1173,7 +1223,7 @@ function paperCard() {
     '<table style="width:100%;min-width:0;margin:10px 0"><thead><tr><th>Class</th><th style="text-align:right">Samples</th><th style="text-align:right">Images</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<div class="paper" id="paperText">' + esc(p.text) + '</div>' +
     '<div class="row" style="margin-top:10px"><button class="btn" data-action="copyPaper">📋 Copy</button>' +
-    (p.useVal ? '<button class="btn ghost" data-action="exportSet">📦 Export for training</button>' : '') +
+    (p.useVal ? '<button class="btn ghost" data-action="exportSet"' + busyBtn(S.exporting, '📦 Export for training', 'Exporting…') + '</button>' : '') +
     (d.exportFolderUrl ? '<a href="' + esc(d.exportFolderUrl) + '" target="_blank" rel="noopener">Open exported set ↗</a>' : '') + '</div>' +
     '<p class="small muted" style="margin:8px 0 0">Fill in yourself: phone model, validator\'s name.</p></details>';
 }
@@ -1186,11 +1236,21 @@ function sampleCard(x) {
   const sel = (v, field) => '<select data-change="sample" ' + at + ' data-field="' + field + '"><option value=""></option>' +
     cls.map(c => '<option' + (c === v ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select>';
   const match = x.validated ? (x.validated === x.disease ? '<span class="match y">✓ RCPC agrees</span>' : '<span class="match n">✗ RCPC says ' + esc(x.validated) + '</span>') : '';
+  const key = 'smp_' + x.id, open = !!S.open[key];
+  const pills = [
+    x.disease ? '<span class="pill">' + esc(x.disease) + '</span>' : '<span class="pill warn">No disease yet</span>',
+    x.bagged ? '<span class="pill ok">✓ Bagged</span>' : '',
+    x.submitted ? '<span class="pill ok">Sent ' + esc(fmt(x.submitted).replace(/^\w+, /, '')) + '</span>' : '',
+    match].join('');
+  const toggle = '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
   return '<div class="sc' + (x.submitted ? ' sub' : '') + '" style="--c:' + m.color + '">' +
     '<div class="sc-top"><span class="lbl">' + esc(x.id) + '</span><span class="sc-own">' + esc(owner) + '</span><span class="sp"></span>' +
       (q ? '<span class="qchip">⏳ ' + q + '</span>' : '') +
       '<button class="cam-btn ' + camCls + '" data-action="cam" ' + at + '>📷 ' + (n + q) + '/5' + (n >= MIN_ANGLES ? ' ✓' : '') + '</button></div>' +
-    '<div class="sc-grid">' +
+    (open ? '' : '<div class="sc-sum" data-action="toggleCard" data-v="' + esc(key) + '"><div class="meta">' + pills + '</div>' +
+      '<div class="meta">' + esc(x.site || 'No site') + ' · ' + esc(x.date ? fmt(x.date).replace(/^\w+, /, '') : '—') + '</div></div>' +
+      '<div class="sc-foot">' + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">Photos ↗</a>' : '') + toggle + '</div></div>') +
+    (!open ? '' : '<div class="sc-grid">' +
       '<label>Suspected disease' + sel(x.disease, 'disease') + '</label>' +
       '<label>Collected<input type="date" value="' + esc(x.date) + '" data-change="sample" ' + at + ' data-field="date"></label>' +
       '<label class="wide">Site<input type="text" value="' + esc(x.site) + '" placeholder="Farm / barangay" data-change="sample" ' + at + ' data-field="site"></label>' +
@@ -1204,7 +1264,7 @@ function sampleCard(x) {
       (gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">📍 Location</a>' : '') +
     '</div>' +
     '<div class="sc-notes"><input type="text" value="' + esc(x.notes) + '" placeholder="Notes" aria-label="Notes" data-change="sample" ' + at + ' data-field="notes"></div>' +
-  '</div>';
+    '<div class="sc-foot">' + toggle + '</div></div>');
 }
 
 /* ---------- camera (inside DA RCPC Samples): guided 3 required + 2 optional, then label reminder ---------- */
@@ -1231,7 +1291,7 @@ function angleState(x, a) {
 function photoStatusLine(x) {
   const states = [1, 2, 3, 4, 5].map(a => angleState(x, a)).filter(Boolean);
   const up = states.filter(s => s === 'up' || s === 'prep').length, q = states.filter(s => s === 'q').length;
-  return up ? '⬆ Uploading ' + up + ' photo' + (up > 1 ? 's' : '') + '…' : q ? '📴 ' + q + ' photo' + (q > 1 ? 's' : '') + ' saved on this phone · uploads when there\'s signal' : states.length ? '✓ All photos saved to Drive' : '';
+  return up ? SPIN + 'Uploading ' + up + ' photo' + (up > 1 ? 's' : '') + '…' : esc(q ? '📴 ' + q + ' photo' + (q > 1 ? 's' : '') + ' saved on this phone · uploads when there\'s signal' : states.length ? '✓ All photos saved to Drive' : '');
 }
 function renderCam() {
   if (!S.cam || !S.data) return;
@@ -1263,7 +1323,7 @@ function camShootHtml(x) {
   }
   const tiles = names.map((nm, i) => {
     const a = i + 1, st = angleState(x, a), thumb = S.thumbs[x.id + '_' + a];
-    const badge = st === 'prep' || st === 'up' ? '⬆' : st === 'q' ? '📴' : st === 'done' ? '✓' : '';
+    const badge = st === 'prep' || st === 'up' ? SPIN : st === 'q' ? '📴' : st === 'done' ? '✓' : '';
     return '<button class="tile' + (a > MIN_ANGLES ? ' opt' : '') + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '">' +
       (thumb ? '<img src="' + thumb + '" alt="">' : st === 'done' ? '✓' : a) + (badge ? '<span class="badge">' + badge + '</span>' : '') + '</button>';
   }).join('');
@@ -1271,7 +1331,7 @@ function camShootHtml(x) {
       '<span class="sp"></span><button class="iconbtn" data-action="camClose" aria-label="Close" title="Close">✕</button></div>' +
     '<div class="dots">' + dots + '<span>3 required · 2 optional</span></div>' + main +
     '<div class="strip">' + tiles + '</div><div class="strip-cap">' + names.map(nm => '<span>' + esc(nm) + '</span>').join('') + '</div>' +
-    '<p class="small muted" style="margin:10px 0 0">Tap any photo above to retake it. ' + esc(photoStatusLine(x)) + '</p>';
+    '<p class="small muted" style="margin:10px 0 0">Tap any photo above to retake it. ' + photoStatusLine(x) + '</p>';
 }
 function camFinishHtml(x) {
   const n = takenSet(x).size, me = S.user;
@@ -1292,7 +1352,7 @@ function camFinishHtml(x) {
       (lastSite && !x.site ? '<div class="qd"><button class="chip" data-action="camSite" data-v="' + esc(lastSite) + '">Same as last: ' + esc(lastSite) + '</button></div>' : '') + '</div>' +
     '<button class="btn bigcam" data-action="camNextSample">＋ Next sample (' + esc(nextLabel(me)) + ')</button>' +
     '<button class="btn bigcam ghost" data-action="camDone">Done for now</button>' +
-    '<p class="small muted" style="margin:10px 0 0">' + esc(photoStatusLine(x)) + '</p>';
+    '<p class="small muted" style="margin:10px 0 0">' + photoStatusLine(x) + '</p>';
 }
 function takeShot(angle) {
   if (!S.cam || !angle) return;
@@ -1376,7 +1436,7 @@ function queueUpload(job) {           // uploads go one at a time so the phone s
 async function sendPhoto(job) {
   const key = jobKey(job);
   delete S.waiting[key];
-  S.uploading[key] = true; delete S.queued[key]; renderCam();
+  S.uploading[key] = true; delete S.queued[key]; renderCam(); updateSyncChip();
   if (job.kind === 'receipt') return sendReceipt(job, key);
   try {
     const patch = await call('uploadPhoto', job.id, job.angle, job.b64);
@@ -1456,9 +1516,17 @@ function vSupplies() {
     const dis = s.tempId ? ' disabled' : '';
     const at = 'data-change="supply" data-row="' + s.row + '"' + dis;
     const rk = receiptKey(s.row), rq = S.queued[rk], rup = S.uploading[rk] || S.waiting[rk] || S.preparing[rk];
-    const receiptBtn = s.tempId ? '' : rup ? '<span class="qchip">⬆ receipt…</span>' : rq ? '<span class="qchip">📴 receipt saved on phone</span>' :
+    const receiptBtn = s.tempId || (!s.bought && !s.receipt && !rq && !rup) ? '' : rup ? '<span class="qchip">' + SPIN + 'Uploading receipt</span>' : rq ? '<span class="qchip">📴 receipt saved on phone</span>' :
       s.receipt ? '<a class="rcpt" href="' + esc(s.receipt) + '" target="_blank" rel="noopener">🧾 Receipt</a><button class="iconbtn" data-action="receipt" data-row="' + s.row + '" title="Retake receipt" aria-label="Retake receipt photo">📷</button>' :
       '<button class="cam-btn none" data-action="receipt" data-row="' + s.row + '">📷 Receipt</button>';
+    const key = 'exp_' + s.row, open = !!S.open[key] || !s.item;
+    const toggle = s.tempId ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
+    const sumMeta = [s.category, (s.qty || 1) + ' × ' + (s.cost !== '' && s.cost != null ? peso(+s.cost) : 'no price'), s.assigned ? 'by ' + s.assigned : 'Nobody yet', s.date ? fmt(s.date).replace(/^\w+, /, '') : ''].filter(Boolean).map(esc).join(' · ');
+    if (!open) return '<div class="sc supc' + (s.bought ? ' sub' : '') + '" style="--c:var(--leaf)">' +
+      '<div class="sc-top"><label class="ck big"><input type="checkbox" ' + (s.bought ? 'checked' : '') + ' ' + at + ' data-field="bought" aria-label="Paid">' + (s.bought ? 'Paid' : 'To buy') + '</label>' +
+        '<span class="sp"></span>' + (s.tempId ? '<span class="qchip">⏳ waiting to sync</span>' : '<b>' + (s.cost !== '' && s.cost != null ? peso(expenseTotal(s)) : '—') + '</b>') + '</div>' +
+      '<div class="sc-sum" data-action="toggleCard" data-v="' + esc(key) + '"><div class="ttl">' + esc(s.item) + '</div><div class="meta">' + sumMeta + '</div></div>' +
+      '<div class="sc-foot">' + receiptBtn + toggle + '</div></div>';
     return '<div class="sc supc' + (s.bought ? ' sub' : '') + '" style="--c:var(--leaf)">' +
       '<div class="sc-top"><label class="ck big"><input type="checkbox" ' + (s.bought ? 'checked' : '') + ' ' + at + ' data-field="bought" aria-label="Paid">' + (s.bought ? 'Paid' : 'To buy') + '</label>' +
         '<span class="sp"></span>' + (s.tempId ? '<span class="qchip">⏳ waiting to sync</span>' : '<b>' + (s.cost !== '' && s.cost != null ? peso(expenseTotal(s)) : '—') + '</b>') +
@@ -1473,7 +1541,7 @@ function vSupplies() {
         '<label>Purpose<input type="text" value="' + esc(s.purpose) + '" placeholder="What it\'s for" ' + at + ' data-field="purpose"></label>' +
         '<label class="wide">Notes<input type="text" value="' + esc(s.notes) + '" ' + at + ' data-field="notes"></label>' +
       '</div>' +
-      '<div class="sc-foot">' + receiptBtn + '</div></div>';
+      '<div class="sc-foot">' + receiptBtn + toggle + '</div></div>';
   };
   return '<div class="row" style="margin-bottom:12px"><h2 style="margin:0">Expenses</h2><div class="sp"></div>' +
       '</div>' +
@@ -1482,16 +1550,16 @@ function vSupplies() {
       '<div class="stat"><div class="k">To buy</div><div class="v">' + peso(sum(toBuy)) + '</div><div class="small muted">' + toBuy.length + ' item' + (toBuy.length === 1 ? '' : 's') + '</div></div>' +
       '<div class="stat" style="grid-column:span 2"><div class="k">Paid by</div><div class="chips" style="margin-top:8px">' + perPerson + '</div></div>' +
     '</div>' +
-    '<div class="addwrap' + (S.addExpOpen ? ' open' : '') + '"><button class="btn ' + (S.addExpOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddExp">' + (S.addExpOpen ? 'Close' : '＋ Add expense') + '</button>' +
+    '<div class="addwrap' + (S.addExpOpen ? ' open' : '') + '"><button class="btn ' + (S.addExpOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddExp">' + (S.addExpOpen ? '✕ Cancel' : '＋ Add expense') + '</button>' +
     '<form id="addSupply" class="card addsup">' +
-      '<input type="text" name="item" placeholder="What did you buy? (e.g. Printing, 3 copies)" required aria-label="Item">' +
-      sel(cats, 'Printing', 'name="category" aria-label="Category"') +
-      '<input type="number" name="qty" min="0" value="1" aria-label="Quantity">' +
-      '<input type="number" name="cost" min="0" step="0.01" placeholder="₱ each" aria-label="Unit cost">' +
-      sel(ppl, S.user, 'name="assigned" aria-label="Paid by"') +
-      '<input type="date" name="date" value="' + localDay() + '" aria-label="Date">' +
-      '<label class="ck"><input type="checkbox" name="bought" checked>Already paid</label>' +
-      '<button class="btn" type="submit">＋ Add</button></form></div>' +
+      '<label class="fl wide">Item<input type="text" name="item" placeholder="e.g. Printing, 3 copies" required></label>' +
+      '<label class="fl">Category' + sel(cats, 'Printing', 'name="category"') + '</label>' +
+      '<label class="fl">Date<input type="date" name="date" value="' + localDay() + '"></label>' +
+      '<label class="fl">Qty<input type="number" name="qty" min="0" value="1" inputmode="numeric"></label>' +
+      '<label class="fl">₱ each<input type="number" name="cost" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></label>' +
+      '<label class="fl">Paid by' + sel(ppl, S.user, 'name="assigned"') + '</label>' +
+      '<label class="ck" style="align-self:center"><input type="checkbox" name="bought" checked>Already paid</label>' +
+      '<button class="btn wide" type="submit">＋ Add expense</button></form></div>' +
     '<div class="row filters"><div class="chips">' + chips + '</div></div>' +
     '<div class="scards">' + (items.map(card).join('') || '<div class="empty" style="grid-column:1/-1">Nothing here yet. Add your first expense above.</div>') + '</div>';
 }
@@ -1548,14 +1616,20 @@ document.addEventListener('click', e => {
   const a = el.dataset.action, v = el.dataset.v;
   if (a === 'install') { doInstall(); return; }
   if (a === 'logout') { logout(); return; }
-  if (a === 'authBack') { S.auth = { step: 'email', email: S.auth.email }; renderAuth(''); return; }
+  if (a === 'authBack') {
+    if (S.auth.busy) return;
+    if (S.auth.step === 'email') { store.del(INSTALL_SKIP); document.getElementById('login').hidden = true; document.getElementById('install').hidden = false; return; }
+    S.auth = { step: 'email', email: S.auth.email }; renderAuth(''); return;
+  }
   if (a === 'authForgot' || a === 'authResend') {
-    call('authForgot', S.auth.email).then(() => { S.auth.step = 'code'; renderAuth(''); toast('Code sent', 1800); })
-      .catch(e => renderAuth(e.network ? 'No signal.' : e.message));
+    if (S.auth.sending || S.auth.busy) return;
+    S.auth.sending = true; renderAuth('');
+    call('authForgot', S.auth.email).then(() => { S.auth.sending = false; S.auth.step = 'code'; renderAuth(''); toast('Code sent', 1800); })
+      .catch(e => { S.auth.sending = false; renderAuth(e.network ? 'No signal.' : e.message); });
     return;
   }
   if (a === 'installNow') { doInstall(); return; }
-  if (a === 'installSkip') { store.set(INSTALL_SKIP, '1'); document.getElementById('install').hidden = true; startApp(); return; }
+  if (a === 'installSkip') { S.cameFromInstall = true; store.set(INSTALL_SKIP, '1'); document.getElementById('install').hidden = true; startApp(); return; }
   if (a === 'gotoView') { S.view = v; S.member = 'All'; S.status = 'Open'; render(); window.scrollTo(0, 0); return; }
   if (a === 'goto') { S.view = 'tasks'; S.member = v; S.status = 'Open'; render(); window.scrollTo(0, 0); }
   else if (a === 'member') { S.member = v; render(); }
@@ -1565,6 +1639,7 @@ document.addEventListener('click', e => {
   else if (a === 'toggleAddTask') { S.addTaskOpen = !S.addTaskOpen; render(); if (S.addTaskOpen) { const i = document.querySelector('#addForm [name=task]'); if (i) i.focus(); } }
   else if (a === 'toggleAddExp') { S.addExpOpen = !S.addExpOpen; render(); if (S.addExpOpen) { const i = document.querySelector('#addSupply [name=item]'); if (i) i.focus(); } }
   else if (a === 'sampleFilter') { S.sampleFilter = v; render(); }
+  else if (a === 'toggleCard') { S.open[v] = !S.open[v]; render(); }
   else if (a === 'newSample') { newSample(); }
   else if (a === 'cam') { openCam(el.dataset.id); }
   else if (a === 'camClose') {
@@ -1581,11 +1656,14 @@ document.addEventListener('click', e => {
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied ✓', 1500), () => toast('Select the text and copy it', 2500));
   }
   else if (a === 'exportSet') {
-    toast('Exporting validated photos… this can take a minute');
+    if (S.exporting) return;
+    S.exporting = true; render();
+    toast('Exporting… this can take a minute');
     call('exportValidatedDataset').then(r => {
       if (r && r.folder) S.data.exportFolderUrl = r.folder;
-      toast('Exported ✓ ' + (r ? r.copied : 0) + ' new photos', 3000); render();
-    }).catch(e => toast(e.network ? 'Needs signal: try again when online.' : 'Export failed: ' + e.message, 4000, true));
+      toast('Exported ✓ ' + (r ? r.copied : 0) + ' new photos', 3000);
+    }).catch(e => toast(e.network ? 'Needs signal: try again when online.' : 'Export failed: ' + e.message, 4000, true))
+      .finally(() => { S.exporting = false; render(); });
   }
   else if (a === 'revSelAll') {
     const list = S.data.revisions.filter(r => (S.revOwner === 'All' || r.owner.indexOf(S.revOwner) > -1) && (S.revStatus === 'All' || r.status === S.revStatus));
@@ -1732,7 +1810,7 @@ window.addEventListener('appinstalled', () => {
 });
 if (isIOS && !isStandalone) document.getElementById('installBtn').hidden = false;
 function doInstall() {
-  if (installEvt) { installEvt.prompt(); installEvt.userChoice.then(c => { if (c && c.outcome === 'accepted') store.set(INSTALL_SKIP, '1'); }).finally(() => { installEvt = null; }); }
+  if (installEvt) { installEvt.prompt(); installEvt.userChoice.then(c => { if (c && c.outcome === 'accepted') { store.set(INSTALL_SKIP, '1'); if (!document.getElementById('install').hidden) { S.cameFromInstall = true; document.getElementById('install').hidden = true; startApp(); } } }).finally(() => { installEvt = null; }); }
   else if (isIOS) document.getElementById('iosHint').hidden = false;
   else toast('Use your browser menu → Install app', 4000);
 }
