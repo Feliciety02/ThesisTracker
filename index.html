@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f4b3a">
+<meta name="description" content="Task tracker for the Banana Leaf Disease thesis team">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Thesis Tracker">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script src="config.js"></script>
+<title>Banana Thesis Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f6ef; --card:#ffffff; --ink:#1f3b33; --muted:#5f6f66; --line:#e2e5d6; --soft:#eef2e4;
+  --brand:#1f4b3a; --brand-ink:#ffffff; --leaf:#588d10; --leaf-soft:#eaf2da; --banana:#588d10; --banana-soft:#eef4e0;
+  --red:#b83226; --red-soft:#fbe9e6; --amber:#9a5c00; --amber-soft:#fff1d6;
+  --ok:#3f7a12; --ok-soft:#e8f2da; --blue:#1d5fa8; --blue-soft:#e6effa;
+  --shadow:0 1px 2px rgba(31,59,51,.05),0 8px 24px rgba(31,59,51,.06);
+  --r:14px; --hfont:"League Spartan","Hanken Grotesk",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#101612; --card:#18211b; --ink:#e4ece5; --muted:#97a69b; --line:#28342c; --soft:#1f2a22;
+    --brand:#9ccf6a; --brand-ink:#10190f; --leaf:#9ccf6a; --leaf-soft:#1f2c18; --banana:#9ccf6a; --banana-soft:#1f2c18;
+    --red:#f08376; --red-soft:#381e1a; --amber:#f1b65c; --amber-soft:#33281a;
+    --ok:#9ccf6a; --ok-soft:#1d2b17; --blue:#86b8f0; --blue-soft:#1a2634; --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Hanken Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body{overflow-x:hidden}
+a{color:var(--brand)}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+
+/* header — cream with banana-leaf line art, like the title slide */
+header{position:relative;overflow:hidden;background:linear-gradient(120deg,#f4f5e8 0%,#e9efd9 100%);color:var(--ink);border-bottom:1px solid var(--line)}
+@media (prefers-color-scheme: dark){ header{background:linear-gradient(120deg,#15201a 0%,#1a2a1f 100%)} }
+header .leaves{position:absolute;inset:0;pointer-events:none;opacity:.55}
+header .leaves path{fill:none;stroke:#8fa77e;stroke-width:1.2}
+header .wrap{position:relative}
+.hd{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:26px 0 18px;flex-wrap:wrap}
+.brand{display:flex;gap:14px;align-items:center;min-width:0}
+.logo{width:46px;height:46px;border-radius:50%;background:var(--leaf);display:grid;place-items:center;flex:none}
+.logo svg{width:24px;height:24px}
+.eyebrow{font-family:var(--hfont);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--leaf)}
+.brand h1{margin:0;font-family:var(--hfont);font-size:30px;line-height:1;font-weight:800;letter-spacing:-.03em;color:var(--ink)}
+.brand h1 em{font-style:normal;color:var(--leaf)}
+.brand p{margin:4px 0 0;font-size:13px;color:var(--muted);max-width:620px}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;white-space:nowrap}
+.pill b{color:#c9e79a}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:0;color:var(--muted);padding:10px 14px;border-radius:10px 10px 0 0;font-weight:700;cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--ink)}
+nav button.on{background:var(--bg);color:var(--ink);box-shadow:inset 0 3px 0 var(--leaf)}
+nav .count{display:inline-block;margin-left:6px;font-size:11px;background:var(--leaf);color:#fff;border-radius:999px;padding:0 7px;font-weight:700}
+
+main{padding:24px 0 60px}
+h2{font-family:var(--hfont);font-size:24px;line-height:1.1;margin:0 0 12px;font-weight:800;letter-spacing:-.025em;color:var(--ink)}
+h3{font-family:var(--hfont);font-size:18px;margin:0 0 10px;font-weight:700;letter-spacing:-.015em}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:820px){.g3,.g2{grid-template-columns:1fr}}
+.section{margin-top:28px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+
+/* stat strip */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:820px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.stat .k{font-family:var(--hfont);font-size:12px;color:var(--leaf);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.stat .v{font-family:var(--hfont);font-size:32px;line-height:1.1;font-weight:800;color:var(--brand);letter-spacing:-.02em;margin-top:2px}
+.stat.hot{background:var(--brand);border-color:var(--brand);color:#fff}.stat.hot .k,.stat.hot .v,.stat.hot .small{color:#fff}.stat.hot .k{color:#c9e79a}
+.stat input[type=date]{margin-top:6px;width:100%;color:var(--ink);background:#fff;border-color:transparent}
+@media (prefers-color-scheme: dark){.stat input[type=date]{background:var(--card)}}
+
+/* member cards */
+.member{cursor:pointer;transition:transform .15s,border-color .15s;border-top:4px solid var(--c)}
+.member:hover{transform:translateY(-2px)}
+.member .nm{font-family:var(--hfont);font-weight:800;font-size:19px;letter-spacing:-.02em}
+.member .rl{font-size:13px;color:var(--muted)}
+.bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin:14px 0 6px}
+.bar i{display:block;height:100%;background:var(--c,var(--brand));border-radius:99px;transition:width .4s}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.kv div{background:var(--soft);border-radius:10px;padding:8px 10px}
+.kv b{display:block;font-size:18px}
+.kv span{font-size:11.5px;color:var(--muted)}
+.kv .bad{background:var(--red-soft);color:var(--red)}
+.kv .bad span{color:var(--red)}
+
+/* chips & controls */
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:6px}
+input[type=text],input[type=search],input[type=number],input[type=date],select,textarea{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--brand) 40%,transparent);outline-offset:1px;border-color:var(--brand)}
+.btn{border:0;background:var(--brand);color:var(--brand-ink);padding:9px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* tasks */
+.tasks{display:flex;flex-direction:column;gap:8px}
+.task{display:grid;grid-template-columns:150px minmax(0,1fr) 150px;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;padding:12px 14px}
+.task.overdue{background:var(--red-soft)}
+.task.soon{background:var(--amber-soft)}
+.task.done{opacity:.6}
+.task.done .t-title{text-decoration:line-through}
+.t-title{font-weight:600}
+.t-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;font-size:12.5px;color:var(--muted);align-items:center}
+.t-meta .who{color:var(--c);font-weight:700}
+.tag{background:var(--soft);border-radius:6px;padding:1px 8px;font-weight:600}
+.p-High{color:var(--red);font-weight:700}
+.due-lbl{font-size:11.5px;font-weight:700;margin-top:3px;text-align:right}
+.overdue .due-lbl{color:var(--red)}
+.soon .due-lbl{color:var(--amber)}
+.status{font-weight:700;width:100%}
+.s-done{background:var(--ok-soft);color:var(--ok)}
+.s-in-progress{background:var(--blue-soft);color:var(--blue)}
+.s-waiting{background:var(--amber-soft);color:var(--amber)}
+@media (max-width:720px){
+  .task{grid-template-columns:1fr 1fr;gap:10px}
+  .task .t-main{grid-column:1/-1;order:-1}
+  .due-lbl{text-align:left}
+}
+.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+form.add{display:grid;grid-template-columns:140px minmax(0,1fr) 150px 120px 150px auto;gap:8px;align-items:center;margin-bottom:14px}
+@media (max-width:900px){form.add{grid-template-columns:1fr 1fr} form.add .wide{grid-column:1/-1}}
+
+/* urgent list */
+.ulist{display:flex;flex-direction:column}
+.ui{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.ui:last-child{border-bottom:0}
+.ui .d{flex:none;width:68px;text-align:center;border-radius:10px;padding:5px 0;font-size:12px;font-weight:800}
+.ui .d.overdue{background:var(--red-soft);color:var(--red)}
+.ui .d.soon{background:var(--amber-soft);color:var(--amber)}
+.ui .d.later{background:var(--soft);color:var(--muted)}
+.ui .w{font-size:12px;color:var(--c);font-weight:700}
+
+/* milestones */
+.ms{display:grid;grid-template-columns:minmax(0,1fr) minmax(70px,140px) 48px;gap:12px;align-items:center;padding:8px 0}
+.ms .bar{margin:0}
+.ms b{text-align:right}
+
+/* revisions */
+.rgroup{margin-bottom:14px}
+.rhead{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.rnum{flex:none;width:28px;height:28px;border-radius:50%;background:var(--leaf);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.rev{display:grid;grid-template-columns:minmax(0,1fr) 170px 120px 70px;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:6px}
+.rev.C{background:var(--ok-soft)}
+.rev.NA{opacity:.55}
+.rev .warn{color:var(--red);font-weight:700}
+.own{font-size:12px;font-weight:700}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:6px 12px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on.C{background:var(--ok);color:#fff}
+.seg button.on.NC{background:var(--red);color:#fff}
+.seg button.on.NA{background:var(--muted);color:var(--card)}
+.rev input[type=text]{width:100%}
+label.ck{display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600;cursor:pointer}
+@media (max-width:720px){.rev{grid-template-columns:1fr 1fr}.rev .rc{grid-column:1/-1}}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:1100px;font-size:13px}
+th{position:sticky;top:0;background:var(--soft);text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:10px 8px;font-weight:700;white-space:nowrap}
+td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:middle}
+td input[type=text],td input[type=number],td input[type=date],td select{width:100%;padding:6px 8px;border-radius:8px}
+td.id{font-weight:800;white-space:nowrap}
+td.fn{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--muted);white-space:nowrap}
+tr.filled td.id{color:var(--ok)}
+.match{font-weight:700;white-space:nowrap}
+.match.y{color:var(--ok)} .match.n{color:var(--red)}
+.rule{background:var(--leaf-soft);border:1px solid color-mix(in srgb,var(--leaf) 35%,var(--line));border-radius:var(--r);padding:14px 16px;margin-bottom:16px;font-size:14px}
+.rule code{background:var(--card);border-radius:6px;padding:1px 6px;font-weight:700}
+
+/* supplies */
+.sup{display:grid;grid-template-columns:28px minmax(0,1.2fr) minmax(0,2fr) 70px 110px 110px 130px;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.sup:first-child{border-top:0}
+.sup.bought .nm{text-decoration:line-through;color:var(--muted)}
+.sup .nm{font-weight:700}
+.sup input[type=number],.sup select{width:100%}
+.sup .sub{text-align:right;font-weight:700}
+.suphead{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;background:var(--soft);border-radius:var(--r) var(--r) 0 0}
+@media (max-width:820px){.sup{grid-template-columns:28px 1fr 1fr}.sup .pp{grid-column:2/-1}.suphead{display:none}}
+
+/* links */
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.lnk{display:flex;gap:12px;align-items:center;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;transition:border-color .15s,transform .15s}
+.lnk:hover{border-color:var(--brand);transform:translateY(-1px)}
+.lnk .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--soft);flex:none}
+.lnk .ic svg{width:20px;height:20px;stroke:var(--brand)}
+.lnk b{display:block;font-size:14px}
+.lnk span{font-size:12px;color:var(--muted)}
+
+/* sample cards */
+.batch{display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:var(--brand);color:#fff;border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
+.batch .big{font-family:var(--hfont);font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.batch .k{font-family:var(--hfont);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#c9e79a}
+.batch .btn{background:#fff;color:var(--brand)}
+.batch .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+.scards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+@media (max-width:420px){.scards{grid-template-columns:1fr}}
+.sc{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.sc.sub{background:var(--ok-soft)}
+.sc-top{display:flex;gap:10px;align-items:center}
+.lbl{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;font-size:17px;background:#fffbe6;color:#3b3000;border:1px dashed #c9b458;border-radius:6px;padding:2px 8px;letter-spacing:.02em}
+.sc-own{font-size:12px;font-weight:700;color:var(--c)}
+.cam-btn{border:0;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer;background:var(--soft);color:var(--ink);white-space:nowrap}
+.cam-btn.ok{background:var(--ok-soft);color:var(--ok)}
+.cam-btn.part{background:var(--amber-soft);color:var(--amber)}
+.cam-btn.none{background:var(--leaf);color:#fff}
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sc-grid label,.sc-notes label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.sc-grid input,.sc-grid select,.sc-notes input{width:100%;text-transform:none;letter-spacing:0;font-weight:500;font-size:14px;color:var(--ink)}
+.sc-grid .wide{grid-column:1/-1}
+.sc-foot{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13px}
+.qchip{display:inline-flex;align-items:center;gap:6px;background:var(--amber-soft);color:var(--amber);border-radius:999px;padding:4px 10px;font-weight:700;font-size:12.5px}
+
+/* camera sheet */
+.cam{position:fixed;inset:0;z-index:15;background:rgba(15,25,20,.55);display:flex;align-items:flex-end;justify-content:center}
+.cam[hidden]{display:none}
+.cam-sheet{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+@media (min-width:700px){.cam{align-items:center}.cam-sheet{border-radius:20px}}
+.cam-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:30px;font-weight:800;background:#fffbe6;color:#3b3000;border:2px dashed #c9b458;border-radius:8px;padding:2px 12px;display:inline-block}
+.shot{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:8px}
+.shot .th{width:64px;height:64px;border-radius:10px;background:var(--soft);display:grid;place-items:center;overflow:hidden;font-size:22px;color:var(--muted)}
+.shot .th img{width:100%;height:100%;object-fit:cover}
+.shot b{display:block}
+.shot .fn{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--muted)}
+.shot .st{font-size:12px;font-weight:700}
+.shot.done .st{color:var(--ok)} .shot.up .st{color:var(--blue)} .shot.q .st{color:var(--amber)}
+.shot.next{border-color:var(--leaf);box-shadow:0 0 0 2px color-mix(in srgb,var(--leaf) 30%,transparent)}
+.bigcam{width:100%;margin-top:14px;padding:16px;font-size:16px;border-radius:14px}
+
+/* printable labels */
+#printArea{display:none}
+@media print{
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block;color:#000;font-family:Arial,sans-serif}
+  #printArea h1{font-size:16px;margin:0 0 8px}
+  .labels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .lab{border:1.5px dashed #555;border-radius:6px;padding:8px;break-inside:avoid;font-size:10.5px;display:flex;flex-direction:column;gap:5px}
+  .lab b{font-size:22px;font-family:"Courier New",monospace}
+}
+
+/* toast + loading */
+#toast{visibility:hidden;position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;font-size:13.5px;transition:transform .25s;z-index:9;max-width:calc(100% - 32px)}
+#toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
+#toast.err{background:var(--red);color:#fff}
+.loading{padding:80px 0;text-align:center;color:var(--muted)}
+.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.demo{background:var(--brand);color:#fff;text-align:center;font-size:12.5px;font-weight:700;padding:6px 16px}
+/* app chrome */
+header{padding-top:env(safe-area-inset-top)}
+.hd-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.install{border:1px solid var(--brand);background:transparent;color:var(--brand);border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer}
+.offline{background:#7a4b00;color:#fff;text-align:center;font-size:12.5px;font-weight:700;padding:6px 16px}
+.login{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:linear-gradient(120deg,#f4f5e8 0%,#e3ebd0 100%)}
+@media (prefers-color-scheme: dark){.login{background:linear-gradient(120deg,#121a15,#1a2a1f)}}
+.login[hidden]{display:none}
+.login-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:28px 24px;display:flex;flex-direction:column;gap:12px}
+.login-card h2{margin:6px 0 0;font-size:28px}
+.login-card input{padding:12px 14px;font-size:16px}
+.login-card .btn{padding:12px;font-size:15px}
+.who-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.who-btn{display:flex;gap:12px;align-items:center;text-align:left;width:100%;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:14px;padding:12px 14px;cursor:pointer;transition:transform .12s,border-color .12s}
+.who-btn:hover,.who-btn:focus-visible{transform:translateY(-1px);border-color:var(--c)}
+.who-btn .av{width:40px;height:40px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-family:var(--hfont);font-weight:800;font-size:18px;flex:none}
+.who-btn b{display:block;font-size:15px}
+.who-btn span{font-size:12.5px;color:var(--muted)}
+.me{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 5px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink)}
+.me .av{width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
+.you{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:var(--leaf);color:#fff;border-radius:999px;padding:1px 8px;vertical-align:middle}
+.act{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.act:last-child{border-bottom:0}
+.act .av{width:28px;height:28px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.act time{display:block;font-size:12px;color:var(--muted)}
+.login-err{color:var(--red);font-weight:600;font-size:13.5px;min-height:1em;margin:0}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12.5px;padding:0}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 40px}
+</style>
+</head>
+<body>
+<div id="login" class="login" hidden>
+  <div class="login-card">
+    <div class="logo" style="width:52px;height:52px"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
+    <div><div class="eyebrow">Welcome</div><h2>Banana Thesis <em style="font-style:normal;color:var(--leaf)">Tracker</em></h2></div>
+    <p class="muted small" style="margin:0">Who's using this device? You'll stay logged in until you switch.</p>
+    <div class="who-list" id="whoList"></div>
+    <p class="login-err" id="loginErr"></p>
+  </div>
+</div>
+<div id="demo" class="demo" hidden>Demo mode with sample data. Paste your Apps Script URL into config.js to connect your Google Sheet.</div>
+<div id="offline" class="offline" hidden></div>
+<header>
+  <svg class="leaves" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path d="M-20 200 C 200 120, 420 210, 640 150 S 1000 60, 1220 120"/>
+    <path d="M1080 -10 C 1010 60, 1000 150, 1060 230 M1080 -10 C 1150 60, 1170 150, 1060 230"/>
+    <path d="M1080 10 L1062 200 M1078 40 l-40 22 M1076 70 l-46 26 M1073 100 l-48 28 M1070 130 l-46 28 M1067 160 l-38 24 M1079 40 l42 24 M1077 70 l50 28 M1074 100 l52 30 M1071 130 l48 30 M1068 160 l38 24"/>
+    <path d="M1180 -20 C 1120 40, 1130 120, 1190 170"/>
+  </svg>
+  <div class="wrap">
+    <div class="hd">
+      <div class="brand">
+        <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
+        <div>
+          <div class="eyebrow">BSCS Capstone · Task Tracker</div>
+          <h1>Banana Thesis <em>Tracker</em></h1>
+          <p id="thesis">An Enhanced EfficientNetB0 Architecture for Mobile Banana Leaf Disease Classification</p>
+        </div>
+      </div>
+      <div class="hd-right">
+        <button class="install" id="installBtn" data-action="install" hidden>⬇ Install app</button>
+        <button class="me" id="meChip" data-action="switch" hidden title="Switch user"></button>
+        <span class="qchip" id="syncChip" hidden></span>
+        <div class="pill" id="countPill">DA RCPC submission · <b>set date</b></div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+  </header>
+
+<main><div class="wrap" id="app"><div class="loading"><div class="spinner"></div>Loading tracker…</div></div></main>
+<footer class="wrap" id="foot">BSCS Capstone · University of Mindanao · College of Computing Education<br><span id="syncInfo"></span> · <button class="linkbtn" data-action="switch">Switch user</button></footer>
+<div id="toast"></div>
+<div id="cam" class="cam" hidden>
+  <div class="cam-sheet" role="dialog" aria-modal="true" aria-label="Sample photos">
+    <div class="row">
+      <div><div class="eyebrow">Sample photos · 3 to 5 angles</div><div class="cam-id" id="camId"></div></div>
+      <span class="sp"></span>
+      <button class="btn ghost" data-action="camClose">Done</button>
+    </div>
+    <p class="small muted" style="margin:10px 0 0">Check that the bag's masking tape says <b id="camId2"></b>. Photos are named automatically, so you never rename files.</p>
+    <div id="camList"></div>
+    <button class="btn bigcam" id="camNext" data-action="camNext">📷 Take photo</button>
+  </div>
+</div>
+<input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+<div id="printArea"></div>
+
+<script>
+/* =========================================================
+   Data access: Apps Script when deployed, sample data when previewed
+   ========================================================= */
+const API_URL = String(window.TRACKER_API_URL || '').trim();
+const DEMO = !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API_URL);
+const USER_STORE = 'bt:user', DATA_STORE = 'bt:data';
+const TEAM = [
+  { tab: 'Fe Anne', name: 'Fe Anne Malasarte', role: 'Team Leader', color: '#6a1b9a', prefix: 'FA' },
+  { tab: 'Rho', name: 'Rho Alphone Jornadal', role: 'Machine Learning Lead', color: '#1565c0', prefix: 'RJ' },
+  { tab: 'Cha', name: 'Charisse Priego', role: 'Documentation Lead', color: '#c62828', prefix: 'CP' },
+];
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+};
+function cached() { try { return JSON.parse(store.get(DATA_STORE) || 'null'); } catch (e) { return null; } }
+
+async function call(fn, ...args) {
+  if (DEMO) {
+    await new Promise(r => setTimeout(r, 150));
+    const out = Demo[fn] ? Demo[fn](...args) : S.data;
+    if (fn !== 'getData' && S.data) (S.data.activity = S.data.activity || []).unshift({ when: 'Just now', who: S.user, what: fn.replace(/([A-Z])/g, ' $1').toLowerCase() });
+    return out;
+  }
+  if (!navigator.onLine) { const err = new Error("You're offline."); err.network = true; throw err; }
+  let res;
+  try {
+    res = await fetch(API_URL, {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ user: S.asUser || S.user || '', fn, args }),
+    });
+  } catch (e) { const err = new Error("Can't reach the tracker server. Check your internet connection."); err.network = true; throw err; }
+  let j;
+  try { j = await res.json(); }
+  catch (e) { throw new Error('The tracker server sent an unexpected reply. In Apps Script, the deployment access must be "Anyone".'); }
+  if (!j.ok) { const err = new Error(j.error || 'Request failed'); err.auth = !!j.auth; throw err; }
+  if (fn === 'getData' && j.data) store.set(DATA_STORE, JSON.stringify({ at: Date.now(), d: j.data }));
+  return j.data;
+}
+
+/* ---------- sample data for preview ---------- */
+const Demo = (() => {
+  const iso = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  const DOC = 'https://docs.google.com/document/d/1du8tYoex9vLWZCVAy1BsPHyzAsmjxJSJKiu2rBhTa40/edit';
+  const L = {
+    da: { label: 'DA Questions', url: DOC + '?tab=t.masbs5zb7cep' },
+    tr: { label: 'Training Results', url: DOC + '?tab=t.rkkrikwydqrw' },
+    ps: { label: 'Public Dataset Sources', url: DOC + '?tab=t.s4c9q6mu8vpe' },
+    vl: { label: 'Dataset Validation Letter', url: DOC + '?tab=t.37d5kfl379y3' },
+    rl: { label: 'Dataset Request Letter', url: DOC + '?tab=t.6pxmo4idkk59' },
+    cf: { label: 'Curated Dataset (Drive)', url: 'https://drive.google.com/drive/folders/1OxFuhfrEIChjzVFISjBL0J8yrMM2af-P' },
+    td: { label: 'Thesis Working Doc', url: DOC },
+  };
+  let r = 4;
+  const T = (id, task, category, priority, status, due, link, notes) =>
+    ({ row: r++, id, task, category, priority, status, due: due === '' ? '' : iso(due), link: link ? L[link] : null, notes: notes || '', completed: status === 'Done' ? iso(-3) : '' });
+  const fe = [
+    T('F-01','Visit DA main office to request datasets / validation','DA RCPC','High','Done',-25,'','Redirected to DA RCPC Davao.'),
+    T('F-02','Prepare DA Questions for the visit','DA RCPC','High','Done',-25,'da'),
+    T('F-03','Draft the Dataset Validation Letter','Letters','Medium','Done','','vl'),
+    T('F-04','Draft the Dataset Request Letter','Letters','Medium','Done','','rl'),
+    T('F-05','Make the new docs file from scratch with the re-arranged structure','Paper','Medium','Done','','td'),
+    T('F-06','Request datasets from DA (follow up through DA RCPC)','DA RCPC','Medium','Waiting','',''),
+    T('F-07','Sort the Curated Banana Leaf Disease Dataset folder (with Cha)','Dataset','High','In Progress',2,'cf'),
+    T('F-08','Contact DA RCPC Davao: confirm submission day, office hours, samples per class','DA RCPC','High','Not Started',1,''),
+    T('F-09','Buy supplies: cotton, plastic bags, markers, masking tape','DA RCPC','High','Not Started',3,''),
+    T('F-10','Lead field collection of fresh banana leaf samples (whole team)','DA RCPC','High','Not Started',8,''),
+    T('F-11','Submit fresh, labeled samples to DA RCPC Davao','DA RCPC','High','Not Started',10,''),
+    T('F-13','Collect + photograph YOUR sample batch FA-001 → FA-020 (3–5 angles each, app camera)','DA RCPC','High','Not Started',8,'','Write FA-### on masking tape.'),
+    T('F-12','Lead panel revisions: Problem, Purpose, Objectives, Scope & Limitations','Panel Revision','High','Not Started',14,''),
+  ];
+  r = 4;
+  const rho = [
+    T('R-01','Retrain the baseline model from scratch and record results in Training Results','Model','High','In Progress',-1,'tr'),
+    T('R-02','Re-curate the dataset','Dataset','High','In Progress',2,'cf'),
+    T('R-03','Record the image count for each class','Dataset','Medium','Not Started',3,''),
+    T('R-04','Send public dataset links to Cha for citation','Dataset','Medium','Not Started',2,'ps'),
+    T('R-05','Collect + photograph YOUR sample batch RJ-001 → RJ-020 (3–5 angles each, app camera)','DA RCPC','High','Not Started',8,'','Write RJ-### on masking tape.'),
+    T('R-06','Add RCPC-validated images to the dataset and update class counts','Dataset','Medium','Not Started','',''),
+    T('R-07','Methodology revisions: preprocessing, split, model construction, tuning','Panel Revision','High','Not Started',14,''),
+  ];
+  r = 4;
+  const cha = [
+    T('C-01','Fill in the Dataset Validation Letter','Letters','Medium','Done','','vl'),
+    T('C-02','Fill in the Dataset Request Letter','Letters','Medium','Done','','rl'),
+    T('C-03','Fill in the new docs file, including the public dataset link from Rho','Paper','Medium','Done','','td'),
+    T('C-04','Sort the Curated Banana Leaf Disease Dataset folder (with Fe Anne)','Dataset','High','In Progress',2,'cf'),
+    T('C-05','Cite the public dataset sources in the paper (IEEE)','Paper','Medium','Waiting','','ps','Waiting for R-04.'),
+    T('C-06','Collect + photograph YOUR sample batch CP-001 → CP-020 (3–5 angles each, app camera)','DA RCPC','High','Not Started',8,'','Write CP-### on masking tape.'),
+    T('C-07','Write up the DA RCPC validation process in Methodology','Paper','Medium','Not Started','',''),
+    T('C-08','Formatting revisions: CCS, keywords, tables/figures, IEEE refs, ACM format','Panel Revision','High','Not Started',14,''),
+  ];
+  const R = [
+    ['1','Title Page','Title must be under 20 words','Fe Anne','C'],
+    ['3','CCS Concepts','Use the ACM Computing Classification Scheme','Cha','NC'],
+    ['5','Keywords','Limit to 5 keywords','Cha','C'],
+    ['6','Background – Problem','Indicate the main problem of the baseline (re-read the baseline paper)','Fe Anne + Rho','NC'],
+    ['6','Background – Problem','Add real banana symptom data aside from the 900 original images','Fe Anne','NC'],
+    ['6','Background – Problem','⚠ If the baseline study changes, the architecture changes too → re-defense required','Team','NC'],
+    ['8','Objectives','Revise objectives to a CS (not IT) approach','Fe Anne + Rho','NC'],
+    ['10','Methodology – Model Construction','⚠ Add a sample computation of the detection','Rho','NC'],
+    ['11','Results & Discussion','NA for Capstone 1','—','NA'],
+    ['14','References','Add more references from 2022 onward','Cha + Fe Anne','NC'],
+  ].map((x, i) => ({ row: i + 4, item: x[0], section: x[1], comment: x[2], owner: x[3], status: x[4], page: x[4] === 'C' ? '1' : '', signed: false, notes: '' }));
+  const samples = [];
+  [['FA', 'Fe Anne'], ['RJ', 'Rho'], ['CP', 'Cha']].forEach(([p, who]) => {
+    for (let i = 1; i <= 20; i++) samples.push({ row: samples.length + 4, id: p + '-' + String(i).padStart(3, '0'), disease: '', date: '', site: '', by: who, photos: '', cotton: false, bagged: false, submitted: '', validated: '', notes: '', folder: '', angles: [] });
+  });
+  Object.assign(samples[0], { disease: 'Black Sigatoka', date: iso(-1), site: 'Manuel Guianga, Tugbok', photos: 4, angles: [1, 2, 3, 4], cotton: true, bagged: true, folder: 'https://drive.google.com/' });
+  Object.assign(samples[1], { disease: 'Cordana Leaf Spot', date: iso(-1), site: 'Manuel Guianga, Tugbok', photos: 2, angles: [1, 2], cotton: true });
+  Object.assign(samples[20], { disease: 'Healthy', date: iso(-1), site: 'Manuel Guianga, Tugbok', photos: 3, angles: [1, 2, 3], cotton: true, bagged: true });
+  const supplies = [
+    ['Cotton','Wrap cut leaf ends (slightly damp) to keep samples fresh',1,45,'Fe Anne',true],
+    ['Plastic bags (resealable)','One bag per sample',1,60,'Fe Anne',false],
+    ['Permanent markers','Write sample ID on labels',2,35,'Fe Anne',false],
+    ['Masking tape','Labels on each bag',1,40,'Fe Anne',false],
+    ['Cooler / ice box','Keep samples cool during transport',1,'','',false],
+    ['Pruning shears / scissors','Clean cuts when collecting',1,'','',false],
+    ['','', '', '', '', false],
+  ].map((x, i) => ({ row: i + 3, item: x[0], purpose: x[1], qty: x[2], cost: x[3], assigned: x[4], bought: x[5], notes: '' }));
+  const data = {
+    title: 'Banana Leaf Disease Thesis Tracker',
+    thesisTitle: 'An Enhanced EfficientNetB0 Architecture for Mobile Banana Leaf Disease Classification',
+    sheetUrl: 'https://docs.google.com/spreadsheets/',
+    rcpcDate: iso(10),
+    members: [
+      { tab: 'Fe Anne', name: 'Fe Anne Malasarte', role: 'Team Leader', email: 'f.malasarte.543849@umindanao.edu.ph', color: '#6a1b9a', tasks: fe },
+      { tab: 'Rho', name: 'Rho Alphone Jornadal', role: 'Machine Learning Lead', email: 'r.jornadal.544960@umindanao.edu.ph', color: '#1565c0', tasks: rho },
+      { tab: 'Cha', name: 'Charisse Priego', role: 'Documentation Lead', email: 'c.priego.545409@umindanao.edu.ph', color: '#c62828', tasks: cha },
+    ],
+    revisions: R, samples, supplies, links: Object.values(L),
+    activity: [
+      { when: 'Today, 8:12 PM', who: 'Rho', what: 'changed R-01 "Retrain the baseline model…" status → In Progress' },
+      { when: 'Today, 7:40 PM', who: 'Cha', what: 'checked "Bagged & Labeled" for sample BL-001' },
+      { when: 'Today, 6:05 PM', who: 'Fe Anne', what: 'set the DA RCPC submission date' },
+    ],
+    lists: { statuses: ['Not Started','In Progress','Waiting','Done'], priorities: ['High','Medium','Low'],
+      categories: ['DA RCPC','Dataset','Model','Paper','Letters','Panel Revision','Admin'],
+      classes: ['Cordana Leaf Spot','Black Sigatoka','Healthy','Unsure'], revStatuses: ['C','NC','NA'] },
+    panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde','Mr. Hernando','Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
+  };
+  return {
+    getData: () => JSON.parse(JSON.stringify(data)),
+    uploadPhoto: (row, angle) => {
+      const sm = S.data.samples.find(x => x.row === row);
+      const angles = sm.angles.concat(sm.angles.indexOf(angle) < 0 ? [angle] : []).sort((a, b) => a - b);
+      return { angles, photos: angles.length, folder: 'https://drive.google.com/drive/folders/1OxFuhfrEIChjzVFISjBL0J8yrMM2af-P', date: sm.date || new Date().toISOString().slice(0, 10) };
+    },
+    addTask: (tab, t) => {
+      const m = S.data.members.find(x => x.tab === tab);
+      const max = Math.max(0, ...m.tasks.map(x => +(x.id.match(/\d+$/) || [0])[0]));
+      return { row: 4 + m.tasks.length, id: tab[0] + '-' + String(max + 1).padStart(2, '0'), task: t.task, category: t.category,
+        priority: t.priority, status: 'Not Started', due: t.due || '', link: null, notes: t.notes || '', completed: '' };
+    },
+  };
+})();
+
+/* =========================================================
+   State + helpers
+   ========================================================= */
+const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', allSamples: false, sampleFilter: null, cam: null, uploading: {}, waiting: {}, queued: {}, thumbs: {} };
+const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Supplies'],['links','Links']];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const toDate = s => s ? new Date(s + 'T00:00:00') : null;
+const daysUntil = s => s ? Math.round((toDate(s) - today()) / 864e5) : null;
+const fmt = s => s ? toDate(s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '—';
+const slug = s => String(s).toLowerCase().replace(/[^a-z]+/g, '-');
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const peso = n => '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function dueState(t) {
+  if (t.status === 'Done' || !t.due) return '';
+  const n = daysUntil(t.due);
+  return n < 0 ? 'overdue' : n <= 3 ? 'soon' : '';
+}
+function dueText(t) {
+  if (!t.due) return '';
+  const n = daysUntil(t.due);
+  if (t.status === 'Done') return '';
+  if (n < 0) return Math.abs(n) + 'd overdue';
+  if (n === 0) return 'Due today';
+  if (n === 1) return 'Due tomorrow';
+  return 'In ' + n + ' days';
+}
+const byDue = (a, b) => (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0;
+function member(tab) { return S.data.members.find(m => m.tab === tab); }
+function allTasks() { return S.data.members.flatMap(m => m.tasks.map(t => Object.assign({}, t, { tab: m.tab, color: m.color }))); }
+function ownerColor(owner) { const m = S.data.members.find(x => owner.indexOf(x.tab) > -1); return m ? m.color : 'var(--muted)'; }
+function stats(m) {
+  const t = m.tasks, done = t.filter(x => x.status === 'Done').length;
+  const open = t.filter(x => x.status !== 'Done');
+  const next = open.filter(x => x.due).sort(byDue)[0];
+  return {
+    total: t.length, done, open: open.length,
+    overdue: open.filter(x => x.due && daysUntil(x.due) < 0).length,
+    next, panel: S.data.revisions.filter(r => r.owner.indexOf(m.tab) > -1 && r.status === 'NC').length,
+  };
+}
+
+let toastTimer;
+function toast(msg, ms, err) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'show' + (err ? ' err' : '');
+  clearTimeout(toastTimer);
+  if (ms) toastTimer = setTimeout(() => el.className = '', ms);
+}
+
+/* =========================================================
+   Load + save
+   ========================================================= */
+function load(quiet) {
+  return flushOutbox().then(() => {
+    if (outbox().length) { const e = new Error('pending'); e.network = true; throw e; }
+    return call('getData');
+  }).then(d => {
+    S.data = d; setOffline(false);
+    if (!quiet || !isTyping()) render();
+    renderCam();
+  }).catch(e => {
+    if (e.auth) { lock(e.message); return; }
+    const c = cached();
+    if (c || S.data) {
+      if (!S.data) S.data = c.d;
+      setOffline(true, c ? c.at : Date.now());
+      if (!isTyping()) render();
+      return;
+    }
+    document.getElementById('app').innerHTML = '<div class="empty">Could not load the tracker: ' + esc(e && e.message || e) + '</div>';
+  });
+}
+function setOffline(on, at) {
+  const el = document.getElementById('offline');
+  el.hidden = !on;
+  if (on) el.textContent = "📴 No signal. Keep working: changes and photos are saved on this phone and sync automatically when you're back online.";
+  updateSyncChip();
+  const info = document.getElementById('syncInfo');
+  if (info) info.textContent = DEMO ? 'Demo data' : on ? 'Offline copy' : 'Synced ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+function lock(msg) {
+  store.del(USER_STORE);
+  S.user = null;
+  const me = document.getElementById('meChip'); if (me) me.hidden = true;
+  document.getElementById('whoList').innerHTML = TEAM.map(m =>
+    '<button class="who-btn" style="--c:' + m.color + '" data-action="pick" data-v="' + esc(m.tab) + '">' +
+    '<span class="av" style="color:#fff">' + esc(m.tab.charAt(0)) + '</span><span style="color:var(--ink)"><b>' + esc(m.name) + '</b><span>' + esc(m.role) + '</span></span></button>').join('');
+  document.getElementById('loginErr').textContent = msg || '';
+  document.getElementById('login').hidden = false;
+}
+function signIn(tab) {
+  S.user = tab; S.member = tab;
+  store.set(USER_STORE, tab);
+  document.getElementById('login').hidden = true;
+  const m = TEAM.find(x => x.tab === tab);
+  const me = document.getElementById('meChip');
+  me.style.setProperty('--c', m.color);
+  me.innerHTML = '<span class="av">' + esc(tab.charAt(0)) + '</span>' + esc(tab);
+  me.hidden = false;
+  if (S.data) render();
+  else document.getElementById('app').innerHTML = '<div class="loading"><div class="spinner"></div>Opening tracker…</div>';
+}
+function isTyping() {
+  const a = document.activeElement;
+  return a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && !/checkbox|radio|button|submit/.test(a.type)));
+}
+function persist() { if (S.data) store.set(DATA_STORE, JSON.stringify({ at: Date.now(), d: S.data })); }
+/* ---------- offline outbox: every change is kept on the phone until the server has it ---------- */
+const OUTBOX = 'bt:outbox';
+let flushing = null;
+function outbox() { try { return JSON.parse(store.get(OUTBOX) || '[]'); } catch (e) { return []; } }
+function setOutbox(a) { store.set(OUTBOX, JSON.stringify(a)); updateSyncChip(); }
+function queueWrite(fn, args, meta) {
+  const a = outbox();
+  a.push(Object.assign({ fn, args, user: S.user, at: Date.now() }, meta || {}));
+  setOutbox(a);
+  toast('Saved on this phone ✓ Will sync when there\'s signal.', 2200);
+}
+function updateSyncChip() {
+  const n = outbox().length + Object.keys(S.queued).length + Object.keys(S.waiting).length + Object.keys(S.uploading).length;
+  const el = document.getElementById('syncChip');
+  if (!el) return;
+  el.hidden = !n;
+  el.textContent = '⏳ ' + n + ' to sync';
+}
+function flushOutbox() {
+  if (flushing) return flushing;
+  if (DEMO || !navigator.onLine || !outbox().length) return Promise.resolve();
+  flushing = (async () => {
+    let synced = 0;
+    while (outbox().length) {
+      const job = outbox()[0];
+      try {
+        S.asUser = job.user;
+        const res = await call(job.fn, ...job.args);
+        if (job.fn === 'addTask' && res && job.tempId) {
+          const m = member(job.tab), i = m ? m.tasks.findIndex(t => t.tempId === job.tempId) : -1;
+          if (i > -1) m.tasks[i] = res;
+        }
+        synced++;
+      } catch (e) {
+        S.asUser = null;
+        if (e.network) break;                      // still no signal: keep it, try again later
+        toast('One change could not sync: ' + e.message, 4000, true);  // server refused it: drop it
+      }
+      S.asUser = null;
+      const a = outbox(); a.shift(); setOutbox(a);
+    }
+    if (synced) { persist(); toast('Synced ' + synced + ' change' + (synced > 1 ? 's' : '') + ' ✓', 1800); }
+  })().finally(() => { flushing = null; });
+  return flushing;
+}
+
+function save(fn, args, apply, onQueued) {
+  if (apply) apply();
+  persist();
+  if (!isTyping()) render();
+  const queue = () => { const meta = onQueued ? onQueued() : null; queueWrite(fn, args, meta); persist(); if (!isTyping()) render(); return null; };
+  if (!DEMO && (!navigator.onLine || outbox().length)) return Promise.resolve(queue());   // keep changes in order
+  toast('Saving…');
+  return call(fn, ...args).then(d => {
+    persist();
+    toast('Saved ✓', 1200);
+    return d;
+  }).catch(e => {
+    if (e.auth) { lock(e.message); return; }
+    if (e.network) return queue();
+    toast('Could not save: ' + (e && e.message || e), 5000, true); load(true);
+  });
+}
+
+/* =========================================================
+   Render
+   ========================================================= */
+function render() {
+  if (!S.data) return;
+  const d = S.data;
+  document.getElementById('thesis').textContent = d.thesisTitle;
+  const n = daysUntil(d.rcpcDate);
+  document.getElementById('countPill').innerHTML = 'DA RCPC submission · <b>' +
+    (!d.rcpcDate ? 'set date' : n > 1 ? n + ' days left' : n === 1 ? 'tomorrow' : n === 0 ? 'today' : 'passed') + '</b>';
+  const openTasks = allTasks().filter(t => t.status !== 'Done').length;
+  const openRev = d.revisions.filter(r => r.status === 'NC').length;
+  document.getElementById('nav').innerHTML = VIEWS.map(([k, label]) =>
+    '<button data-view="' + k + '" class="' + (S.view === k ? 'on' : '') + '">' + label +
+    (k === 'tasks' && openTasks ? '<span class="count">' + openTasks + '</span>' : '') +
+    (k === 'revisions' && openRev ? '<span class="count">' + openRev + '</span>' : '') + '</button>').join('');
+  const fn = { overview: vOverview, tasks: vTasks, revisions: vRevisions, samples: vSamples, supplies: vSupplies, links: vLinks }[S.view];
+  document.getElementById('app').innerHTML = fn();
+  if (S.view === 'tasks') renderTaskList();
+}
+
+/* ---------- Overview ---------- */
+function vOverview() {
+  const d = S.data, tasks = allTasks();
+  const done = tasks.filter(t => t.status === 'Done').length;
+  const overdue = tasks.filter(t => dueState(t) === 'overdue').length;
+  const revApplic = d.revisions.filter(r => r.status !== 'NA');
+  const revDone = revApplic.filter(r => r.status === 'C').length;
+  const n = daysUntil(d.rcpcDate);
+
+  const cards = d.members.map(m => {
+    const s = stats(m), p = pct(s.done, s.total);
+    return '<div class="card member" style="--c:' + m.color + '" data-action="goto" data-v="' + esc(m.tab) + '">' +
+      '<div class="row"><div><div class="nm">' + esc(m.name) + (m.tab === S.user ? '<span class="you">You</span>' : '') + '</div><div class="rl">' + esc(m.role) + '</div></div><div class="sp"></div><b style="font-size:22px">' + p + '%</b></div>' +
+      '<div class="bar"><i style="width:' + p + '%"></i></div>' +
+      '<div class="small muted">' + s.done + ' of ' + s.total + ' tasks done' + (s.next ? ' · next: <b style="color:var(--ink)">' + fmt(s.next.due) + '</b>' : '') + '</div>' +
+      '<div class="kv"><div><b>' + s.open + '</b><span>open</span></div>' +
+      '<div class="' + (s.overdue ? 'bad' : '') + '"><b>' + s.overdue + '</b><span>overdue</span></div>' +
+      '<div><b>' + s.panel + '</b><span>panel items</span></div></div></div>';
+  }).join('');
+
+  const urgent = tasks.filter(t => t.status !== 'Done' && t.due && daysUntil(t.due) <= 7).sort(byDue);
+  const ulist = urgent.length ? urgent.map(t => {
+    const st = dueState(t) || 'later', k = daysUntil(t.due);
+    return '<div class="ui" style="--c:' + t.color + '"><div class="d ' + st + '">' + (k < 0 ? Math.abs(k) + 'd late' : k === 0 ? 'Today' : fmt(t.due).replace(/^\w+, /, '')) + '</div>' +
+      '<div style="min-width:0"><div style="font-weight:600">' + esc(t.task) + '</div><div class="w">' + esc(t.tab) + ' · ' + esc(t.status) + '</div></div></div>';
+  }).join('') : '<div class="empty">Nothing due in the next 7 days.</div>';
+
+  const smp = d.samples, collected = smp.filter(s => s.date).length, submitted = smp.filter(s => s.submitted).length, validated = smp.filter(s => s.validated).length;
+  const supItems = d.supplies.filter(s => s.item), bought = supItems.filter(s => s.bought).length;
+  const ms = [
+    ['Panel revisions complied', revDone, revApplic.length, 'var(--brand)'],
+    ['Supplies bought', bought, supItems.length, 'var(--leaf)'],
+    ['Collected samples submitted to RCPC', submitted, Math.max(collected, 1), 'var(--leaf)', submitted + ' of ' + collected + ' collected'],
+    ['Submitted samples validated by RCPC', validated, Math.max(submitted, 1), 'var(--leaf)', validated + ' of ' + submitted + ' submitted'],
+  ].map(x => '<div class="ms"><div><b style="text-align:left;display:block">' + x[0] + '</b><span class="small muted">' + (x[4] || x[1] + ' of ' + x[2]) + '</span></div>' +
+    '<div class="bar" style="--c:' + x[3] + '"><i style="width:' + pct(x[1], x[2]) + '%"></i></div><b>' + pct(x[1], x[2]) + '%</b></div>').join('');
+
+  return '<div class="stats">' +
+    '<div class="stat"><div class="k">Team progress</div><div class="v">' + pct(done, tasks.length) + '%</div><div class="small muted">' + done + ' / ' + tasks.length + ' tasks</div></div>' +
+    '<div class="stat"><div class="k">Overdue</div><div class="v" style="color:' + (overdue ? 'var(--red)' : 'inherit') + '">' + overdue + '</div><div class="small muted">tasks past due</div></div>' +
+    '<div class="stat"><div class="k">Panel revisions</div><div class="v">' + revDone + '<span class="muted" style="font-size:16px"> / ' + revApplic.length + '</span></div><div class="small muted">complied</div></div>' +
+    '<div class="stat hot"><div class="k">DA RCPC submission</div><div class="v" style="font-size:20px">' + (d.rcpcDate ? (n > 0 ? n + ' days left' : n === 0 ? 'Today' : 'Passed') : 'Not set') + '</div>' +
+    '<input type="date" data-change="rcpc" value="' + esc(d.rcpcDate) + '" aria-label="DA RCPC submission date"></div>' +
+    '</div>' +
+    '<div class="section"><h2>Team</h2><div class="grid g3">' + cards + '</div></div>' +
+    '<div class="section grid g2">' +
+    '<div class="card"><h3>Due this week &amp; overdue</h3><div class="ulist">' + ulist + '</div></div>' +
+    '<div class="card"><h3>Milestones</h3>' + ms + '</div></div>' +
+    '<div class="section card"><h3>Recent activity</h3>' + activityHtml() + '</div>';
+}
+
+function activityHtml() {
+  const list = (S.data.activity || []).slice(0, 8);
+  if (!list.length) return '<div class="muted small">No changes yet. Edits made in the app show up here with who made them.</div>';
+  return list.map(x => {
+    const m = TEAM.find(t => t.tab === x.who);
+    return '<div class="act" style="--c:' + (m ? m.color : 'var(--muted)') + '"><span class="av">' + esc((x.who || '?').charAt(0)) + '</span>' +
+      '<div style="min-width:0"><b>' + esc(x.who) + '</b> ' + esc(x.what) + '<time>' + esc(x.when) + '</time></div></div>';
+  }).join('');
+}
+
+/* ---------- Tasks ---------- */
+function vTasks() {
+  const d = S.data, L = d.lists;
+  const memberChips = ['All', ...d.members.map(m => m.tab)].map(t => {
+    const m = member(t);
+    return '<button class="chip ' + (S.member === t ? 'on' : '') + '" data-action="member" data-v="' + esc(t) + '"' + (m ? ' style="--c:' + m.color + '"' : '') + '>' +
+      (m ? '<span class="dot"></span>' : '') + esc(t === 'All' ? 'Everyone' : t) + '</button>';
+  }).join('');
+  const statusChips = ['Open', 'All', 'Done'].map(s => '<button class="chip ' + (S.status === s ? 'on' : '') + '" data-action="status" data-v="' + s + '">' + s + '</button>').join('');
+  const opt = (arr, sel) => arr.map(x => '<option' + (x === sel ? ' selected' : '') + '>' + esc(x) + '</option>').join('');
+  const defMember = S.member !== 'All' ? S.member : d.members[0].tab;
+
+  return '<div class="row" style="margin-bottom:14px"><h2 style="margin:0">Tasks</h2><div class="sp"></div>' +
+    '<input type="search" id="q" placeholder="Search tasks…" value="' + esc(S.q) + '" style="width:220px"></div>' +
+    '<form class="add card" id="addForm" style="padding:12px">' +
+    '<select name="tab" aria-label="Member">' + d.members.map(m => '<option' + (m.tab === defMember ? ' selected' : '') + '>' + esc(m.tab) + '</option>').join('') + '</select>' +
+    '<input class="wide" type="text" name="task" placeholder="Add a new task…" required>' +
+    '<select name="category" aria-label="Category">' + opt(L.categories, 'DA RCPC') + '</select>' +
+    '<select name="priority" aria-label="Priority">' + opt(L.priorities, 'Medium') + '</select>' +
+    '<input type="date" name="due" aria-label="Due date">' +
+    '<button class="btn" type="submit">Add</button></form>' +
+    '<div class="row" style="margin-bottom:12px"><div class="chips">' + memberChips + '</div><div class="sp"></div><div class="chips">' + statusChips + '</div></div>' +
+    '<div class="tasks" id="taskList"></div>';
+}
+function renderTaskList() {
+  const el = document.getElementById('taskList');
+  if (!el) return;
+  const q = S.q.trim().toLowerCase();
+  let list = allTasks().filter(t =>
+    (S.member === 'All' || t.tab === S.member) &&
+    (S.status === 'All' || (S.status === 'Done' ? t.status === 'Done' : t.status !== 'Done')) &&
+    (!q || (t.task + ' ' + t.notes + ' ' + t.id + ' ' + t.category).toLowerCase().indexOf(q) > -1));
+  list.sort((a, b) => (a.status === 'Done') - (b.status === 'Done') || byDue(a, b));
+  const sts = S.data.lists.statuses;
+  el.innerHTML = list.length ? list.map(t => {
+    const st = dueState(t);
+    return '<div class="task ' + st + (t.status === 'Done' ? ' done' : '') + '" style="--c:' + t.color + '">' +
+      '<select class="status s-' + slug(t.status) + '" data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="status" aria-label="Status"' + (t.tempId ? ' disabled' : '') + '>' +
+      sts.map(s => '<option' + (s === t.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select>' +
+      '<div class="t-main"><div class="t-title">' + esc(t.task) + '</div><div class="t-meta">' +
+      '<span class="who">' + esc(t.tab) + '</span><span>' + (t.tempId ? '⏳ waiting to sync' : esc(t.id)) + '</span>' +
+      (t.category ? '<span class="tag">' + esc(t.category) + '</span>' : '') +
+      (t.priority ? '<span class="p-' + esc(t.priority) + '">' + esc(t.priority) + '</span>' : '') +
+      (t.link ? '<a href="' + esc(t.link.url) + '" target="_blank" rel="noopener">' + esc(t.link.label) + ' ↗</a>' : '') +
+      (t.notes ? '<span>' + esc(t.notes) + '</span>' : '') +
+      (t.completed ? '<span>Done ' + fmt(t.completed) + '</span>' : '') + '</div></div>' +
+      '<div><input type="date" value="' + esc(t.due) + '" data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="due" aria-label="Due date" style="width:100%"' + (t.tempId ? ' disabled' : '') + '>' +
+      '<div class="due-lbl">' + dueText(t) + '</div></div></div>';
+  }).join('') : '<div class="empty">No tasks match these filters.</div>';
+}
+
+/* ---------- Panel revisions ---------- */
+function vRevisions() {
+  const d = S.data;
+  const owners = ['All', ...d.members.map(m => m.tab), 'Team'];
+  const ownerChips = owners.map(o => '<button class="chip ' + (S.revOwner === o ? 'on' : '') + '" data-action="revOwner" data-v="' + esc(o) + '">' + esc(o === 'All' ? 'Everyone' : o) + '</button>').join('');
+  const stChips = [['All','All'],['NC','Not complied'],['C','Complied'],['NA','N/A']].map(([k, l]) => '<button class="chip ' + (S.revStatus === k ? 'on' : '') + '" data-action="revStatus" data-v="' + k + '">' + l + '</button>').join('');
+  const list = d.revisions.filter(r => (S.revOwner === 'All' || r.owner.indexOf(S.revOwner) > -1) && (S.revStatus === 'All' || r.status === S.revStatus));
+  const applic = d.revisions.filter(r => r.status !== 'NA'), c = applic.filter(r => r.status === 'C').length;
+  const groups = [];
+  list.forEach(r => { const g = groups[groups.length - 1]; if (g && g.item === r.item) g.rows.push(r); else groups.push({ item: r.item, rows: [r] }); });
+  const body = groups.length ? groups.map(g => '<div class="rgroup"><div class="rhead"><span class="rnum">' + esc(g.item) + '</span><h3 style="margin:0">' + esc(g.rows[0].section.split(' – ')[0]) + '</h3></div>' +
+    g.rows.map(r => {
+      const warn = r.comment.charAt(0) === '⚠';
+      return '<div class="rev ' + esc(r.status) + '"><div class="rc"><div class="' + (warn ? 'warn' : '') + '">' + esc(r.comment) + '</div>' +
+        '<div class="small muted">' + esc(r.section) + ' · <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span></div></div>' +
+        '<div class="seg">' + d.lists.revStatuses.map(s => '<button class="' + s + (r.status === s ? ' on' : '') + '" data-action="rev" data-row="' + r.row + '" data-v="' + s + '">' + s + '</button>').join('') + '</div>' +
+        '<input type="text" placeholder="Page no." value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page" aria-label="Page number">' +
+        '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Signed</label></div>';
+    }).join('') + '</div>').join('') : '<div class="empty">No revision items match these filters.</div>';
+
+  return '<div class="row" style="margin-bottom:6px"><h2 style="margin:0">Panel Revisions</h2><div class="sp"></div><b>' + c + ' / ' + applic.length + ' complied</b></div>' +
+    '<div class="small muted" style="margin-bottom:10px">' + esc(d.panel.defense) + ' · Adviser: ' + esc(d.panel.adviser) + ' · Panel: ' + esc(d.panel.members.join(', ')) + '</div>' +
+    '<div class="bar" style="--c:var(--ok);margin:0 0 16px"><i style="width:' + pct(c, applic.length) + '%"></i></div>' +
+    '<div class="row" style="margin-bottom:14px"><div class="chips">' + ownerChips + '</div><div class="sp"></div><div class="chips">' + stChips + '</div></div>' + body;
+}
+
+/* ---------- Samples ---------- */
+const MIN_ANGLES = 3;
+const ANGLE_HINTS = [
+  'Whole leaf, upper side, flat and in focus',
+  'Flip the leaf and show the lower side',
+  'Fill the frame with the spots or streaks',
+  'Tilt about 45° so the texture shows (optional)',
+  'Any other view that helps RCPC (optional)',
+];
+function angleNames() { return (S.data && S.data.photoAngles) || ['Top surface', 'Underside', 'Lesion close-up', 'Side / angled', 'Extra']; }
+function ownerOf(id) { const p = String(id).split('-')[0]; const m = TEAM.find(t => t.prefix === p); return m ? m.tab : ''; }
+function batchOf(tab) { return S.data.samples.filter(s => ownerOf(s.id) === tab); }
+function sampleUsed(s) { return !!(s.disease || s.date || s.site || s.notes || s.submitted || (s.angles && s.angles.length)); }
+function fname(id, n) { return id + '_' + String(n).padStart(2, '0') + '.jpg'; }
+function queuedFor(row) { return Object.values(S.queued).filter(j => j.row === row).length; }
+
+function vSamples() {
+  const d = S.data, me = S.user, meM = TEAM.find(t => t.tab === me) || TEAM[0];
+  const filt = S.sampleFilter || me;
+  const mine = batchOf(me);
+  const next = mine.find(x => !sampleUsed(x));
+  const photographed = mine.filter(x => (x.angles || []).length >= MIN_ANGLES).length;
+  let rows = filt === 'All' ? d.samples : batchOf(filt);
+  if (!S.allSamples) { let blanks = 0; rows = rows.filter(x => sampleUsed(x) || blanks++ < 2); }
+  const chips = [me, ...TEAM.map(t => t.tab).filter(t => t !== me), 'All'].map(t => {
+    const m = TEAM.find(x => x.tab === t);
+    const label = t === me ? 'My batch (' + m.prefix + ')' : t === 'All' ? 'All batches' : t + ' (' + m.prefix + ')';
+    return '<button class="chip ' + (filt === t ? 'on' : '') + '" data-action="sampleFilter" data-v="' + esc(t) + '"' + (m ? ' style="--c:' + m.color + '"' : '') + '>' + (m ? '<span class="dot"></span>' : '') + esc(label) + '</button>';
+  }).join('');
+  const qn = Object.keys(S.queued).length;
+  const collected = d.samples.filter(x => x.date).length;
+
+  return '<div class="batch">' +
+      '<div><div class="k">Your labels, ' + esc(me) + '</div><div class="big">' + esc(mine[0] ? mine[0].id : '') + ' → ' + esc(mine.length ? mine[mine.length - 1].id : '') + '</div>' +
+      '<div class="small" style="opacity:.85">' + photographed + ' of ' + mine.length + ' photographed (3+ angles)</div></div>' +
+      '<div class="sp"></div>' +
+      (next ? '<div><div class="k">Next free label</div><div class="big">' + esc(next.id) + '</div></div>' : '<div class="big">Batch full ✓</div>') +
+      '<div class="row">' + (next ? '<button class="btn" data-action="cam" data-row="' + next.row + '">📷 Start ' + esc(next.id) + '</button>' : '') +
+      '<button class="btn ghost" data-action="printLabels" data-v="' + esc(me) + '">🖨 Print my labels</button></div></div>' +
+    '<div class="rule"><b>No mix-ups:</b> write <b>your</b> labels (' + esc(meM.prefix) + '-###) on masking tape, one per bag. Open that same number here and tap 📷. ' +
+      'The app names every photo for you (<code>' + esc(next ? fname(next.id, 1) : meM.prefix + '-001_01.jpg') + '</code>, <code>…_02.jpg</code> …). Take at least 3 angles, up to 5. ' +
+      'Wrap the cut end in damp cotton, seal, and submit <b>fresh</b>.</div>' +
+    '<div class="row" style="margin-bottom:12px"><div class="chips">' + chips + '</div><div class="sp"></div>' +
+      (qn ? '<span class="qchip">⏳ ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') +
+      '<span class="small muted">' + collected + ' collected · ' + d.samples.filter(x => x.submitted).length + ' submitted · ' + d.samples.filter(x => x.validated).length + ' validated</span></div>' +
+    '<div class="scards">' + (rows.map(sampleCard).join('') || '<div class="empty">No samples here yet.</div>') + '</div>' +
+    '<div style="margin-top:12px"><button class="btn ghost" data-action="allSamples">' + (S.allSamples ? 'Show only used labels' : 'Show every label in the batch') + '</button></div>';
+}
+
+function sampleCard(x) {
+  const cls = S.data.lists.classes, owner = ownerOf(x.id), m = TEAM.find(t => t.tab === owner) || { color: 'var(--muted)' };
+  const n = (x.angles || []).length, q = queuedFor(x.row);
+  const camCls = n >= MIN_ANGLES ? 'ok' : n > 0 ? 'part' : 'none';
+  const sel = (v, field) => '<select data-change="sample" data-row="' + x.row + '" data-field="' + field + '"><option value=""></option>' +
+    cls.map(c => '<option' + (c === v ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select>';
+  const match = x.validated ? (x.validated === x.disease ? '<span class="match y">✓ RCPC agrees</span>' : '<span class="match n">✗ RCPC says ' + esc(x.validated) + '</span>') : '';
+  return '<div class="sc' + (x.submitted ? ' sub' : '') + '" style="--c:' + m.color + '">' +
+    '<div class="sc-top"><span class="lbl">' + esc(x.id) + '</span><span class="sc-own">' + esc(owner) + '</span><span class="sp"></span>' +
+      (q ? '<span class="qchip">⏳ ' + q + '</span>' : '') +
+      '<button class="cam-btn ' + camCls + '" data-action="cam" data-row="' + x.row + '">📷 ' + n + '/5' + (n >= MIN_ANGLES ? ' ✓' : '') + '</button></div>' +
+    '<div class="sc-grid">' +
+      '<label>Suspected disease' + sel(x.disease, 'disease') + '</label>' +
+      '<label>Collected<input type="date" value="' + esc(x.date) + '" data-change="sample" data-row="' + x.row + '" data-field="date"></label>' +
+      '<label class="wide">Site<input type="text" value="' + esc(x.site) + '" placeholder="Farm / barangay" data-change="sample" data-row="' + x.row + '" data-field="site"></label>' +
+      '<label>Submitted to RCPC<input type="date" value="' + esc(x.submitted) + '" data-change="sample" data-row="' + x.row + '" data-field="submitted"></label>' +
+      '<label>RCPC result' + sel(x.validated, 'validated') + '</label>' +
+    '</div>' +
+    '<div class="sc-foot">' +
+      '<label class="ck"><input type="checkbox" ' + (x.cotton ? 'checked' : '') + ' data-change="sample" data-row="' + x.row + '" data-field="cotton">Cotton</label>' +
+      '<label class="ck"><input type="checkbox" ' + (x.bagged ? 'checked' : '') + ' data-change="sample" data-row="' + x.row + '" data-field="bagged">Bagged &amp; labeled</label>' +
+      match + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">Photos in Drive ↗</a>' : '') +
+    '</div>' +
+    '<div class="sc-notes"><input type="text" value="' + esc(x.notes) + '" placeholder="Notes" aria-label="Notes" data-change="sample" data-row="' + x.row + '" data-field="notes"></div>' +
+  '</div>';
+}
+
+/* ---------- camera ---------- */
+function openCam(row) {
+  S.cam = { row: row };
+  document.getElementById('cam').hidden = false;
+  renderCam();
+}
+function closeCam() { S.cam = null; document.getElementById('cam').hidden = true; render(); }
+function nextAngle(x) {
+  const have = new Set((x.angles || []).concat(Object.values(S.queued).filter(j => j.row === x.row).map(j => j.angle)).concat(Object.keys(S.uploading).concat(Object.keys(S.waiting)).filter(k => k.startsWith(x.row + '_')).map(k => +k.split('_')[1])));
+  for (let i = 1; i <= 5; i++) if (!have.has(i)) return i;
+  return 0;
+}
+function renderCam() {
+  if (!S.cam || !S.data) return;
+  const x = S.data.samples.find(s => s.row === S.cam.row);
+  if (!x) return;
+  const names = angleNames(), nx = nextAngle(x);
+  document.getElementById('camId').textContent = x.id;
+  document.getElementById('camId2').textContent = x.id;
+  document.getElementById('camList').innerHTML = names.map((nm, i) => {
+    const a = i + 1, key = x.row + '_' + a;
+    const done = (x.angles || []).indexOf(a) > -1, up = !!S.uploading[key] || !!S.waiting[key], q = !!S.queued[key];
+    const st = S.waiting[key] ? 'Waiting to upload…' : up ? 'Uploading…' : q ? 'Saved on phone · uploads when online' : done ? '✓ Saved to Drive' : a <= MIN_ANGLES ? 'Required' : 'Optional';
+    const thumb = S.thumbs[x.id + '_' + a];
+    return '<div class="shot ' + (up ? 'up' : q ? 'q' : done ? 'done' : '') + (a === nx ? ' next' : '') + '">' +
+      '<div class="th">' + (thumb ? '<img src="' + thumb + '" alt="">' : done ? '✓' : a) + '</div>' +
+      '<div style="min-width:0"><b>' + a + '. ' + esc(nm) + '</b><div class="small muted">' + esc(ANGLE_HINTS[i] || '') + '</div>' +
+      '<div class="fn">' + esc(fname(x.id, a)) + '</div><div class="st">' + st + '</div></div>' +
+      '<button class="btn ' + (done || q ? 'ghost' : '') + '" data-action="camShot" data-v="' + a + '"' + (up ? ' disabled' : '') + '>' + (done || q ? 'Retake' : '📷') + '</button></div>';
+  }).join('');
+  const btn = document.getElementById('camNext');
+  if (nx) { btn.hidden = false; btn.dataset.v = nx; btn.textContent = '📷 Take ' + names[nx - 1].toLowerCase() + ' (' + nx + ' of ' + (nx <= MIN_ANGLES ? MIN_ANGLES : 5) + ')'; }
+  else { btn.hidden = false; btn.dataset.v = ''; btn.textContent = 'All 5 angles done ✓'; }
+}
+function takeShot(angle) {
+  if (!S.cam || !angle) return;
+  S.cam.angle = angle;
+  const inp = document.getElementById('camInput');
+  inp.value = '';
+  inp.click();
+}
+function shrinkPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const max = 1600, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      const full = c.toDataURL('image/jpeg', 0.85);
+      const t = document.createElement('canvas'), tk = 160 / Math.max(w, h);
+      t.width = Math.round(w * tk); t.height = Math.round(h * tk);
+      t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
+      resolve({ full, thumb: t.toDataURL('image/jpeg', 0.7) });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read that photo.')); };
+    img.src = url;
+  });
+}
+
+/* offline-safe photo queue (IndexedDB) */
+const PhotoQ = (() => {
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open('bt-photos', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('q');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const run = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction('q', mode), req = fn(t.objectStore('q'));
+    t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error);
+  }));
+  return {
+    put: (k, v) => run('readwrite', st => st.put(v, k)).catch(() => {}),
+    del: k => run('readwrite', st => st.delete(k)).catch(() => {}),
+    all: () => run('readonly', st => st.getAll()).catch(() => []),
+  };
+})();
+
+let uploadChain = Promise.resolve();
+function queueUpload(job) {           // uploads go one at a time so the phone stays responsive
+  const key = job.row + '_' + job.angle;
+  if (S.uploading[key] || S.waiting[key]) return uploadChain;
+  S.waiting[key] = true; delete S.queued[key]; renderCam(); updateSyncChip();
+  uploadChain = uploadChain.then(() => sendPhoto(job));
+  return uploadChain;
+}
+async function sendPhoto(job) {
+  const key = job.row + '_' + job.angle;
+  delete S.waiting[key];
+  S.uploading[key] = true; delete S.queued[key]; renderCam();
+  try {
+    const patch = await call('uploadPhoto', job.row, job.angle, job.b64);
+    const sm = S.data && S.data.samples.find(x => x.row === job.row);
+    if (sm && patch) { Object.assign(sm, patch); persist(); }
+    await PhotoQ.del(key);
+    toast('Saved ' + fname(job.id, job.angle) + ' ✓', 1500);
+  } catch (e) {
+    if (e.auth) { delete S.uploading[key]; lock(e.message); return; }
+    S.queued[key] = job;
+    toast('📴 ' + fname(job.id, job.angle) + ' saved on this phone. It uploads by itself when there\'s signal.', 3000);
+  }
+  delete S.uploading[key];
+  renderCam(); updateSyncChip();
+  if (!S.cam && S.view === 'samples' && !isTyping()) render();
+}
+async function flushPhotos() {
+  if (!navigator.onLine || !S.user) return;
+  const jobs = await PhotoQ.all();
+  for (const j of jobs || []) queueUpload(j);
+  return uploadChain;
+}
+
+document.getElementById('camInput').addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file || !S.cam) return;
+  const x = S.data.samples.find(s => s.row === S.cam.row), angle = S.cam.angle;
+  try {
+    toast('Preparing photo…');
+    const p = await shrinkPhoto(file);
+    S.thumbs[x.id + '_' + angle] = p.thumb;
+    const job = { row: x.row, id: x.id, angle, b64: p.full.split(',')[1], at: Date.now() };
+    await PhotoQ.put(x.row + '_' + angle, job);  // kept on the phone until Drive confirms
+    queueUpload(job);
+    renderCam();
+  } catch (err) { toast(err.message || String(err), 4000, true); }
+});
+
+function printLabels(tab) {
+  const m = TEAM.find(t => t.tab === tab), list = batchOf(tab);
+  document.getElementById('printArea').innerHTML =
+    '<h1>' + esc(m.name) + ' · sample labels ' + esc(list[0].id) + ' → ' + esc(list[list.length - 1].id) + ' · DA RCPC Davao</h1><div class="labels">' +
+    list.map(x => '<div class="lab"><b>' + esc(x.id) + '</b><span>Disease: ____________</span><span>Date: ______  Site: ________</span></div>').join('') + '</div>';
+  setTimeout(() => window.print(), 50);
+}
+
+/* ---------- Supplies ---------- */
+function vSupplies() {
+  const d = S.data, ppl = d.members.map(m => m.tab);
+  const items = d.supplies.filter(s => s.item);
+  const blank = d.supplies.find(s => !s.item);
+  const total = items.reduce((a, s) => a + (Number(s.qty) || 0) * (Number(s.cost) || 0), 0);
+  const rows = items.map(s => {
+    const sub = s.qty !== '' && s.cost !== '' ? peso(s.qty * s.cost) : '—';
+    return '<div class="sup ' + (s.bought ? 'bought' : '') + '">' +
+      '<input type="checkbox" ' + (s.bought ? 'checked' : '') + ' data-change="supply" data-row="' + s.row + '" data-field="bought" aria-label="Bought">' +
+      '<div class="nm">' + esc(s.item) + '</div><div class="pp small muted">' + esc(s.purpose) + '</div>' +
+      '<input type="number" min="0" value="' + esc(s.qty) + '" data-change="supply" data-row="' + s.row + '" data-field="qty" aria-label="Quantity">' +
+      '<input type="number" min="0" step="0.01" placeholder="₱ each" value="' + esc(s.cost) + '" data-change="supply" data-row="' + s.row + '" data-field="cost" aria-label="Unit cost">' +
+      '<div class="sub">' + sub + '</div>' +
+      '<select data-change="supply" data-row="' + s.row + '" data-field="assigned" aria-label="Assigned to"><option value=""></option>' +
+      ppl.map(p => '<option' + (p === s.assigned ? ' selected' : '') + '>' + esc(p) + '</option>').join('') + '</select></div>';
+  }).join('');
+  return '<div class="row" style="margin-bottom:12px"><h2 style="margin:0">Supplies for sample collection</h2><div class="sp"></div><b>Total ' + peso(total) + '</b></div>' +
+    '<div class="card" style="padding:0">' +
+    '<div class="sup suphead"><span></span><span>Item</span><span>Purpose</span><span>Qty</span><span>Unit cost</span><span style="text-align:right">Subtotal</span><span>Assigned</span></div>' + rows + '</div>' +
+    (blank ? '<form id="addSupply" class="row" style="margin-top:12px"><input type="text" name="item" placeholder="Add another item…" required style="flex:1;min-width:180px"><button class="btn" type="submit">Add item</button></form>' : '');
+}
+
+/* ---------- Links ---------- */
+const ICON = {
+  doc: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>',
+  folder: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  sheet: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
+};
+function vLinks() {
+  const d = S.data;
+  const card = (url, title, sub, icon) => '<a class="lnk" href="' + esc(url) + '" target="_blank" rel="noopener"><div class="ic">' + ICON[icon] + '</div><div style="min-width:0"><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div></a>';
+  return '<h2>Project links</h2><div class="links">' +
+    card(d.sheetUrl, 'Tracker Google Sheet', 'Same data as this website', 'sheet') +
+    d.links.map(l => card(l.url, l.label, /drive\.google/.test(l.url) ? 'Google Drive folder' : 'Thesis Google Doc', /drive\.google/.test(l.url) ? 'folder' : 'doc')).join('') +
+    '</div><div class="section"><h2>Team</h2><div class="links">' +
+    d.members.map(m => card('mailto:' + m.email, m.name, m.role + ' · ' + m.email, 'mail')).join('') + '</div></div>';
+}
+
+/* =========================================================
+   Events
+   ========================================================= */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-view],[data-action]');
+  if (!el) return;
+  if (el.dataset.view) { S.view = el.dataset.view; render(); window.scrollTo(0, 0); return; }
+  const a = el.dataset.action, v = el.dataset.v;
+  if (a === 'install') { doInstall(); return; }
+  if (a === 'switch') { lock(); return; }
+  if (a === 'pick') { signIn(v); S.sampleFilter = null; toast('Hi ' + v + ' 👋', 1500); load().then(flushPhotos); return; }
+  if (a === 'goto') { S.view = 'tasks'; S.member = v; S.status = 'Open'; render(); window.scrollTo(0, 0); }
+  else if (a === 'member') { S.member = v; render(); }
+  else if (a === 'status') { S.status = v; render(); }
+  else if (a === 'revOwner') { S.revOwner = v; render(); }
+  else if (a === 'revStatus') { S.revStatus = v; render(); }
+  else if (a === 'allSamples') { S.allSamples = !S.allSamples; render(); }
+  else if (a === 'sampleFilter') { S.sampleFilter = v; render(); }
+  else if (a === 'cam') { openCam(+el.dataset.row); }
+  else if (a === 'camClose') { closeCam(); }
+  else if (a === 'camShot' || a === 'camNext') { takeShot(+(v || el.dataset.v)); }
+  else if (a === 'printLabels') { printLabels(v); }
+  else if (a === 'rev') {
+    const row = +el.dataset.row;
+    save('updateRevision', [row, 'status', v], () => { S.data.revisions.find(r => r.row === row).status = v; });
+  }
+});
+
+document.addEventListener('change', e => {
+  const el = e.target, k = el.dataset.change;
+  if (!k) return;
+  const row = +el.dataset.row, field = el.dataset.field;
+  let val = el.type === 'checkbox' ? el.checked : el.type === 'number' ? (el.value === '' ? '' : Number(el.value)) : el.value;
+  if (k === 'task') {
+    const tab = el.dataset.tab;
+    save('updateTask', [tab, row, field, val], () => {
+      const t = member(tab).tasks.find(x => x.row === row);
+      t[field] = val;
+      if (field === 'status') t.completed = val === 'Done' ? new Date().toISOString().slice(0, 10) : '';
+    });
+  } else if (k === 'rev') {
+    save('updateRevision', [row, field, val], () => { S.data.revisions.find(r => r.row === row)[field] = val; });
+  } else if (k === 'sample') {
+    save('updateSample', [row, field, val], () => { S.data.samples.find(s => s.row === row)[field] = val; });
+  } else if (k === 'supply') {
+    save('updateSupply', [row, field, val], () => { S.data.supplies.find(s => s.row === row)[field] = val; });
+  } else if (k === 'rcpc') {
+    save('setRcpcDate', [val], () => { S.data.rcpcDate = val; });
+  }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'q') { S.q = e.target.value; renderTaskList(); }
+});
+
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target;
+  if (f.id === 'addForm') {
+    const t = { task: f.task.value.trim(), category: f.category.value, priority: f.priority.value, due: f.due.value };
+    if (!t.task) return;
+    const tab = f.tab.value;
+    f.querySelector('button').disabled = true;
+    f.task.blur();
+    save('addTask', [tab, t], null, () => {
+      const tempId = 'tmp' + Date.now();
+      member(tab).tasks.push({ row: 0, id: 'new', tempId, task: t.task, category: t.category, priority: t.priority,
+        status: 'Not Started', due: t.due || '', link: null, notes: '', completed: '' });
+      return { tempId, tab };
+    }).then(task => {
+      if (!task) return;
+      member(tab).tasks.push(task); persist(); render();
+      toast('Task added to ' + tab, 1600);
+    });
+  } else if (f.id === 'addSupply') {
+    const blank = S.data.supplies.find(s => !s.item);
+    const item = f.item.value.trim();
+    if (!blank || !item) return;
+    f.item.blur();
+    save('updateSupply', [blank.row, 'item', item], () => { blank.item = item; blank.qty = 1; });
+  }
+});
+
+/* auto-refresh so the team sees each other's updates */
+const busy = () => Object.keys(S.uploading).length || Object.keys(S.waiting).length;
+setInterval(() => { if (S.data && navigator.onLine && document.visibilityState === 'visible' && !isTyping() && !busy()) load(true); }, 120000);
+let lastFocusLoad = 0;
+document.addEventListener('visibilitychange', () => {
+  if (S.data && document.visibilityState === 'visible' && !isTyping() && !busy() && Date.now() - lastFocusLoad > 30000) { lastFocusLoad = Date.now(); load(true); }
+});
+window.addEventListener('online', () => { if (S.data) flushOutbox().then(flushPhotos).then(() => load(true)); });
+window.addEventListener('offline', () => { if (S.data) setOffline(true, (cached() || {}).at); });
+
+/* install as an app */
+let installEvt = null;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.getElementById('installBtn').hidden = false; });
+window.addEventListener('appinstalled', () => { document.getElementById('installBtn').hidden = true; toast('Installed ✓ Open it from your home screen.', 3000); });
+if (isIOS && !isStandalone) document.getElementById('installBtn').hidden = false;
+function doInstall() {
+  if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; }); }
+  else if (isIOS) toast('On iPhone: open this in Safari, tap Share, then "Add to Home Screen".', 6000);
+  else toast('Use your browser menu → "Install app" or "Add to Home screen".', 5000);
+}
+if ('serviceWorker' in navigator && window.isSecureContext) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+/* start */
+PhotoQ.all().then(jobs => { (jobs || []).forEach(j => { S.queued[j.row + '_' + j.angle] = j; }); updateSyncChip(); });
+setInterval(() => { if (navigator.onLine && (outbox().length || Object.keys(S.queued).length)) flushOutbox().then(flushPhotos); }, 45000);
+// ask the browser to keep offline photos/changes even when storage is tight
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+updateSyncChip();
+if (DEMO) document.getElementById('demo').hidden = false;
+const savedUser = store.get(USER_STORE);
+if (!savedUser || !TEAM.some(m => m.tab === savedUser)) {
+  lock();
+  const c = cached(); if (c) S.data = c.d;
+} else {
+  const c = cached();
+  if (c) S.data = c.d;
+  signIn(savedUser);
+  load().then(flushPhotos);
+}
+</script>
+</body>
+</html>
