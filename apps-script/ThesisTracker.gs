@@ -27,6 +27,12 @@ const CFG = {
   maxRows: 200,
   sampleRows: 300,        // room for this many samples; labels are handed out by the app (FA-001, RJ-001, CP-001 …)
   photoAngles: ['Top surface', 'Underside', 'Lesion close-up', 'Side / angled', 'Extra'],  // 3 required, 5 max
+  // Who can sign in to the app (email → member). Two emails each; add or remove here, then deploy a New version.
+  accounts: {
+    'f.malasarte.543849@umindanao.edu.ph': 'Fe Anne', 'feannemlsrte@gmail.com': 'Fe Anne',
+    'r.jornadal.544960@umindanao.edu.ph': 'Rho',      'lofty08.business@gmail.com': 'Rho',
+    'c.priego.545409@umindanao.edu.ph': 'Cha',        'changpriego@gmail.com': 'Cha',
+  },
   members: [
     { tab: 'Fe Anne', name: 'Fe Anne Malasarte',     role: 'Team Leader',           email: 'f.malasarte.543849@umindanao.edu.ph', color: '#6a1b9a', light: '#f3e5f5', prefix: 'FA' },
     { tab: 'Rho',     name: 'Rho Alphone Jornadal',  role: 'Machine Learning Lead', email: 'r.jornadal.544960@umindanao.edu.ph',  color: '#1565c0', light: '#e3f2fd', prefix: 'RJ' },
@@ -161,6 +167,7 @@ function onOpen() {
     .addItem('📷 Connect photo folder', 'setupPhotoFolder')
     .addItem('📦 Export RCPC-validated photos to class folders', 'exportValidatedDatasetMenu')
     .addItem('💾 Back up this sheet now', 'backupNow')
+    .addItem('🔑 Reset someone\'s app password', 'resetMemberPassword')
     .addItem('📧 Email each member their open tasks', 'emailOpenTasks')
     .addItem('⏰ Turn ON daily 8 AM email reminders', 'enableDailyReminder')
     .addItem('🔕 Turn OFF daily reminders', 'disableDailyReminder')

@@ -347,6 +347,11 @@ details.card summary::-webkit-details-marker{display:none}
   .sample-tip{font-size:13.5px}
 }
 
+.tap{cursor:pointer;transition:border-color .15s,transform .15s}
+.tap:hover{border-color:var(--leaf)}
+.tap:active{transform:scale(.99)}
+.filters{position:sticky;top:0;z-index:4;background:var(--bg);padding:8px 0;margin:0 0 10px!important}
+
 /* toast + loading */
 #toast{visibility:hidden;position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;font-size:13.5px;transition:transform .25s;z-index:9;max-width:calc(100% - 32px)}
 #toast.show{visibility:visible;transform:translateX(-50%) translateY(0)}
@@ -365,6 +370,9 @@ header{padding-top:env(safe-area-inset-top)}
 .login[hidden]{display:none}
 .login-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:28px 24px;display:flex;flex-direction:column;gap:12px}
 .login-card h2{margin:6px 0 0;font-size:28px}
+.login-card label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--muted)}
+.login-card label input{color:var(--ink);font-weight:500}
+.authrow{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .login-card input{padding:12px 14px;font-size:16px}
 .login-card .btn{padding:12px;font-size:15px}
 .who-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
@@ -386,16 +394,25 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
 </style>
 </head>
 <body>
-<div id="login" class="login" hidden>
-  <div class="login-card">
-    <div class="logo" style="width:56px;height:56px"><img src="icons/favicon.svg" alt="" width="56" height="56"></div>
-    <div><div class="eyebrow">Welcome</div><h2>Banana Thesis <em style="font-style:normal;color:var(--leaf)">Tracker</em></h2></div>
-    <p class="muted small" style="margin:0">Who's using this device? You'll stay logged in until you switch.</p>
-    <div class="who-list" id="whoList"></div>
-    <p class="login-err" id="loginErr"></p>
+<div id="install" class="login" hidden>
+  <div class="login-card" style="text-align:center;align-items:center">
+    <div class="logo" style="width:72px;height:72px;border-radius:18px"><img src="icons/favicon.svg" alt="" width="72" height="72"></div>
+    <h2>Get the app</h2>
+    <p class="muted" style="margin:0">Works offline on the farm.</p>
+    <button class="btn" style="width:100%" data-action="installNow" id="installNow">⬇ Install</button>
+    <p class="small muted" id="iosHint" hidden style="margin:0">Tap <b>Share</b> <span aria-hidden="true">⬆</span> then <b>Add to Home Screen</b>.</p>
+    <button class="linkbtn" data-action="installSkip">Not now</button>
   </div>
 </div>
-<div id="demo" class="demo" hidden>Demo mode with sample data. Paste your Apps Script URL into config.js to connect your Google Sheet.</div>
+<div id="login" class="login" hidden>
+  <form id="authForm" class="login-card" autocomplete="on" novalidate>
+    <div class="logo" style="width:56px;height:56px"><img src="icons/favicon.svg" alt="" width="56" height="56"></div>
+    <h2>Sign in</h2>
+    <div id="authBody"></div>
+    <p class="login-err" id="loginErr" role="alert"></p>
+  </form>
+</div>
+<div id="demo" class="demo" hidden>Demo data</div>
 <div id="offline" class="offline" hidden></div>
 <header>
   <svg class="leaves" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -409,14 +426,13 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
       <div class="brand">
         <div class="logo"><img src="icons/favicon.svg" alt="" width="46" height="46"></div>
         <div>
-          <div class="eyebrow">BSCS Capstone · Task Tracker</div>
           <h1>Banana Thesis <em>Tracker</em></h1>
-          <p id="thesis">An Enhanced EfficientNetB0 Architecture for Mobile Banana Leaf Disease Classification</p>
+          <p id="thesis" hidden></p>
         </div>
       </div>
       <div class="hd-right">
         <button class="install" id="installBtn" data-action="install" hidden>⬇ Install app</button>
-        <button class="me" id="meChip" data-action="switch" hidden title="Switch user"></button>
+        <button class="me" id="meChip" data-action="logout" hidden title="Log out"></button>
         <span class="qchip" id="syncChip" hidden></span>
         <div class="pill" id="countPill">DA RCPC submission · <b>set date</b></div>
       </div>
@@ -425,7 +441,7 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
   </header>
 
 <main><div class="wrap" id="app"><div class="loading"><div class="spinner"></div>Loading tracker…</div></div></main>
-<footer class="wrap" id="foot">BSCS Capstone · University of Mindanao · College of Computing Education<br><span id="syncInfo"></span> · <button class="linkbtn" data-action="switch">Switch user</button></footer>
+<footer class="wrap" id="foot"><span id="syncInfo"></span> · <button class="linkbtn" data-action="logout">Log out</button></footer>
 <nav id="bnav" class="bnav" aria-label="Sections"></nav>
 <div id="toast"></div>
 <div id="cam" class="cam" hidden>
@@ -440,7 +456,7 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
    ========================================================= */
 const API_URL = String(window.TRACKER_API_URL || '').trim();
 const DEMO = !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API_URL);
-const USER_STORE = 'bt:user', DATA_STORE = 'bt:data';
+const TOKEN_STORE = 'bt:token', ACCT_STORE = 'bt:acct', DATA_STORE = 'bt:data', INSTALL_SKIP = 'bt:installSkip';
 const TEAM = [
   { tab: 'Fe Anne', name: 'Fe Anne Malasarte', role: 'Team Leader', color: '#6a1b9a', prefix: 'FA' },
   { tab: 'Rho', name: 'Rho Alphone Jornadal', role: 'Machine Learning Lead', color: '#1565c0', prefix: 'RJ' },
@@ -456,8 +472,9 @@ function cached() { try { return JSON.parse(store.get(DATA_STORE) || 'null'); } 
 async function call(fn, ...args) {
   if (DEMO) {
     await new Promise(r => setTimeout(r, 150));
-    const out = Demo[fn] ? Demo[fn](...args) : S.data;
-    if (fn !== 'getData' && S.data) (S.data.activity = S.data.activity || []).unshift({ when: 'Just now', who: S.user, what: fn.replace(/([A-Z])/g, ' $1').toLowerCase() });
+    let out;
+    try { out = Demo[fn] ? Demo[fn](...args) : S.data; } catch (e) { return Promise.reject(e); }
+    if (fn !== 'getData' && fn.indexOf('auth') !== 0 && S.data) (S.data.activity = S.data.activity || []).unshift({ when: 'Just now', who: S.user, what: fn.replace(/([A-Z])/g, ' $1').toLowerCase() });
     return out;
   }
   if (!navigator.onLine) { const err = new Error("You're offline."); err.network = true; throw err; }
@@ -466,7 +483,7 @@ async function call(fn, ...args) {
     res = await fetch(API_URL, {
       method: 'POST', redirect: 'follow',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ user: S.asUser || S.user || '', fn, args }),
+      body: JSON.stringify({ token: store.get(TOKEN_STORE) || '', fn, args }),
     });
   } catch (e) { const err = new Error("Can't reach the tracker server. Check your internet connection."); err.network = true; throw err; }
   let j;
@@ -478,6 +495,8 @@ async function call(fn, ...args) {
 }
 
 /* ---------- sample data for preview ---------- */
+const DEMO_ACCOUNTS = { 'f.malasarte.543849@umindanao.edu.ph': 'Fe Anne', 'feannemlsrte@gmail.com': 'Fe Anne', 'r.jornadal.544960@umindanao.edu.ph': 'Rho',
+  'lofty08.business@gmail.com': 'Rho', 'c.priego.545409@umindanao.edu.ph': 'Cha', 'changpriego@gmail.com': 'Cha' };
 const Demo = (() => {
   const iso = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const DOC = 'https://docs.google.com/document/d/1du8tYoex9vLWZCVAy1BsPHyzAsmjxJSJKiu2rBhTa40/edit';
@@ -579,6 +598,10 @@ const Demo = (() => {
   };
   return {
     getData: () => JSON.parse(JSON.stringify(data)),
+    authStart: email => { const t = DEMO_ACCOUNTS[email]; if (!t) throw new Error('This email doesn\'t have access.'); return { hasPassword: true }; },
+    authForgot: () => ({ codeSent: true }),
+    authLogin: email => ({ token: 'demo', user: DEMO_ACCOUNTS[email], email, name: DEMO_ACCOUNTS[email] }),
+    authVerify: email => ({ token: 'demo', user: DEMO_ACCOUNTS[email], email, name: DEMO_ACCOUNTS[email] }),
     exportValidatedDataset: () => ({ folder: 'https://drive.google.com/', copied: 7, counts: {} }),
     updateRevisions: () => true, rescheduleTasks: () => true,
     createSample: id => ({ id, row: 100 + S.data.samples.length }),
@@ -677,33 +700,94 @@ function load(quiet) {
 function setOffline(on, at) {
   const el = document.getElementById('offline');
   el.hidden = !on;
-  if (on) el.textContent = "📴 No signal. Keep working: changes and photos are saved on this phone and sync automatically when you're back online.";
+  if (on) el.textContent = "📴 Offline · saving on this phone";
   updateSyncChip();
   const info = document.getElementById('syncInfo');
   if (info) info.textContent = DEMO ? 'Demo data' : on ? 'Offline copy' : 'Synced ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
-function lock(msg) {
-  store.del(USER_STORE);
+/* ---------- sign-in: email → (code + new password the first time) or password ---------- */
+function lock(msg) {               // show sign-in (also used when the server says the login is no longer valid)
+  store.del(TOKEN_STORE); store.del(ACCT_STORE);
   S.user = null;
   const me = document.getElementById('meChip'); if (me) me.hidden = true;
-  document.getElementById('whoList').innerHTML = TEAM.map(m =>
-    '<button class="who-btn" style="--c:' + m.color + '" data-action="pick" data-v="' + esc(m.tab) + '">' +
-    '<span class="av" style="color:#fff">' + esc(m.tab.charAt(0)) + '</span><span style="color:var(--ink)"><b>' + esc(m.name) + '</b><span>' + esc(m.role) + '</span></span></button>').join('');
-  document.getElementById('loginErr').textContent = msg || '';
+  S.auth = { step: 'email', email: (S.auth && S.auth.email) || '' };
   document.getElementById('login').hidden = false;
+  renderAuth(msg || '');
+}
+function renderAuth(err) {
+  const a = S.auth, f = document.getElementById('authBody');
+  const field = (label, html) => '<label>' + label + html + '</label>';
+  if (a.step === 'email') {
+    f.innerHTML = field('Email', '<input type="email" name="email" autocomplete="username" required value="' + esc(a.email) + '">') +
+      '<button class="btn" type="submit"' + (a.busy ? ' disabled' : '') + '>' + (a.busy ? '…' : 'Continue') + '</button>';
+  } else if (a.step === 'password') {
+    f.innerHTML = '<div class="authrow"><b>' + esc(a.email) + '</b><button type="button" class="linkbtn" data-action="authBack">Change</button></div>' +
+      '<input type="email" name="email" autocomplete="username" value="' + esc(a.email) + '" hidden>' +
+      field('Password', '<input type="password" name="pw" autocomplete="current-password" required>') +
+      '<button class="btn" type="submit"' + (a.busy ? ' disabled' : '') + '>' + (a.busy ? '…' : 'Log in') + '</button>' +
+      '<button type="button" class="linkbtn" data-action="authForgot">Forgot password?</button>';
+  } else {
+    f.innerHTML = '<div class="authrow"><span class="small">Code sent to <b>' + esc(a.email) + '</b></span><button type="button" class="linkbtn" data-action="authBack">Change</button></div>' +
+      '<input type="email" name="email" autocomplete="username" value="' + esc(a.email) + '" hidden>' +
+      field('6-digit code', '<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>') +
+      field('New password (8+ characters)', '<input type="password" name="pw" autocomplete="new-password" minlength="8" required>') +
+      '<button class="btn" type="submit"' + (a.busy ? ' disabled' : '') + '>' + (a.busy ? '…' : 'Set password') + '</button>' +
+      '<button type="button" class="linkbtn" data-action="authResend">Send a new code</button>';
+  }
+  document.getElementById('loginErr').textContent = err || '';
+  const first = f.querySelector('input:not([hidden])'); if (first) setTimeout(() => first.focus(), 30);
+}
+async function authSubmit(form) {
+  const a = S.auth;
+  if (a.busy) return;
+  // read what was typed BEFORE redrawing the form
+  const email = form.email ? form.email.value.trim().toLowerCase() : a.email;
+  const pw = form.pw ? form.pw.value : '', code = form.code ? form.code.value.trim() : '';
+  if (a.step === 'email') a.email = email;
+  a.busy = true; renderAuth('');
+  try {
+    if (a.step === 'email') {
+      if (!a.email) throw new Error('Enter your email.');
+      const r = await call('authStart', a.email);
+      a.step = r.hasPassword ? 'password' : 'code';
+    } else if (a.step === 'password') {
+      finishSignIn(await call('authLogin', a.email, pw));
+      return;
+    } else {
+      finishSignIn(await call('authVerify', a.email, code, pw));
+      return;
+    }
+    a.busy = false; renderAuth('');
+  } catch (e) {
+    a.busy = false; renderAuth(e.network ? 'No signal. Signing in needs internet once.' : (e.message || String(e)));
+  }
+}
+function finishSignIn(r) {
+  store.set(TOKEN_STORE, r.token);
+  store.set(ACCT_STORE, JSON.stringify({ user: r.user, email: r.email, name: r.name }));
+  S.auth = null;
+  signIn(r.user);
+  S.sampleFilter = null;
+  toast('Hi ' + r.user + ' 👋', 1500);
+  load().then(flushPhotos);
+}
+function logout() {
+  if (!confirm('Log out of this device?')) return;
+  const t = store.get(TOKEN_STORE);
+  if (t && !DEMO && navigator.onLine) call('authLogout').catch(() => {});
+  setTimeout(() => lock(), 50);
 }
 function signIn(tab) {
   S.user = tab; S.member = tab;
-  store.set(USER_STORE, tab);
   document.getElementById('login').hidden = true;
   const m = TEAM.find(x => x.tab === tab);
   const me = document.getElementById('meChip');
   me.style.setProperty('--c', m.color);
   me.innerHTML = '<span class="av">' + esc(tab.charAt(0)) + '</span><span class="me-name">' + esc(tab) + '</span>';
-  me.setAttribute('aria-label', 'Logged in as ' + tab + '. Tap to switch user');
+  me.setAttribute('aria-label', 'Signed in as ' + tab + '. Tap to log out');
   me.hidden = false;
   if (S.data) render();
-  else document.getElementById('app').innerHTML = '<div class="loading"><div class="spinner"></div>Opening tracker…</div>';
+  else document.getElementById('app').innerHTML = '<div class="loading"><div class="spinner"></div>Loading…</div>';
 }
 function isTyping() {
   const a = document.activeElement;
@@ -736,7 +820,6 @@ function flushOutbox() {
     while (outbox().length) {
       const job = outbox()[0];
       try {
-        S.asUser = job.user;
         const res = await call(job.fn, ...job.args);
         if (job.fn === 'addSupply' && res && job.tempId) {
           const i = S.data.supplies.findIndex(x => x.tempId === job.tempId);
@@ -748,11 +831,9 @@ function flushOutbox() {
         }
         synced++;
       } catch (e) {
-        S.asUser = null;
         if (e.network) break;                      // still no signal: keep it, try again later
         toast('One change could not sync: ' + e.message, 4000, true);  // server refused it: drop it
       }
-      S.asUser = null;
       const a = outbox(); a.shift(); setOutbox(a);
     }
     if (synced) { persist(); toast('Synced ' + synced + ' change' + (synced > 1 ? 's' : '') + ' ✓', 1800); }
@@ -835,7 +916,7 @@ function vOverview() {
   const urgent = tasks.filter(t => t.status !== 'Done' && t.due && daysUntil(t.due) <= 7).sort(byDue);
   const ulist = urgent.length ? urgent.map(t => {
     const st = dueState(t) || 'later', k = daysUntil(t.due);
-    return '<div class="ui" style="--c:' + t.color + '"><div class="d ' + st + '">' + (k < 0 ? Math.abs(k) + 'd late' : k === 0 ? 'Today' : fmt(t.due).replace(/^\w+, /, '')) + '</div>' +
+    return '<div class="ui tap" style="--c:' + t.color + '" data-action="goto" data-v="' + esc(t.tab) + '" role="button" tabindex="0"><div class="d ' + st + '">' + (k < 0 ? Math.abs(k) + 'd late' : k === 0 ? 'Today' : fmt(t.due).replace(/^\w+, /, '')) + '</div>' +
       '<div style="min-width:0"><div style="font-weight:600">' + esc(t.task) + '</div><div class="w">' + esc(t.tab) + ' · ' + esc(t.status) + '</div></div></div>';
   }).join('') : '<div class="empty">Nothing due in the next 7 days.</div>';
 
@@ -850,17 +931,17 @@ function vOverview() {
     '<div class="bar" style="--c:' + x[3] + '"><i style="width:' + pct(x[1], x[2]) + '%"></i></div><b>' + pct(x[1], x[2]) + '%</b></div>').join('');
 
   return '<div class="stats">' +
-    '<div class="stat"><div class="k">Team progress</div><div class="v">' + pct(done, tasks.length) + '%</div><div class="small muted">' + done + ' / ' + tasks.length + ' tasks</div></div>' +
-    '<div class="stat"><div class="k">Overdue</div><div class="v" style="color:' + (overdue ? 'var(--red)' : 'inherit') + '">' + overdue + '</div><div class="small muted">tasks past due</div></div>' +
-    '<div class="stat"><div class="k">Panel revisions</div><div class="v">' + revDone + '<span class="muted" style="font-size:16px"> / ' + revApplic.length + '</span></div><div class="small muted">complied</div></div>' +
-    '<div class="stat hot"><div class="k">DA RCPC submission</div><div class="v" style="font-size:20px">' + (d.rcpcDate ? (n > 0 ? n + ' days left' : n === 0 ? 'Today' : 'Passed') : 'Not set') + '</div>' +
+    '<div class="stat tap" data-action="gotoView" data-v="tasks" role="button" tabindex="0"><div class="k">Progress</div><div class="v">' + pct(done, tasks.length) + '%</div><div class="small muted">' + done + ' / ' + tasks.length + ' tasks</div></div>' +
+    '<div class="stat tap" data-action="gotoView" data-v="tasks" role="button" tabindex="0"><div class="k">Overdue</div><div class="v" style="color:' + (overdue ? 'var(--red)' : 'inherit') + '">' + overdue + '</div><div class="small muted">tasks</div></div>' +
+    '<div class="stat tap" data-action="gotoView" data-v="revisions" role="button" tabindex="0"><div class="k">Panel</div><div class="v">' + revDone + '<span class="muted" style="font-size:16px"> / ' + revApplic.length + '</span></div><div class="small muted">complied</div></div>' +
+    '<div class="stat hot"><div class="k">RCPC submission</div><div class="v" style="font-size:20px">' + (d.rcpcDate ? (n > 0 ? n + ' days left' : n === 0 ? 'Today' : 'Passed') : 'Not set') + '</div>' +
     '<input type="date" data-change="rcpc" value="' + esc(d.rcpcDate) + '" aria-label="DA RCPC submission date"></div>' +
     '</div>' +
     '<div class="section"><h2>Team</h2><div class="grid g3">' + cards + '</div></div>' +
     '<div class="section grid g2">' +
-    '<div class="card"><h3>Due this week &amp; overdue</h3><div class="ulist">' + ulist + '</div></div>' +
+    '<div class="card"><h3>Due soon</h3><div class="ulist">' + ulist + '</div></div>' +
     '<div class="card"><h3>Milestones</h3>' + ms + '</div></div>' +
-    '<div class="section card"><h3>Recent activity</h3>' + activityHtml() + '</div>';
+    '<div class="section card"><h3>Activity</h3>' + activityHtml() + '</div>';
 }
 
 function activityHtml() {
@@ -886,16 +967,16 @@ function vTasks() {
   const defMember = S.member !== 'All' ? S.member : d.members[0].tab;
 
   return '<div class="row" style="margin-bottom:14px"><h2 style="margin:0">Tasks</h2><div class="sp"></div>' +
-    '<input type="search" id="q" placeholder="Search tasks…" value="' + esc(S.q) + '" style="width:220px"></div>' +
+    '<input type="search" id="q" placeholder="Search" value="' + esc(S.q) + '" style="width:220px"></div>' +
     '<div class="addwrap' + (S.addTaskOpen ? ' open' : '') + '"><button class="btn ' + (S.addTaskOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddTask">' + (S.addTaskOpen ? 'Close' : '＋ Add task') + '</button>' +
     '<form class="add card" id="addForm" style="padding:12px">' +
     '<select name="tab" aria-label="Member">' + d.members.map(m => '<option' + (m.tab === defMember ? ' selected' : '') + '>' + esc(m.tab) + '</option>').join('') + '</select>' +
-    '<input class="wide" type="text" name="task" placeholder="Add a new task…" required>' +
+    '<input class="wide" type="text" name="task" placeholder="New task" required>' +
     '<select name="category" aria-label="Category">' + opt(L.categories, 'DA RCPC') + '</select>' +
     '<select name="priority" aria-label="Priority">' + opt(L.priorities, 'Medium') + '</select>' +
     '<input type="date" name="due" aria-label="Due date">' +
     '<button class="btn" type="submit">Add</button></form></div>' +
-    '<div class="row" style="margin-bottom:12px"><div class="chips">' + memberChips + '</div><div class="sp"></div><div class="chips">' + statusChips + '</div></div>' +
+    '<div class="row filters"><div class="chips">' + memberChips + '</div><div class="sp"></div><div class="chips">' + statusChips + '</div></div>' +
     '<div class="tasks" id="taskList"></div>';
 }
 function renderTaskList() {
@@ -910,8 +991,7 @@ function renderTaskList() {
   const sts = S.data.lists.statuses;
   const overdue = allTasks().filter(t => (S.member === 'All' || t.tab === S.member) && !t.tempId && dueState(t) === 'overdue');
   const nextWeek = (() => { const d = new Date(); d.setDate(d.getDate() + 7); return localDay(d); })();
-  const resched = overdue.length ? '<div class="resched">⚠ ' + overdue.length + ' overdue' + (S.member === 'All' ? '' : ' for ' + esc(S.member)) +
-    ' · move them all to <input type="date" id="reschedDate" value="' + nextWeek + '" aria-label="New due date"><button class="btn" data-action="reschedule">Move</button></div>' : '';
+  const resched = overdue.length ? '<div class="resched">⚠ ' + overdue.length + ' overdue → <input type="date" id="reschedDate" value="' + nextWeek + '" aria-label="New due date"><button class="btn" data-action="reschedule">Move</button></div>' : '';
   el.innerHTML = resched + (list.length ? list.map(t => {
     const st = dueState(t);
     return '<div class="task ' + st + (t.status === 'Done' ? ' done' : '') + '" style="--c:' + t.color + '">' +
@@ -973,16 +1053,15 @@ function vRevisions() {
   const openBy = d.members.map(m => m.tab + ' ' + applic.filter(r => r.status !== 'C' && r.owner.indexOf(m.tab) > -1).length).join(' · ');
   const nSel = Object.keys(S.revSel).length;
   const bulk = nSel ? '<div class="bulk"><b>' + nSel + ' selected</b><span class="sp"></span>' +
-      '<button class="btn" data-action="revBulk" data-v="C">✓ Mark complied · done by me</button>' +
+      '<button class="btn" data-action="revBulk" data-v="C">✓ Complied (by me)</button>' +
       '<button class="btn ghost" data-action="revBulk" data-v="NC">Not complied</button>' +
       '<button class="btn ghost" data-action="revSelClear">Clear</button></div>' : '';
   return '<div class="row" style="margin-bottom:6px"><h2 style="margin:0">Panel Revisions</h2><div class="sp"></div><b>' + c + ' / ' + applic.length + ' complied</b></div>' +
-    '<div class="small muted" style="margin-bottom:10px">' + esc(d.panel.defense) + ' · Adviser: ' + esc(d.panel.adviser) + ' · Panel: ' + esc(d.panel.members.join(', ')) + '</div>' +
-    '<div class="card" style="padding:14px 16px"><h3 style="margin:0">' + (ready ? '✅ Ready to ask ' + esc(d.panel.adviser) + ' for endorsement' : 'Defense readiness') + '</h3>' +
-      '<div class="ready"><div><b>' + c + '/' + applic.length + '</b><span>complied</span></div><div><b>' + withPage + '/' + applic.length + '</b><span>with page no.</span></div><div><b>' + signed + '/' + applic.length + '</b><span>signed by adviser</span></div></div>' +
-      '<div class="small muted">Still open, by who it\'s assigned to: ' + esc(openBy) + '. Anyone can complete any item; the app records who did.</div></div>' +
-    '<div class="row" style="margin:14px 0"><div class="chips">' + ownerChips + '</div><div class="sp"></div><div class="chips">' + stChips + '</div></div>' +
-    '<div class="row" style="margin-bottom:10px"><button class="btn ghost" data-action="revSelAll">☑ Select all shown (' + list.length + ')</button></div>' +
+    '<div class="card" style="padding:14px 16px"><h3 style="margin:0">' + (ready ? '✅ Ready for endorsement' : 'Readiness') + '</h3>' +
+      '<div class="ready"><div><b>' + c + '/' + applic.length + '</b><span>complied</span></div><div><b>' + withPage + '/' + applic.length + '</b><span>page no.</span></div><div><b>' + signed + '/' + applic.length + '</b><span>signed</span></div></div>' +
+      '<div class="small muted">Open: ' + esc(openBy) + '</div></div>' +
+    '<div class="row filters"><div class="chips">' + ownerChips + '</div><div class="sp"></div><div class="chips">' + stChips + '</div></div>' +
+    '<div class="row" style="margin-bottom:10px"><button class="btn ghost" data-action="revSelAll">☑ Select all (' + list.length + ')</button></div>' +
     bulk + body;
 }
 
@@ -1075,12 +1154,11 @@ function vSamples() {
   const qn = Object.keys(S.queued).length;
 
   return '<div class="batch">' +
-      '<div><div class="k">Your next label</div><div class="big">' + esc(next) + '</div>' +
-      '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' so far · ' + withPhotos + ' with 3+ photos</div></div>' +
+      '<div><div class="k">Next label</div><div class="big">' + esc(next) + '</div>' +
+      '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' · ' + withPhotos + ' with photos</div></div>' +
       '<div class="sp"></div>' +
       '<button class="btn newsample" data-action="newSample">＋ New sample 📷</button></div>' +
-    '<div class="rule sample-tip"><b>How it works:</b> ＋ New sample → take 3–5 photos → copy the label (' + esc(meM.prefix) + '-###) onto masking tape. The app names every photo for you.</div>' +
-    '<div class="row" style="margin-bottom:12px"><div class="chips">' + chips + '</div><div class="sp"></div>' +
+    '<div class="row filters"><div class="chips">' + chips + '</div><div class="sp"></div>' +
       (qn ? '<span class="qchip">⏳ ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') + '</div>' +
     paperCard() +
     '<div class="scards">' + (rows.map(sampleCard).join('') ||
@@ -1090,14 +1168,14 @@ function vSamples() {
 function paperCard() {
   const p = paperNumbers(), d = S.data;
   const rows = p.per.map(r => '<tr><td>' + esc(r.c) + '</td><td style="text-align:right">' + r.n + '</td><td style="text-align:right">' + r.img + '</td></tr>').join('');
-  return '<details class="card" style="margin-bottom:14px"' + (S.paperOpen ? ' open' : '') + ' data-action="paperToggle"><summary>📄 Numbers for the paper (2.1.2 Local Test Set) · ' + p.n + ' samples, ' + p.imgs + ' images ' +
-      (p.useVal ? '<span class="doneby">· RCPC-validated</span>' : '<span class="small muted">· suspected classes until RCPC results are in</span>') + '</summary>' +
+  return '<details class="card" style="margin-bottom:14px"' + (S.paperOpen ? ' open' : '') + ' data-action="paperToggle"><summary>📄 Paper numbers · ' + p.n + ' samples, ' + p.imgs + ' images ' +
+      (p.useVal ? '<span class="doneby">· RCPC-validated</span>' : '<span class="small muted">· not validated yet</span>') + '</summary>' +
     '<table style="width:100%;min-width:0;margin:10px 0"><thead><tr><th>Class</th><th style="text-align:right">Samples</th><th style="text-align:right">Images</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<div class="paper" id="paperText">' + esc(p.text) + '</div>' +
-    '<div class="row" style="margin-top:10px"><button class="btn" data-action="copyPaper">📋 Copy paragraph</button>' +
-    (p.useVal ? '<button class="btn ghost" data-action="exportSet">📦 Export validated photos for training</button>' : '') +
+    '<div class="row" style="margin-top:10px"><button class="btn" data-action="copyPaper">📋 Copy</button>' +
+    (p.useVal ? '<button class="btn ghost" data-action="exportSet">📦 Export for training</button>' : '') +
     (d.exportFolderUrl ? '<a href="' + esc(d.exportFolderUrl) + '" target="_blank" rel="noopener">Open exported set ↗</a>' : '') + '</div>' +
-    '<p class="small muted" style="margin:8px 0 0">Still fill in by hand: phone model, and the RCPC validator\'s name and position.</p></details>';
+    '<p class="small muted" style="margin:8px 0 0">Fill in yourself: phone model, validator\'s name.</p></details>';
 }
 
 function sampleCard(x) {
@@ -1202,7 +1280,7 @@ function camFinishHtml(x) {
   const chips = S.data.lists.classes.map(c => '<button class="chip' + (x.disease === c ? ' on' : '') + '" data-action="camDisease" data-v="' + esc(c) + '">' + esc(c) + '</button>').join('');
   return '<div class="cam-head"><div><div class="eyebrow">Last step · ' + n + ' photo' + (n > 1 ? 's' : '') + ' taken</div><h2 style="margin:4px 0 0">✂️ Cut, bag and label it</h2></div>' +
       '<span class="sp"></span><button class="iconbtn" data-action="camDone" aria-label="Close" title="Close">✕</button></div>' +
-    '<p class="small" style="margin:12px 0 0">Write <b>exactly</b> this on masking tape. It\'s the same as the spreadsheet row and the photo names, so everything stays matched:</p>' +
+    '<p class="small" style="margin:12px 0 0">Write this on masking tape:</p>' +
     '<div style="text-align:center"><span class="tape">' + esc(x.id) + '</span></div>' +
     '<ol class="fsteps">' +
       '<li><span class="n">1</span><span>Cut the leaf with clean shears.</span></li>' +
@@ -1370,7 +1448,7 @@ function vSupplies() {
     .sort((a, b) => (a.bought - b.bought) || String(b.date || '').localeCompare(String(a.date || '')));
   const paid = all.filter(s => s.bought), toBuy = all.filter(s => !s.bought);
   const sum = arr => arr.reduce((a, s) => a + expenseTotal(s), 0);
-  const perPerson = ppl.map(p => { const m = TEAM.find(t => t.tab === p); return '<span class="chip" style="--c:' + m.color + ';cursor:default"><span class="dot"></span>' + esc(p) + ' paid ' + peso(sum(paid.filter(s => s.assigned === p))) + '</span>'; }).join('');
+  const perPerson = ppl.map(p => { const m = TEAM.find(t => t.tab === p); return '<span class="chip" style="--c:' + m.color + ';cursor:default"><span class="dot"></span>' + esc(p) + ' ' + peso(sum(paid.filter(s => s.assigned === p))) + '</span>'; }).join('');
   const sel = (arr, v, attrs, blank) => '<select ' + attrs + '>' + (blank ? '<option value="">' + blank + '</option>' : '') + arr.map(p => '<option' + (p === v ? ' selected' : '') + '>' + esc(p) + '</option>').join('') + '</select>';
   const chips = ['All', 'Mine', 'To buy', ...cats.filter(c => all.some(s => s.category === c))].map(c =>
     '<button class="chip ' + (f === c ? 'on' : '') + '" data-action="expFilter" data-v="' + esc(c) + '">' + esc(c) + '</button>').join('');
@@ -1398,11 +1476,11 @@ function vSupplies() {
       '<div class="sc-foot">' + receiptBtn + '</div></div>';
   };
   return '<div class="row" style="margin-bottom:12px"><h2 style="margin:0">Expenses</h2><div class="sp"></div>' +
-      '<span class="small muted">Anyone can add what they bought or paid for. Snap the receipt if you have one.</span></div>' +
+      '</div>' +
     '<div class="stats" style="margin-bottom:12px">' +
-      '<div class="stat"><div class="k">Spent so far</div><div class="v">' + peso(sum(paid)) + '</div><div class="small muted">' + paid.length + ' paid</div></div>' +
-      '<div class="stat"><div class="k">Still to buy</div><div class="v">' + peso(sum(toBuy)) + '</div><div class="small muted">' + toBuy.length + ' item' + (toBuy.length === 1 ? '' : 's') + '</div></div>' +
-      '<div class="stat" style="grid-column:span 2"><div class="k">Paid by each of you</div><div class="chips" style="margin-top:8px">' + perPerson + '</div></div>' +
+      '<div class="stat"><div class="k">Spent</div><div class="v">' + peso(sum(paid)) + '</div><div class="small muted">' + paid.length + ' paid</div></div>' +
+      '<div class="stat"><div class="k">To buy</div><div class="v">' + peso(sum(toBuy)) + '</div><div class="small muted">' + toBuy.length + ' item' + (toBuy.length === 1 ? '' : 's') + '</div></div>' +
+      '<div class="stat" style="grid-column:span 2"><div class="k">Paid by</div><div class="chips" style="margin-top:8px">' + perPerson + '</div></div>' +
     '</div>' +
     '<div class="addwrap' + (S.addExpOpen ? ' open' : '') + '"><button class="btn ' + (S.addExpOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddExp">' + (S.addExpOpen ? 'Close' : '＋ Add expense') + '</button>' +
     '<form id="addSupply" class="card addsup">' +
@@ -1414,7 +1492,7 @@ function vSupplies() {
       '<input type="date" name="date" value="' + localDay() + '" aria-label="Date">' +
       '<label class="ck"><input type="checkbox" name="bought" checked>Already paid</label>' +
       '<button class="btn" type="submit">＋ Add</button></form></div>' +
-    '<div class="row" style="margin-bottom:12px"><div class="chips">' + chips + '</div></div>' +
+    '<div class="row filters"><div class="chips">' + chips + '</div></div>' +
     '<div class="scards">' + (items.map(card).join('') || '<div class="empty" style="grid-column:1/-1">Nothing here yet. Add your first expense above.</div>') + '</div>';
 }
 
@@ -1449,7 +1527,7 @@ const ICON = {
 function vLinks() {
   const d = S.data;
   const card = (url, title, sub, icon) => '<a class="lnk" href="' + esc(url) + '" target="_blank" rel="noopener"><div class="ic">' + ICON[icon] + '</div><div style="min-width:0"><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div></a>';
-  return '<h2>Project links</h2><div class="links">' +
+  return '<h2>Links</h2><div class="links">' +
     card(d.sheetUrl, 'Tracker Google Sheet', 'Same data as this website', 'sheet') +
     (d.photoFolderUrl ? card(d.photoFolderUrl, 'DA RCPC Sample Photos', 'Every sample photo, named by label', 'folder') : '') +
     (d.receiptFolderUrl ? card(d.receiptFolderUrl, 'Expense receipts', 'Receipt photos from the Expenses page', 'folder') : '') +
@@ -1469,8 +1547,16 @@ document.addEventListener('click', e => {
   if (el.dataset.view) { S.view = el.dataset.view; S.addTaskOpen = S.addExpOpen = false; render(); window.scrollTo(0, 0); return; }
   const a = el.dataset.action, v = el.dataset.v;
   if (a === 'install') { doInstall(); return; }
-  if (a === 'switch') { lock(); return; }
-  if (a === 'pick') { signIn(v); S.sampleFilter = null; toast('Hi ' + v + ' 👋', 1500); load().then(flushPhotos); return; }
+  if (a === 'logout') { logout(); return; }
+  if (a === 'authBack') { S.auth = { step: 'email', email: S.auth.email }; renderAuth(''); return; }
+  if (a === 'authForgot' || a === 'authResend') {
+    call('authForgot', S.auth.email).then(() => { S.auth.step = 'code'; renderAuth(''); toast('Code sent', 1800); })
+      .catch(e => renderAuth(e.network ? 'No signal.' : e.message));
+    return;
+  }
+  if (a === 'installNow') { doInstall(); return; }
+  if (a === 'installSkip') { store.set(INSTALL_SKIP, '1'); document.getElementById('install').hidden = true; startApp(); return; }
+  if (a === 'gotoView') { S.view = v; S.member = 'All'; S.status = 'Open'; render(); window.scrollTo(0, 0); return; }
   if (a === 'goto') { S.view = 'tasks'; S.member = v; S.status = 'Open'; render(); window.scrollTo(0, 0); }
   else if (a === 'member') { S.member = v; render(); }
   else if (a === 'status') { S.status = v; render(); }
@@ -1579,6 +1665,9 @@ document.addEventListener('change', e => {
 });
 
 document.addEventListener('toggle', e => { if (e.target.matches && e.target.matches('details[data-action=paperToggle]')) S.paperOpen = e.target.open; }, true);
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[role=button][data-action]')) { e.preventDefault(); e.target.click(); }
+});
 document.addEventListener('input', e => {
   if (e.target.id === 'q') { S.q = e.target.value; renderTaskList(); }
 });
@@ -1586,6 +1675,7 @@ document.addEventListener('input', e => {
 document.addEventListener('submit', e => {
   e.preventDefault();
   const f = e.target;
+  if (f.id === 'authForm') { authSubmit(f); return; }
   if (f.id === 'addForm') {
     const t = { task: f.task.value.trim(), category: f.category.value, priority: f.priority.value, due: f.due.value };
     if (!t.task) return;
@@ -1635,12 +1725,16 @@ let installEvt = null;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.getElementById('installBtn').hidden = false; });
-window.addEventListener('appinstalled', () => { document.getElementById('installBtn').hidden = true; toast('Installed ✓ Open it from your home screen.', 3000); });
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBtn').hidden = true;
+  if (!document.getElementById('install').hidden) { document.getElementById('install').hidden = true; startApp(); }
+  toast('Installed ✓', 2500);
+});
 if (isIOS && !isStandalone) document.getElementById('installBtn').hidden = false;
 function doInstall() {
-  if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; }); }
-  else if (isIOS) toast('On iPhone: open this in Safari, tap Share, then "Add to Home Screen".', 6000);
-  else toast('Use your browser menu → "Install app" or "Add to Home screen".', 5000);
+  if (installEvt) { installEvt.prompt(); installEvt.userChoice.then(c => { if (c && c.outcome === 'accepted') store.set(INSTALL_SKIP, '1'); }).finally(() => { installEvt = null; }); }
+  else if (isIOS) document.getElementById('iosHint').hidden = false;
+  else toast('Use your browser menu → Install app', 4000);
 }
 if ('serviceWorker' in navigator && window.isSecureContext) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
@@ -1653,16 +1747,17 @@ setInterval(() => { if (navigator.onLine && (outbox().length || Object.keys(S.qu
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 updateSyncChip();
 if (DEMO) document.getElementById('demo').hidden = false;
-const savedUser = store.get(USER_STORE);
-if (!savedUser || !TEAM.some(m => m.tab === savedUser)) {
-  lock();
+function startApp() {
+  let acct = null; try { acct = JSON.parse(store.get(ACCT_STORE) || 'null'); } catch (e) {}
   const c = cached(); if (c) S.data = c.d;
-} else {
-  const c = cached();
-  if (c) S.data = c.d;
-  signIn(savedUser);
+  if (!store.get(TOKEN_STORE) || !acct || !TEAM.some(m => m.tab === acct.user)) { lock(); return; }
+  signIn(acct.user);                 // stays signed in on this device, online or offline
   load().then(flushPhotos);
 }
+if (!isStandalone && !store.get(INSTALL_SKIP)) {
+  document.getElementById('install').hidden = false;      // first: offer the app
+  if (isIOS) document.getElementById('iosHint').hidden = false;
+} else startApp();
 </script>
 </body>
 </html>

@@ -41,11 +41,14 @@ function doGet() {
 function doPost(e) {
   try {
     const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    const user = String(req.user || '');
+    const args0 = Array.isArray(req.args) ? req.args : [];
+    const open = { authStart: authStart, authForgot: authForgot, authVerify: authVerify, authLogin: authLogin };
+    if (open[req.fn]) return json_({ ok: true, data: open[req.fn].apply(null, args0) });   // sign-in steps need no token
+    const acct = tokenAccount_(req.token);
+    if (!acct) return json_({ ok: false, auth: true, error: 'Please sign in.' });
+    if (req.fn === 'authLogout') return json_({ ok: true, data: authLogout(req.token) });
+    const user = acct.tab;
     CURRENT_USER = user;
-    if (!CFG.members.some(m => m.tab === user)) {
-      return json_({ ok: false, auth: true, error: 'Please pick who you are.' });
-    }
     const actions = {
       getData: getData, updateTask: updateTask, addTask: addTask, updateRevision: updateRevision,
       updateSample: updateSample, updateSupply: updateSupply, setRcpcDate: setRcpcDate,
@@ -630,4 +633,111 @@ function exportValidatedDatasetMenu() {
   SpreadsheetApp.getUi().alert('Export done 📦', 'Copied ' + r.copied + ' new photo(s).\n\n' +
     Object.keys(r.counts).map(c => c + ': ' + r.counts[c].samples + ' samples, ' + r.counts[c].images + ' images').join('\n') +
     '\n\nFolder: ' + r.folder, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/* ============================================================
+ *  ACCOUNTS — only the emails in CFG.accounts can sign in.
+ *  First time (or "Forgot password"): a 6-digit code is emailed, then the person sets a password.
+ *  After that they get a login token that never expires (until they log out or a password reset).
+ *  Passwords and tokens are stored only as salted SHA-256 hashes in Script Properties.
+ * ============================================================ */
+function normEmail_(e) { return String(e || '').trim().toLowerCase(); }
+function accountTab_(email) { return CFG.accounts[normEmail_(email)] || ''; }
+function sha_(s) {
+  return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, s, Utilities.Charset.UTF_8));
+}
+function hashPw_(pw, salt) { let h = salt + '|' + pw; for (let i = 0; i < 300; i++) h = sha_(h + salt); return h; }
+function props_() { return PropertiesService.getScriptProperties(); }
+function memberName_(tab) { const m = CFG.members.find(x => x.tab === tab); return m ? m.name : tab; }
+
+function sendCode_(email) {
+  const p = props_(), key = 'CODE_' + email, old = p.getProperty(key);
+  if (old && Date.now() - Number(old.split('|')[2]) < 60000) throw new Error('A code was just sent. Wait a minute before asking again.');
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  p.setProperty(key, [sha_(code + email), Date.now() + 15 * 60000, Date.now(), 0].join('|'));
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Your Banana Thesis Tracker code: ' + code,
+    htmlBody: '<div style="font-family:Arial,sans-serif;font-size:15px">Your code is <b style="font-size:24px;letter-spacing:3px">' + code +
+      '</b><br><br>It expires in 15 minutes. If you didn\'t ask for it, ignore this email.</div>',
+  });
+}
+
+/** Step 1 of sign-in: is this email allowed, and does it already have a password? (No token needed.) */
+function authStart(email) {
+  email = normEmail_(email);
+  if (!accountTab_(email)) throw new Error('This email doesn\'t have access.');
+  const has = !!props_().getProperty('PW_' + email);
+  if (!has) sendCode_(email);
+  return { hasPassword: has, codeSent: !has };
+}
+function authForgot(email) {
+  email = normEmail_(email);
+  if (!accountTab_(email)) throw new Error('This email doesn\'t have access.');
+  sendCode_(email);
+  return { codeSent: true };
+}
+/** Code from the email + new password → signed in. Used for first-time setup and for resets. */
+function authVerify(email, code, pw) {
+  email = normEmail_(email);
+  const tab = accountTab_(email);
+  if (!tab) throw new Error('This email doesn\'t have access.');
+  if (String(pw || '').length < 8) throw new Error('Use at least 8 characters for the password.');
+  const p = props_(), key = 'CODE_' + email, rec = p.getProperty(key);
+  if (!rec) throw new Error('Ask for a new code.');
+  const [h, exp, sent, tries] = rec.split('|');
+  if (Date.now() > Number(exp)) { p.deleteProperty(key); throw new Error('That code expired. Ask for a new one.'); }
+  if (Number(tries) >= 5) { p.deleteProperty(key); throw new Error('Too many tries. Ask for a new code.'); }
+  if (sha_(String(code).trim() + email) !== h) { p.setProperty(key, [h, exp, sent, Number(tries) + 1].join('|')); throw new Error('Wrong code.'); }
+  p.deleteProperty(key);
+  const salt = Utilities.getUuid();
+  p.setProperty('PW_' + email, salt + '|' + hashPw_(pw, salt));
+  revokeTokens_(email);                       // a reset signs out old devices
+  return issueToken_(email, tab);
+}
+function authLogin(email, pw) {
+  email = normEmail_(email);
+  const tab = accountTab_(email);
+  if (!tab) throw new Error('This email doesn\'t have access.');
+  const p = props_(), fk = 'FAIL_' + email, fail = (p.getProperty(fk) || '0|0').split('|').map(Number);
+  if (fail[0] >= 5 && Date.now() - fail[1] < 10 * 60000) throw new Error('Too many wrong passwords. Try again in 10 minutes.');
+  const rec = p.getProperty('PW_' + email);
+  if (!rec) throw new Error('Set your password first.');
+  const [salt, h] = rec.split('|');
+  if (hashPw_(String(pw || ''), salt) !== h) {
+    p.setProperty(fk, (fail[0] >= 5 ? 1 : fail[0] + 1) + '|' + Date.now());
+    Utilities.sleep(800);
+    throw new Error('Wrong password.');
+  }
+  p.deleteProperty(fk);
+  return issueToken_(email, tab);
+}
+function issueToken_(email, tab) {
+  const token = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+  props_().setProperty('TOK_' + sha_(token), [email, tab, Date.now()].join('|'));
+  return { token: token, user: tab, email: email, name: memberName_(tab) };
+}
+function tokenAccount_(token) {
+  if (!token) return null;
+  const rec = props_().getProperty('TOK_' + sha_(String(token)));
+  if (!rec) return null;
+  const [email, tab] = rec.split('|');
+  return accountTab_(email) === tab ? { email: email, tab: tab } : null;   // removed from CFG.accounts → no access
+}
+function revokeTokens_(email) {
+  const p = props_(), all = p.getProperties();
+  Object.keys(all).forEach(k => { if (k.indexOf('TOK_') === 0 && all[k].split('|')[0] === email) p.deleteProperty(k); });
+}
+function authLogout(token) { props_().deleteProperty('TOK_' + sha_(String(token || ''))); return true; }
+
+/** Menu: 🔑 Reset someone's password (they get a new code the next time they sign in). */
+function resetMemberPassword() {
+  const ui = SpreadsheetApp.getUi();
+  const res = ui.prompt('Reset a password', 'Email to reset:\n' + Object.keys(CFG.accounts).join('\n'), ui.ButtonSet.OK_CANCEL);
+  if (res.getSelectedButton() !== ui.Button.OK) return;
+  const email = normEmail_(res.getResponseText());
+  if (!accountTab_(email)) { ui.alert('That email isn\'t in the account list.'); return; }
+  props_().deleteProperty('PW_' + email);
+  revokeTokens_(email);
+  ui.alert('Done. ' + email + ' is signed out everywhere and will set a new password with an emailed code.');
 }

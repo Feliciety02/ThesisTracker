@@ -35,11 +35,21 @@ Installable task tracker app for the thesis
 4. After about a minute, the app is live at `https://<your-username>.github.io/<repo-name>/`.
 
 ### 3. Install on phones
-- **Android (Chrome):** open the link, then tap **⬇ Install app** in the header (or ⋮ → Install app).
+- **Android (Chrome):** open the link, then tap **⬇ Install** on the first screen (or ⋮ → Install app).
 - **iPhone (Safari):** open the link, then Share → **Add to Home Screen**.
 - **Laptop (Chrome / Edge):** use the install icon in the address bar.
 
-The first time, each member taps their name. The app remembers them on that device, so they stay logged in. **Switch user** (top-right name chip, or the bottom of the app) changes who is logged in.
+When the app opens for the first time it asks to be installed (or **Not now**), then asks you to sign in.
+
+## Accounts
+Only the team's six emails (two per member, listed in `accounts` in `ThesisTracker.gs`) can sign in.
+
+- **First time:** type your email → a 6-digit code is emailed to you → type the code and choose a password (8+ characters). Each email has its own password.
+- **After that:** you stay signed in on that phone until you tap your avatar → **Log out**.
+- **Forgot password?** Tap it on the sign-in screen to get a new code.
+- **Locked out / lost access:** in the sheet, **🍌 Thesis Tracker → 🔑 Reset someone's app password** signs that email out everywhere so they can set a new password.
+- To add or change emails, edit `accounts` in `CFG` at the top of `ThesisTracker.gs`, then deploy a new version.
+- Passwords are stored only as salted hashes in the script's properties, never in the sheet. 5 wrong tries locks that email for 10 minutes.
 
 ## Samples, labels and photos
 - Tap **＋ New sample** on the DA RCPC Samples page. The app gives the next label automatically: **FA-###** (Fe Anne), **RJ-###** (Rho), **CP-###** (Cha). It works offline too, and two people can never get the same label.
@@ -50,7 +60,7 @@ The first time, each member taps their name. The app remembers them on that devi
 
 ## Working on the farm (no signal)
 - **Before leaving:** open the app once with signal and make sure you're logged in. That saves the app and the latest data on the phone.
-- **On the farm:** use it normally. Sample details, checkboxes, tasks, and photos are all saved on the phone. A **📴 No signal** bar and a **⏳ N to sync** counter show what's waiting.
+- **On the farm:** use it normally. Sample details, checkboxes, tasks, and photos are all saved on the phone. A **📴 Offline** bar and a **⏳ N to sync** counter show what's waiting.
 - **Back in signal:** open the app. It syncs everything by itself, in order: changes first, then photos. The ⏳ counter disappears when it's done.
 - Don't uninstall the app or clear the browser's data while ⏳ is showing, or the waiting photos are lost.
 
@@ -81,6 +91,6 @@ All three members can add, edit and delete tasks (✏️ on a task) and expenses
 - **Changed `WebApp.gs`?** In Apps Script: Deploy → Manage deployments → ✏️ → Version: **New version** → Deploy. The URL stays the same.
 
 ## Notes
-- There is no password. Anyone who has the app link can open the tracker and pick a name, so share the link only within the team. Every edit is logged on the **Activity** tab, so you can always see who changed what.
+- Only the six team emails can sign in. Every edit is logged on the **Activity** tab, so you can always see who changed what.
 - If `config.js` still has the placeholder, the app runs in **demo mode** with sample data.
 - If your school account doesn't offer "Anyone" as a deployment option, deploy the Apps Script from a personal Gmail copy of the sheet instead.
