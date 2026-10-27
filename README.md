@@ -38,9 +38,9 @@ Installable task tracker app for the thesis
 
 The first time, each member taps their name. The app remembers them on that device, so they stay logged in. **Switch user** (top-right name chip, or the bottom of the app) changes who is logged in.
 
-## Sample photos and label batches
-- Each member has their own labels: **FA-001…** (Fe Anne), **RJ-001…** (Rho), **CP-001…** (Cha). Write them on masking tape, one per bag. **🖨 Print my labels** on the Samples page prints a cut-out sheet.
-- Open a sample and tap **📷**. The app walks through 3–5 angles (top, underside, lesion close-up, then side and extra as optional) and names each photo `<ID>_01.jpg … <ID>_05.jpg`.
+## Samples, labels and photos
+- Tap **＋ New sample** on the DA RCPC Samples page. The app gives the next label automatically: **FA-###** (Fe Anne), **RJ-###** (Rho), **CP-###** (Cha). It works offline too, and two people can never get the same label.
+- Copy that label onto masking tape on the bag. The camera opens right away and walks through 3–5 angles (top, underside, lesion close-up, then side and extra as optional), naming each photo `<ID>_01.jpg … <ID>_05.jpg`.
 - Photos are saved automatically to the team's **Curated Banana Leaf Disease Dataset** folder, inside **DA RCPC Sample Photos**. Retaking an angle replaces that file.
 - Photos are resized to 1600 px (about 0.3–0.7 MB each) and upload one at a time, so the app stays fast.
 
@@ -49,7 +49,9 @@ The first time, each member taps their name. The app remembers them on that devi
 - **On the farm:** use it normally. Sample details, checkboxes, tasks, and photos are all saved on the phone. A **📴 No signal** bar and a **⏳ N to sync** counter show what's waiting.
 - **Back in signal:** open the app. It syncs everything by itself, in order: changes first, then photos. The ⏳ counter disappears when it's done.
 - Don't uninstall the app or clear the browser's data while ⏳ is showing, or the waiting photos are lost.
-- To change the batch size (default 20 per person), edit `samplesPerMember` in `ThesisTracker.gs` before running setup.
+
+## Everyone is an admin
+All three members can add, edit and delete tasks (✏️ on a task) and supplies (＋ Add, edit any field, 🗑 delete), and edit any sample. Every change is logged with who made it on the sheet's **Activity** tab.
 
 ## Updating
 - **Changed `index.html`?** Bump `VERSION` in `sw.js` (for example `bt-v2`) so installed apps pick up the change.

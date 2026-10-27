@@ -25,7 +25,7 @@ const CFG = {
   thesisTitle: 'An Enhanced EfficientNetB0 Architecture for Mobile Banana Leaf Disease Classification',
   timezone: 'Asia/Manila',
   maxRows: 200,
-  samplesPerMember: 20,   // label batch size: FA-001…FA-020, RJ-001…, CP-001…
+  sampleRows: 300,        // room for this many samples; labels are handed out by the app (FA-001, RJ-001, CP-001 …)
   photoAngles: ['Top surface', 'Underside', 'Lesion close-up', 'Side / angled', 'Extra'],  // 3 required, 5 max
   members: [
     { tab: 'Fe Anne', name: 'Fe Anne Malasarte',     role: 'Team Leader',           email: 'f.malasarte.543849@umindanao.edu.ph', color: '#6a1b9a', light: '#f3e5f5', prefix: 'FA' },
@@ -66,7 +66,7 @@ const TASKS = {
     ['F-09', 'Buy supplies: cotton, plastic bags, markers, masking tape', 'DA RCPC', 'High', 'Not Started', '', '', 'See Supplies tab.'],
     ['F-10', 'Lead field collection of fresh banana leaf samples (whole team)', 'DA RCPC', 'High', 'Not Started', '', '', 'Collect close to submission day so leaves stay fresh.'],
     ['F-11', 'Submit fresh, labeled samples to DA RCPC Davao', 'DA RCPC', 'High', 'Not Started', '', '', 'Bring the printed Sample Log.'],
-    ['F-13', 'Collect + photograph YOUR sample batch FA-001 → FA-020 (3–5 angles each, using the app camera)', 'DA RCPC', 'High', 'Not Started', '', '', 'Write FA-### on masking tape for each bag. The app names the photos for you.'],
+    ['F-13', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels FA-001, FA-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
     ['F-14', 'Run 🍌 Thesis Tracker → 📷 Connect photo folder (once) so app photos save into the Curated dataset folder', 'DA RCPC', 'High', 'Not Started', '', '', 'Do this before the field collection day.'],
     ['F-12', 'Lead panel revisions: Problem, Purpose, Objectives, Scope & Limitations', 'Panel Revision', 'High', 'Not Started', '', '', 'See Panel Revisions tab.'],
   ],
@@ -75,7 +75,7 @@ const TASKS = {
     ['R-02', 'Re-curate the dataset', 'Dataset', 'High', 'Not Started', OCT2, 'curatedFolder', ''],
     ['R-03', 'Record the image count for each class', 'Dataset', 'Medium', 'Not Started', OCT2, '', ''],
     ['R-04', 'Get the public dataset links from Public Dataset Sources and send them to Cha for citation', 'Dataset', 'Medium', 'Not Started', OCT2, 'publicSources', 'Send to c.priego.545409@umindanao.edu.ph'],
-    ['R-05', 'Collect + photograph YOUR sample batch RJ-001 → RJ-020 (3–5 angles each, using the app camera)', 'DA RCPC', 'High', 'Not Started', '', '', 'Write RJ-### on masking tape for each bag. The app names the photos for you.'],
+    ['R-05', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels RJ-001, RJ-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
     ['R-08', 'Check all sample photos in the Drive photo folder (3+ angles each, correct names) before adding them to the dataset', 'Dataset', 'Medium', 'Not Started', '', '', 'Curated Banana Leaf Disease Dataset → DA RCPC Sample Photos.'],
     ['R-06', 'Add RCPC-validated images to the dataset and update the per-class counts', 'Dataset', 'Medium', 'Not Started', '', '', 'After RCPC returns results.'],
     ['R-07', 'Methodology revisions: preprocessing, training split, model construction, hyperparameter tuning', 'Panel Revision', 'High', 'Not Started', '', '', 'See Panel Revisions tab.'],
@@ -86,7 +86,7 @@ const TASKS = {
     ['C-03', 'Fill in the new docs file, including the public dataset link from Rho', 'Paper', 'Medium', 'Done', '', 'thesisDoc', ''],
     ['C-04', 'Sort the Curated Banana Leaf Disease Dataset folder (with Fe Anne)', 'Dataset', 'High', 'Not Started', OCT2, 'curatedFolder', 'Shared with Fe Anne (F-07).'],
     ['C-05', 'Cite the public dataset sources in the paper (IEEE)', 'Paper', 'Medium', 'Waiting', '', 'publicSources', 'Waiting for links from Rho (R-04).'],
-    ['C-06', 'Collect + photograph YOUR sample batch CP-001 → CP-020 (3–5 angles each, using the app camera)', 'DA RCPC', 'High', 'Not Started', '', '', 'Write CP-### on masking tape for each bag. The app names the photos for you.'],
+    ['C-06', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels CP-001, CP-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
     ['C-10', 'Before submission: check the Sample Log is complete for all three batches (FA, RJ, CP)', 'DA RCPC', 'High', 'Not Started', '', '', 'Every submitted bag needs disease, date, site and 3+ photos.'],
     ['C-07', 'Write up the DA RCPC validation process in Methodology – Data Collection', 'Paper', 'Medium', 'Not Started', '', '', ''],
     ['C-09', 'Paper 2.1.2 Local Test Set: replace [name] / [position] with the DA RCPC validator, fill in [phone model], and fix the "August 90" collection dates', 'Paper', 'High', 'Not Started', '', 'thesisDoc', 'Do this once RCPC returns the validation.'],
@@ -389,30 +389,25 @@ function buildSamples_(ss) {
   const H = ['Sample ID', 'Suspected Disease', 'Date Collected', 'Collection Site (farm / barangay)', 'Collected By', 'No. of Photos',
              'Expected Photo File Names', 'Wrapped in Cotton', 'Bagged & Labeled', 'Submitted to RCPC', 'RCPC Validated Class', 'Match?', 'Notes',
              'Photo Folder', 'Angles Taken'];
-  const per = CFG.samplesPerMember;
-  const n = per * CFG.members.length;
+  const n = CFG.sampleRows;
   banner_(sh, 1, '  DA RCPC Davao — Fresh Leaf Sample Log', H.length, '#2e7d32', 15);
   sh.getRange(2, 1, 1, H.length).merge()
-    .setValue('  Each member has their own labels: ' + CFG.members.map(m => m.prefix + '-001… = ' + m.tab).join(' · ') +
-      '. Bag label = photo names (FA-003 → FA-003_01.jpg …). Take 3–5 angles per sample with the app camera. Submit samples FRESH.')
+    .setValue('  Rows are added by the app: tap ＋ New sample and it hands out the next label (' + CFG.members.map(m => m.prefix + '-### = ' + m.tab).join(' · ') +
+      '). Copy that label onto masking tape. Photos are named from it (FA-003 → FA-003_01.jpg …). Submit samples FRESH.')
     .setBackground('#e8f5e9').setFontWeight('bold').setFontColor('#1b5e20').setWrap(true);
   sh.setRowHeight(2, 40);
   headers_(sh, 3, H, '#37474f');
+  if (sh.getMaxRows() < n + 3) sh.insertRowsAfter(sh.getMaxRows(), n + 3 - sh.getMaxRows());
 
-  const ids = [], owners = [], bg = [];
-  CFG.members.forEach(m => {
-    for (let i = 1; i <= per; i++) { ids.push([m.prefix + '-' + ('00' + i).slice(-3)]); owners.push([m.tab]); bg.push([m.light]); }
-  });
-  sh.getRange(4, 1, n, 1).setValues(ids).setBackgrounds(bg).setFontWeight('bold').setHorizontalAlignment('center');
-  sh.getRange(4, 5, n, 1).setValues(owners);
   sh.getRange(4, 2, n, 1).setDataValidation(listRule_(ss, 4));
   sh.getRange(4, 11, n, 1).setDataValidation(listRule_(ss, 4));
   sh.getRange(4, 5, n, 1).setDataValidation(listRule_(ss, 6));
   sh.getRange(4, 3, n, 1).setNumberFormat('mmm d, yyyy');
   sh.getRange(4, 10, n, 1).setNumberFormat('mmm d, yyyy');
   sh.getRange(4, 15, n, 1).setNumberFormat('@');
-  sh.getRange(4, 7, n, 1).setFormulaR1C1('=IF(RC6="","",RC1&"_01.jpg … "&RC1&"_"&TEXT(RC6,"00")&".jpg")').setFontColor('#616161');
-  sh.getRange(4, 12, n, 1).setFormulaR1C1('=IF(RC11="","",IF(RC11=RC2,"✓ Match","✗ Differs"))').setHorizontalAlignment('center');
+  sh.getRange(4, 7, n, 1).setFontColor('#616161');        // formulas are written per row when the app adds a sample
+  sh.getRange(4, 12, n, 1).setHorizontalAlignment('center');
+  sh.getRange(4, 1, n, 1).setFontWeight('bold').setHorizontalAlignment('center');
   sh.getRange(4, 8, n, 2).insertCheckboxes();
   sh.getRange(4, 6, n, 1).setHorizontalAlignment('center');
   [80, 140, 110, 220, 100, 80, 230, 85, 85, 110, 150, 85, 220, 120, 90].forEach((w, i) => sh.setColumnWidth(i + 1, w));
@@ -517,7 +512,7 @@ function buildDashboard_(ss) {
   headers_(sh, mr, ['Milestone', '', 'Done', 'Total', '', '', '', 'Progress', '%', '', ''], '#455a64');
   const ms = [
     ['Panel revisions complied', '=COUNTIF(\'Panel Revisions\'!E4:E,"C")', '=COUNTA(\'Panel Revisions\'!C4:C)-COUNTIF(\'Panel Revisions\'!E4:E,"NA")', '#ef6c00'],
-    ['Leaf samples collected', '=COUNTA(\'DA RCPC Samples\'!C4:C)', '=COUNTA(\'DA RCPC Samples\'!A4:A)', '#2e7d32'],
+    ['Samples with a collection date', '=COUNTA(\'DA RCPC Samples\'!C4:C)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!A4:A))', '#2e7d32'],
     ['Collected samples with 3+ photos', '=COUNTIFS(\'DA RCPC Samples\'!C4:C,"<>",\'DA RCPC Samples\'!F4:F,">=3")', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
     ['Samples submitted to RCPC', '=COUNTA(\'DA RCPC Samples\'!J4:J)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
     ['Samples validated by RCPC', '=COUNTA(\'DA RCPC Samples\'!K4:K)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!J4:J))', '#2e7d32'],

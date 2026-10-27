@@ -46,14 +46,17 @@ function doPost(e) {
     const actions = {
       getData: getData, updateTask: updateTask, addTask: addTask, updateRevision: updateRevision,
       updateSample: updateSample, updateSupply: updateSupply, setRcpcDate: setRcpcDate,
-      uploadPhoto: uploadPhoto,
+      uploadPhoto: uploadPhoto, createSample: createSample,
+      deleteTask: deleteTask, addSupply: addSupply, deleteSupply: deleteSupply,
     };
     const fn = actions[req.fn];
     if (!fn) throw new Error('Unknown action: ' + req.fn);
     const args = Array.isArray(req.args) ? req.args : [];
     if (req.fn !== 'getData') {
+      let what = req.fn;
+      try { what = describe_(req.fn, args); } catch (err) {}   // described before the change (so deletes keep their names)
       const result = fn.apply(null, args);   // writes return only what changed (fast)
-      try { logActivity_(user, req.fn, args); } catch (err) { /* never block a save on the log */ }
+      try { logActivity_(user, what); } catch (err) { /* never block a save on the log */ }
       return json_({ ok: true, data: result });
     }
     return json_({ ok: true, data: getData() });
@@ -95,16 +98,20 @@ function describe_(fn, a) {
     const c = ss.getSheetByName('Panel Revisions').getRange(Number(a[0]), 3).getValue();
     return 'panel item "' + short_(c, 50) + '": ' + a[1] + ' → ' + show(a[2]);
   }
-  if (fn === 'updateSample') {
-    const id = ss.getSheetByName('DA RCPC Samples').getRange(Number(a[0]), 1).getValue();
-    return 'sample ' + id + ': ' + a[1] + ' → ' + show(a[2]);
+  if (fn === 'updateSample') return 'sample ' + a[0] + ': ' + a[1] + ' → ' + show(a[2]);
+  if (fn === 'createSample') return 'started new sample ' + a[0];
+  if (fn === 'deleteTask') {
+    const r = ss.getSheetByName(a[0]).getRange(Number(a[1]), 1, 1, 2).getValues()[0];
+    return 'deleted task ' + r[0] + ' "' + short_(r[1], 50) + '"';
   }
+  if (fn === 'addSupply') return 'added supply "' + short_(a[0] && a[0].item, 40) + '"';
+  if (fn === 'deleteSupply') return 'deleted supply "' + short_(ss.getSheetByName('Supplies').getRange(Number(a[0]), 1).getValue(), 40) + '"';
   if (fn === 'updateSupply') {
     const item = ss.getSheetByName('Supplies').getRange(Number(a[0]), 1).getValue();
     return 'supply "' + short_(item, 40) + '": ' + a[1] + ' → ' + show(a[2]);
   }
   if (fn === 'uploadPhoto') {
-    const id = ss.getSheetByName('DA RCPC Samples').getRange(Number(a[0]), 1).getValue();
+    const id = a[0];
     const n = Number(a[1]);
     return 'took photo ' + id + '_' + ('0' + n).slice(-2) + '.jpg (' + (CFG.photoAngles[n - 1] || 'angle ' + n) + ')';
   }
@@ -112,10 +119,10 @@ function describe_(fn, a) {
   return fn;
 }
 
-function logActivity_(user, fn, args) {
+function logActivity_(user, what) {
   const sh = activitySheet_();
   sh.insertRowAfter(1);
-  sh.getRange(2, 1, 1, 3).setValues([[new Date(), user, describe_(fn, args)]]);
+  sh.getRange(2, 1, 1, 3).setValues([[new Date(), user, what]]);
   sh.getRange(2, 1).setNumberFormat('mmm d, h:mm am/pm');
   if (sh.getMaxRows() > 600) sh.deleteRows(502, sh.getMaxRows() - 501); // keep the newest ~500
 }
@@ -222,6 +229,7 @@ function getData() {
     const total = suppliesTotalRow_(sup);
     if (total > 3) {
       sup.getRange(3, 1, total - 3, 8).getValues().forEach((r, i) => {
+        if (!r[0]) return;
         supplies.push({
           row: i + 3, item: String(r[0] || ''), purpose: String(r[1] || ''), qty: r[2] === '' ? '' : Number(r[2]),
           cost: r[3] === '' ? '' : Number(r[3]), assigned: String(r[5] || ''), bought: r[6] === true, notes: String(r[7] || ''),
@@ -243,7 +251,6 @@ function getData() {
     rcpcDate: dash ? fmtDate_(dash.getRange('E4').getValue(), tz) : '',
     members, revisions, samples, supplies,
     activity: readActivity_(tz),
-    samplesPerMember: CFG.samplesPerMember,
     photoAngles: CFG.photoAngles,
     links: Object.keys(LINKS).map(k => LINKS[k]),
     lists: { statuses: CFG.statuses, priorities: CFG.priorities, categories: CFG.categories, classes, revStatuses: CFG.revStatuses },
@@ -289,6 +296,16 @@ function addTask(tab, t) {
   });
 }
 
+function deleteTask(tab, row) {
+  return withLock_(() => {
+    const sh = memberSheet_(tab);
+    row = Number(row);
+    if (row < 4) throw new Error('Bad row');
+    sh.getRange(row, 1, 1, 9).clearContent();   // keeps the dropdowns; the row is reused by the next new task
+    return true;
+  });
+}
+
 function updateRevision(row, field, value) {
   return withLock_(() => {
     const sh = sheet_('Panel Revisions');
@@ -301,15 +318,45 @@ function updateRevision(row, field, value) {
   });
 }
 
-function updateSample(row, field, value) {
+/* ---------- samples (addressed by label, e.g. "FA-004") ---------- */
+function sampleRow_(sh, id) {
+  const last = Math.max(4, sh.getLastRow());
+  const ids = sh.getRange(4, 1, last - 3, 1).getValues();
+  for (let i = 0; i < ids.length; i++) if (String(ids[i][0]) === id) return i + 4;
+  return -1;
+}
+
+/** Adds a new sample row for a label the app handed out (FA-004, RJ-012, …). Safe to call twice. */
+function createSample(id) {
+  id = String(id || '').toUpperCase();
+  const m = CFG.members.find(x => id.indexOf(x.prefix + '-') === 0);
+  if (!m || !/^[A-Z]{2}-\d{3,}$/.test(id)) throw new Error('Bad sample label: ' + id);
   return withLock_(() => {
     const sh = sheet_('DA RCPC Samples');
-    row = Number(row);
-    if (row < 4) throw new Error('Bad row');
-    const col = { disease: 2, date: 3, site: 4, by: 5, photos: 6, cotton: 8, bagged: 9, submitted: 10, validated: 11, notes: 13 }[field];
-    if (!col) throw new Error('Field not editable: ' + field);
-    if (field === 'date' || field === 'submitted') value = parseDate_(value);
-    sh.getRange(row, col).setValue(value);
+    let row = sampleRow_(sh, id);
+    if (row > 0) return { id: id, row: row };
+    const vals = sh.getRange(4, 1, Math.max(1, sh.getMaxRows() - 3), 1).getValues();
+    row = -1;
+    for (let i = 0; i < vals.length; i++) if (!vals[i][0]) { row = i + 4; break; }
+    if (row < 0) { sh.insertRowsAfter(sh.getMaxRows(), 50); row = vals.length + 4; }
+    sh.getRange(row, 1).setValue(id).setBackground(m.light).setFontWeight('bold').setHorizontalAlignment('center');
+    sh.getRange(row, 5).setValue(m.tab);
+    sh.getRange(row, 3).setValue(new Date());   // started today
+    sh.getRange(row, 7).setFormulaR1C1('=IF(RC6="","",RC1&"_01.jpg … "&RC1&"_"&TEXT(RC6,"00")&".jpg")');
+    sh.getRange(row, 12).setFormulaR1C1('=IF(RC11="","",IF(RC11=RC2,"✓ Match","✗ Differs"))');
+    sh.getRange(row, 15).setNumberFormat('@');
+    return { id: id, row: row };
+  });
+}
+
+function updateSample(id, field, value) {
+  const col = { disease: 2, date: 3, site: 4, by: 5, photos: 6, cotton: 8, bagged: 9, submitted: 10, validated: 11, notes: 13 }[field];
+  if (!col) throw new Error('Field not editable: ' + field);
+  if (field === 'date' || field === 'submitted') value = parseDate_(value);
+  createSample(id);                       // in case it was started offline on another path
+  return withLock_(() => {
+    const sh = sheet_('DA RCPC Samples');
+    sh.getRange(sampleRow_(sh, String(id).toUpperCase()), col).setValue(value);
     return true;
   });
 }
@@ -322,6 +369,43 @@ function updateSupply(row, field, value) {
     const col = { item: 1, purpose: 2, qty: 3, cost: 4, assigned: 6, bought: 7, notes: 8 }[field];
     if (!col) throw new Error('Field not editable: ' + field);
     sh.getRange(row, col).setValue(value);
+    return true;
+  });
+}
+
+function addSupply(x) {
+  if (!x || !String(x.item || '').trim()) throw new Error('Item name is required');
+  return withLock_(() => {
+    const sh = sheet_('Supplies');
+    let total = suppliesTotalRow_(sh), row = -1;
+    const vals = sh.getRange(3, 1, Math.max(1, total - 3), 1).getValues();
+    for (let i = 0; i < vals.length; i++) if (!vals[i][0]) { row = i + 3; break; }
+    if (row < 0) {                                  // no empty line left: add one above TOTAL
+      sh.insertRowBefore(total);
+      row = total; total++;
+      sh.getRange(row, 5).setFormulaR1C1('=IF(OR(RC3="",RC4=""),"",RC3*RC4)');
+      sh.getRange(row, 7).insertCheckboxes();
+      sh.getRange(total, 5).setFormula('=SUM(E3:E' + (total - 1) + ')');
+    }
+    const qty = x.qty === '' || x.qty == null ? 1 : Number(x.qty);
+    const cost = x.cost === '' || x.cost == null ? '' : Number(x.cost);
+    sh.getRange(row, 1, 1, 4).setValues([[String(x.item).trim(), x.purpose || '', qty, cost]]);
+    sh.getRange(row, 6).setValue(x.assigned || '');
+    sh.getRange(row, 7).setValue(false);
+    sh.getRange(row, 8).setValue(x.notes || '');
+    return { row: row, item: String(x.item).trim(), purpose: x.purpose || '', qty: qty, cost: cost, assigned: x.assigned || '', bought: false, notes: x.notes || '' };
+  });
+}
+
+function deleteSupply(row) {
+  return withLock_(() => {
+    const sh = sheet_('Supplies');
+    row = Number(row);
+    if (row < 3 || row >= suppliesTotalRow_(sh)) throw new Error('Bad row');
+    sh.getRange(row, 1, 1, 4).clearContent();       // keeps the subtotal formula + checkbox for reuse
+    sh.getRange(row, 6).clearContent();
+    sh.getRange(row, 7).setValue(false);
+    sh.getRange(row, 8).clearContent();
     return true;
   });
 }
@@ -357,14 +441,12 @@ function photoFolder_() {
  * Saves one photo as  <ID>_<NN>.jpg  in the DA RCPC Sample Photos folder.
  * Retaking an angle replaces the old file. Returns only what changed for that sample.
  */
-function uploadPhoto(row, angle, b64) {
-  row = Number(row); angle = Number(angle);
-  if (row < 4) throw new Error('Bad row');
+function uploadPhoto(id, angle, b64) {
+  id = String(id || '').toUpperCase(); angle = Number(angle);
   if (!(angle >= 1 && angle <= CFG.photoAngles.length)) throw new Error('Angle must be 1–' + CFG.photoAngles.length);
   if (!b64 || String(b64).length < 100) throw new Error('Empty photo');
   const sh = sheet_('DA RCPC Samples');
-  const id = String(sh.getRange(row, 1).getValue());
-  if (!id) throw new Error('No sample ID on row ' + row);
+  createSample(id);                       // a sample started offline gets its row here if needed
 
   const folder = photoFolder_();
   const name = id + '_' + ('0' + angle).slice(-2) + '.jpg';
@@ -374,6 +456,7 @@ function uploadPhoto(row, angle, b64) {
 
   return withLock_(() => {
     const tz = SpreadsheetApp.getActive().getSpreadsheetTimeZone();
+    const row = sampleRow_(sh, id);
     const cell = sh.getRange(row, 15);
     const angles = String(cell.getValue() || '').split(/[^0-9]+/).filter(String).map(Number);
     if (angles.indexOf(angle) < 0) angles.push(angle);
