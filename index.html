@@ -247,7 +247,32 @@ tr.filled td.id{color:var(--ok)}
 .shot .st{font-size:12px;font-weight:700}
 .shot.done .st{color:var(--ok)} .shot.up .st{color:var(--blue)} .shot.q .st{color:var(--amber)}
 .shot.next{border-color:var(--leaf);box-shadow:0 0 0 2px color-mix(in srgb,var(--leaf) 30%,transparent)}
-.bigcam{width:100%;margin-top:14px;padding:16px;font-size:16px;border-radius:14px}
+.bigcam{width:100%;margin-top:12px;padding:16px;font-size:16px;border-radius:14px}
+.bigcam.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.cam-head{display:flex;gap:12px;align-items:flex-start}
+.dots{display:flex;gap:6px;align-items:center;margin:14px 0 4px}
+.dots i{width:30px;height:8px;border-radius:99px;background:var(--line)}
+.dots i.opt{background:transparent;border:1.5px dashed var(--line);height:8px}
+.dots i.on{background:var(--leaf);border-color:var(--leaf)}
+.dots i.q{background:var(--amber);border-color:var(--amber)}
+.dots span{font-size:12px;color:var(--muted);margin-left:6px}
+.step{display:flex;gap:14px;align-items:center;background:var(--card);border:2px solid var(--leaf);border-radius:16px;padding:14px;margin-top:12px}
+.step-n{width:44px;height:44px;border-radius:50%;background:var(--leaf);color:#fff;display:grid;place-items:center;font-family:var(--hfont);font-weight:800;font-size:22px;flex:none}
+.step b{font-size:17px}
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
+.tile{position:relative;aspect-ratio:1;border-radius:12px;border:1.5px solid var(--line);background:var(--soft);display:grid;place-items:center;cursor:pointer;overflow:hidden;font-weight:800;color:var(--muted);padding:0}
+.tile.opt{border-style:dashed}
+.tile img{width:100%;height:100%;object-fit:cover}
+.tile .badge{position:absolute;right:3px;bottom:3px;font-size:11px;background:rgba(0,0,0,.6);color:#fff;border-radius:6px;padding:0 4px}
+.tile.cur{border-color:var(--leaf);box-shadow:0 0 0 2px color-mix(in srgb,var(--leaf) 35%,transparent)}
+.strip-cap{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-size:10.5px;color:var(--muted);text-align:center;margin-top:4px;line-height:1.2}
+.tape{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:44px;font-weight:800;letter-spacing:.04em;background:#f6efd2;color:#2b2200;border-radius:6px;padding:8px 18px;display:inline-block;transform:rotate(-1.5deg);box-shadow:0 2px 0 #d9cc9a;margin:10px 0 6px}
+.fsteps{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.fsteps li{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px}
+.fsteps input[type=checkbox]{width:22px;height:22px;flex:none}
+.fsteps .n{width:24px;height:24px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800;font-size:12px;flex:none}
+.qd{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.fsteps b{white-space:nowrap}
 
 /* new sample / supplies / task editing */
 .newsample{font-size:16px;padding:14px 20px;border-radius:14px}
@@ -346,16 +371,7 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
 <footer class="wrap" id="foot">BSCS Capstone · University of Mindanao · College of Computing Education<br><span id="syncInfo"></span> · <button class="linkbtn" data-action="switch">Switch user</button></footer>
 <div id="toast"></div>
 <div id="cam" class="cam" hidden>
-  <div class="cam-sheet" role="dialog" aria-modal="true" aria-label="Sample photos">
-    <div class="row">
-      <div><div class="eyebrow">Sample photos · 3 to 5 angles</div><div class="cam-id" id="camId"></div></div>
-      <span class="sp"></span>
-      <button class="btn ghost" data-action="camClose">Done</button>
-    </div>
-    <p class="small muted" style="margin:10px 0 0">Check that the bag's masking tape says <b id="camId2"></b>. Photos are named automatically, so you never rename files.</p>
-    <div id="camList"></div>
-    <button class="btn bigcam" id="camNext" data-action="camNext">📷 Take photo</button>
-  </div>
+  <div class="cam-sheet" role="dialog" aria-modal="true" aria-label="Sample photos"><div id="camBody"></div></div>
 </div>
 <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
 
@@ -959,9 +975,9 @@ function sampleCard(x) {
   '</div>';
 }
 
-/* ---------- camera (inside DA RCPC Samples) ---------- */
-function openCam(id) {
-  S.cam = { id: id };
+/* ---------- camera (inside DA RCPC Samples): guided 3 required + 2 optional, then label reminder ---------- */
+function openCam(id, stage) {
+  S.cam = { id: id, stage: stage || 'shoot', more: false };
   document.getElementById('cam').hidden = false;
   renderCam();
 }
@@ -970,32 +986,74 @@ function busyAngles(id) {
   return Object.keys(S.uploading).concat(Object.keys(S.waiting), Object.keys(S.queued), Object.keys(S.preparing))
     .filter(k => k.lastIndexOf(id + '_', 0) === 0).map(k => +k.slice(id.length + 1));
 }
+function takenSet(x) { return new Set((x.angles || []).concat(busyAngles(x.id))); }
 function nextAngle(x) {
-  const have = new Set((x.angles || []).concat(busyAngles(x.id)));
+  const have = takenSet(x);
   for (let i = 1; i <= 5; i++) if (!have.has(i)) return i;
   return 0;
+}
+function angleState(x, a) {
+  const k = x.id + '_' + a;
+  return S.preparing[k] ? 'prep' : (S.waiting[k] || S.uploading[k]) ? 'up' : S.queued[k] ? 'q' : (x.angles || []).indexOf(a) > -1 ? 'done' : '';
+}
+function photoStatusLine(x) {
+  const states = [1, 2, 3, 4, 5].map(a => angleState(x, a)).filter(Boolean);
+  const up = states.filter(s => s === 'up' || s === 'prep').length, q = states.filter(s => s === 'q').length;
+  return up ? '⬆ Uploading ' + up + ' photo' + (up > 1 ? 's' : '') + '…' : q ? '📴 ' + q + ' photo' + (q > 1 ? 's' : '') + ' saved on this phone · uploads when there\'s signal' : states.length ? '✓ All photos saved to Drive' : '';
 }
 function renderCam() {
   if (!S.cam || !S.data) return;
   const x = sampleById(S.cam.id);
   if (!x) return;
-  const names = angleNames(), nx = nextAngle(x);
-  document.getElementById('camId').textContent = x.id;
-  document.getElementById('camId2').textContent = x.id;
-  document.getElementById('camList').innerHTML = names.map((nm, i) => {
-    const a = i + 1, key = x.id + '_' + a;
-    const done = (x.angles || []).indexOf(a) > -1, up = !!S.uploading[key] || !!S.waiting[key] || !!S.preparing[key], q = !!S.queued[key];
-    const st = S.preparing[key] ? 'Preparing photo…' : S.waiting[key] ? 'Waiting to upload…' : S.uploading[key] ? 'Uploading…' : q ? 'Saved on phone · uploads when online' : done ? '✓ Saved to Drive' : a <= MIN_ANGLES ? 'Required' : 'Optional';
-    const thumb = S.thumbs[key];
-    return '<div class="shot ' + (up ? 'up' : q ? 'q' : done ? 'done' : '') + (a === nx ? ' next' : '') + '">' +
-      '<div class="th">' + (thumb ? '<img src="' + thumb + '" alt="">' : done ? '✓' : a) + '</div>' +
-      '<div style="min-width:0"><b>' + a + '. ' + esc(nm) + '</b><div class="small muted">' + esc(ANGLE_HINTS[i] || '') + '</div>' +
-      '<div class="fn">' + esc(fname(x.id, a)) + '</div><div class="st">' + st + '</div></div>' +
-      '<button class="btn ' + (done || q ? 'ghost' : '') + '" data-action="camShot" data-v="' + a + '"' + (up ? ' disabled' : '') + '>' + (done || q ? 'Retake' : '📷') + '</button></div>';
+  document.getElementById('camBody').innerHTML = S.cam.stage === 'finish' ? camFinishHtml(x) : camShootHtml(x);
+}
+function camShootHtml(x) {
+  const names = angleNames(), n = takenSet(x).size, nx = nextAngle(x), need = Math.max(0, MIN_ANGLES - n);
+  const target = nx && (nx <= MIN_ANGLES || S.cam.more) ? nx : 0;
+  const title = need ? 'Photo ' + (n + 1) + ' of ' + MIN_ANGLES : n >= 5 ? 'All 5 angles done' : n + ' photos · that\'s enough';
+  const dots = [1, 2, 3, 4, 5].map(a => { const st = angleState(x, a); return '<i class="' + (a > MIN_ANGLES ? 'opt ' : '') + (st === 'q' ? 'q' : st ? 'on' : '') + '"></i>'; }).join('');
+  let main = '';
+  if (target) {
+    main += '<div class="step"><div class="step-n">' + target + '</div><div style="min-width:0"><b>' + esc(names[target - 1]) + (target > MIN_ANGLES ? ' <span class="small muted">(optional)</span>' : '') + '</b>' +
+      '<div class="small muted">' + esc(ANGLE_HINTS[target - 1] || '') + '</div><div class="fn small muted">' + esc(fname(x.id, target)) + '</div></div></div>' +
+      '<button class="btn bigcam" data-action="camShot" data-v="' + target + '">📷 Take photo ' + (target <= MIN_ANGLES ? target + ' of ' + MIN_ANGLES : '(optional)') + '</button>';
+  }
+  if (!need) {
+    main += '<button class="btn bigcam' + (target ? ' ghost' : '') + '" data-action="camFinish">✓ Finish sample · ' + n + ' photo' + (n > 1 ? 's' : '') + '</button>';
+    if (nx && !S.cam.more) main += '<button class="btn bigcam ghost" data-action="camMore">＋ Add an optional angle (' + (n + 1) + ' of 5)</button>';
+  }
+  const tiles = names.map((nm, i) => {
+    const a = i + 1, st = angleState(x, a), thumb = S.thumbs[x.id + '_' + a];
+    const badge = st === 'prep' || st === 'up' ? '⬆' : st === 'q' ? '📴' : st === 'done' ? '✓' : '';
+    return '<button class="tile' + (a > MIN_ANGLES ? ' opt' : '') + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '">' +
+      (thumb ? '<img src="' + thumb + '" alt="">' : st === 'done' ? '✓' : a) + (badge ? '<span class="badge">' + badge + '</span>' : '') + '</button>';
   }).join('');
-  const btn = document.getElementById('camNext');
-  if (nx) { btn.dataset.v = nx; btn.textContent = '📷 Take ' + names[nx - 1].toLowerCase() + ' (' + nx + ' of ' + (nx <= MIN_ANGLES ? MIN_ANGLES : 5) + ')'; }
-  else { btn.dataset.v = ''; btn.textContent = 'All 5 angles done ✓'; }
+  return '<div class="cam-head"><div style="min-width:0"><div class="eyebrow">' + esc(title) + '</div><div class="cam-id">' + esc(x.id) + '</div></div>' +
+      '<span class="sp"></span><button class="iconbtn" data-action="camClose" aria-label="Close" title="Close">✕</button></div>' +
+    '<div class="dots">' + dots + '<span>3 required · 2 optional</span></div>' + main +
+    '<div class="strip">' + tiles + '</div><div class="strip-cap">' + names.map(nm => '<span>' + esc(nm) + '</span>').join('') + '</div>' +
+    '<p class="small muted" style="margin:10px 0 0">Tap any photo above to retake it. ' + esc(photoStatusLine(x)) + '</p>';
+}
+function camFinishHtml(x) {
+  const n = takenSet(x).size, me = S.user;
+  const lastSite = (samplesOf(me).filter(s => s.id !== x.id && s.site).sort((a, b) => labelNum(b.id) - labelNum(a.id))[0] || {}).site;
+  const at = 'data-change="sample" data-id="' + esc(x.id) + '"';
+  const chips = S.data.lists.classes.map(c => '<button class="chip' + (x.disease === c ? ' on' : '') + '" data-action="camDisease" data-v="' + esc(c) + '">' + esc(c) + '</button>').join('');
+  return '<div class="cam-head"><div><div class="eyebrow">Last step · ' + n + ' photo' + (n > 1 ? 's' : '') + ' taken</div><h2 style="margin:4px 0 0">✂️ Cut, bag and label it</h2></div>' +
+      '<span class="sp"></span><button class="iconbtn" data-action="camDone" aria-label="Close" title="Close">✕</button></div>' +
+    '<p class="small" style="margin:12px 0 0">Write <b>exactly</b> this on masking tape. It\'s the same as the spreadsheet row and the photo names, so everything stays matched:</p>' +
+    '<div style="text-align:center"><span class="tape">' + esc(x.id) + '</span></div>' +
+    '<ol class="fsteps">' +
+      '<li><span class="n">1</span><span>Cut the leaf with clean shears.</span></li>' +
+      '<li><input type="checkbox" ' + (x.cotton ? 'checked' : '') + ' ' + at + ' data-field="cotton" aria-label="Wrapped in cotton"><span>Wrap the cut end in <b>damp cotton</b>.</span></li>' +
+      '<li><input type="checkbox" ' + (x.bagged ? 'checked' : '') + ' ' + at + ' data-field="bagged" aria-label="Bagged and labeled"><span>Seal it in a plastic bag and stick the <b>' + esc(x.id) + '</b> label on the bag.</span></li>' +
+    '</ol>' +
+    '<div style="margin-top:14px"><div class="eyebrow">Suspected disease (optional)</div><div class="qd">' + chips + '</div></div>' +
+    '<div style="margin-top:12px"><div class="eyebrow">Site (optional)</div><input type="text" style="width:100%;margin-top:6px" value="' + esc(x.site) + '" placeholder="Farm / barangay" ' + at + ' data-field="site">' +
+      (lastSite && !x.site ? '<div class="qd"><button class="chip" data-action="camSite" data-v="' + esc(lastSite) + '">Same as last: ' + esc(lastSite) + '</button></div>' : '') + '</div>' +
+    '<button class="btn bigcam" data-action="camNextSample">＋ Next sample (' + esc(nextLabel(me)) + ')</button>' +
+    '<button class="btn bigcam ghost" data-action="camDone">Done for now</button>' +
+    '<p class="small muted" style="margin:10px 0 0">' + esc(photoStatusLine(x)) + '</p>';
 }
 function takeShot(angle) {
   if (!S.cam || !angle) return;
@@ -1089,6 +1147,7 @@ document.getElementById('camInput').addEventListener('change', async e => {
     const job = { id, angle, b64: p.full.split(',')[1], at: Date.now() };
     await PhotoQ.put(id + '_' + angle, job);  // kept on the phone until Drive confirms
     queueUpload(job);
+    if (angle > MIN_ANGLES) S.cam.more = false;
     renderCam();
   } catch (err) { delete S.preparing[key]; renderCam(); toast(err.message || String(err), 4000, true); }
 });
@@ -1164,8 +1223,21 @@ document.addEventListener('click', e => {
   else if (a === 'sampleFilter') { S.sampleFilter = v; render(); }
   else if (a === 'newSample') { newSample(); }
   else if (a === 'cam') { openCam(el.dataset.id); }
-  else if (a === 'camClose') { closeCam(); }
-  else if (a === 'camShot' || a === 'camNext') { takeShot(+(v || el.dataset.v)); }
+  else if (a === 'camClose') {
+    const x = sampleById(S.cam.id), n = takenSet(x).size;
+    if (n >= MIN_ANGLES) { S.cam.stage = 'finish'; renderCam(); }   // never skip the labeling reminder
+    else if (confirm('Only ' + n + ' of ' + MIN_ANGLES + ' required photos for ' + x.id + '. Close anyway?\nYou can finish later: tap 📷 on ' + x.id + '.')) closeCam();
+  }
+  else if (a === 'camShot') { takeShot(+v); }
+  else if (a === 'camMore') { S.cam.more = true; renderCam(); }
+  else if (a === 'camFinish') { S.cam.stage = 'finish'; renderCam(); }
+  else if (a === 'camDone') { closeCam(); }
+  else if (a === 'camNextSample') { closeCam(); newSample(); }
+  else if (a === 'camDisease' || a === 'camSite') {
+    const id = S.cam.id, field = a === 'camDisease' ? 'disease' : 'site';
+    save('updateSample', [id, field, v], () => { sampleById(id)[field] = v; });
+    renderCam();
+  }
   else if (a === 'editTask') { const k = el.dataset.tab + '_' + el.dataset.row; S.editTask = S.editTask === k ? null : k; renderTaskList(); }
   else if (a === 'delTask') {
     const tab = el.dataset.tab, row = +el.dataset.row, t = member(tab).tasks.find(x => x.row === row);

@@ -20,7 +20,8 @@ Installable task tracker app for the thesis
    - Execute as: **Me**
    - Who has access: **Anyone**
 3. Copy the **Web app URL**. It ends in `/exec`.
-4. Back in the sheet, run **🍌 Thesis Tracker → 📷 Connect photo folder** once. This connects the Curated Banana Leaf Disease Dataset folder (photos go into its **DA RCPC Sample Photos** subfolder) and grants Drive permission. If you deployed before this step, make a **New version** of the deployment.
+4. In Apps Script, run **setupTracker** (or, in the sheet, **🍌 Thesis Tracker → 🛠 Repair / update tracker**). It is safe to run any time: tabs that already have data — tasks, panel items, DA RCPC samples, supplies — are kept untouched; only missing or empty tabs are built.
+5. Back in the sheet, run **🍌 Thesis Tracker → 📷 Connect photo folder** once. This connects the Curated Banana Leaf Disease Dataset folder (photos go into its **DA RCPC Sample Photos** subfolder) and grants Drive permission. If you deployed before this step, make a **New version** of the deployment.
 
 ### 2. GitHub Pages
 1. Upload all files in this folder to the repo root, including `.nojekyll` and the `icons/` folder.
@@ -40,7 +41,8 @@ The first time, each member taps their name. The app remembers them on that devi
 
 ## Samples, labels and photos
 - Tap **＋ New sample** on the DA RCPC Samples page. The app gives the next label automatically: **FA-###** (Fe Anne), **RJ-###** (Rho), **CP-###** (Cha). It works offline too, and two people can never get the same label.
-- Copy that label onto masking tape on the bag. The camera opens right away and walks through 3–5 angles (top, underside, lesion close-up, then side and extra as optional), naming each photo `<ID>_01.jpg … <ID>_05.jpg`.
+- The camera opens right away and guides you one photo at a time: **3 required** (top, underside, lesion close-up), then **✓ Finish** or **＋ add up to 2 optional** angles. Photos are named `<ID>_01.jpg … <ID>_05.jpg`. Tap any thumbnail to retake it.
+- The last screen reminds you to **cut the leaf, wrap it in damp cotton, bag it, and write the label (e.g. FA-004) on masking tape** — the same label as the spreadsheet row and the photo names.
 - Photos are saved automatically to the team's **Curated Banana Leaf Disease Dataset** folder, inside **DA RCPC Sample Photos**. Retaking an angle replaces that file.
 - Photos are resized to 1600 px (about 0.3–0.7 MB each) and upload one at a time, so the app stays fast.
 

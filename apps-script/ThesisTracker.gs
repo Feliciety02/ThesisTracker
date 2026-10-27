@@ -160,7 +160,7 @@ function onOpen() {
     .addItem('⏰ Turn ON daily 8 AM email reminders', 'enableDailyReminder')
     .addItem('🔕 Turn OFF daily reminders', 'disableDailyReminder')
     .addSeparator()
-    .addItem('🛠 Rebuild tracker (erases data!)', 'setupTracker')
+    .addItem('🛠 Repair / update tracker (keeps all data)', 'setupTracker')
     .addToUi();
 }
 
@@ -183,38 +183,90 @@ function onEdit(e) {
 /* ============================================================
  *  BUILD
  * ============================================================ */
+/**
+ * SAFE setup / repair. Run it any time — it never erases data.
+ *  - A tracker tab that is missing, or exists but has no data yet, is (re)built.
+ *  - A tab that already has data is KEPT as it is (DA RCPC Samples, tasks, supplies, panel items).
+ *  - Pure summary tabs (Dashboard, All Open Tasks, Links) are refreshed; the DA RCPC date is kept.
+ *  - Tabs that aren't part of the tracker (Activity, your own tabs) are never touched.
+ * If it ever stops halfway (error or time limit), just run it again: it continues where it left off.
+ */
 function setupTracker() {
   const ss = SpreadsheetApp.getActive();
   const ui = SpreadsheetApp.getUi();
-  const ourNames = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'DA RCPC Samples', 'Supplies', 'Links', 'Lists'];
-
-  if (ss.getSheets().some(s => ourNames.includes(s.getName()))) {
-    const ok = ui.alert('Rebuild tracker?', 'This deletes and recreates all tracker tabs. Any data you typed in them will be lost.', ui.ButtonSet.YES_NO);
-    if (ok !== ui.Button.YES) return;
-  }
-
   ss.setSpreadsheetTimeZone(CFG.timezone);
-  ss.rename(CFG.title);
+  if (!/Tracker/i.test(ss.getName())) ss.rename(CFG.title);
 
-  const temp = ss.insertSheet('__temp__' + Date.now());
-  ss.getSheets().forEach(s => { if (s.getSheetId() !== temp.getSheetId()) ss.deleteSheet(s); });
+  // leftovers from older versions / interrupted runs
+  ss.getSheets().forEach(s => { if (/^__temp__/.test(s.getName()) && ss.getSheets().length > 1) ss.deleteSheet(s); });
 
-  buildLists_(ss);
-  CFG.members.forEach(m => buildMemberTab_(ss, m));
-  buildOpenTasks_(ss);
-  buildRevisions_(ss);
-  buildSamples_(ss);
-  buildSupplies_(ss);
-  buildLinks_(ss);
-  buildDashboard_(ss);
+  const built = [], kept = [];
+  const rcpcDate = (() => { const d = ss.getSheetByName('Dashboard'); return d ? d.getRange('E4').getValue() : ''; })();
 
-  ss.deleteSheet(temp);
+  // name, builder, "has real data?" check
+  const dataTabs = [
+    ['Lists', buildLists_, sh => sh.getLastRow() > 1],
+    ...CFG.members.map(m => [m.tab, s => buildMemberTab_(s, m), sh => hasData_(sh, 4, [2])]),
+    ['Panel Revisions', buildRevisions_, sh => hasData_(sh, 4, [3])],
+    ['DA RCPC Samples', buildSamples_, sh => hasData_(sh, 4, [2, 3, 4, 6, 10, 11, 13])],
+    ['Supplies', buildSupplies_, sh => hasData_(sh, 3, [1])],
+  ];
+  dataTabs.forEach(([name, build, hasData]) => {
+    const sh = ss.getSheetByName(name);
+    if (sh && hasData(sh)) { kept.push(name); return; }
+    replaceTab_(ss, name, build);
+    built.push(name);
+  });
+  upgradeSamplesTab_(ss);
+
+  // summary tabs: always refreshed (they only hold formulas)
+  [['Links', buildLinks_], ['All Open Tasks', buildOpenTasks_], ['Dashboard', buildDashboard_]].forEach(([name, build]) => replaceTab_(ss, name, build));
+  if (rcpcDate) ss.getSheetByName('Dashboard').getRange('E4').setValue(rcpcDate);
+
+  // tidy: an untouched blank "Sheet1" can go
+  ['Sheet1', 'Sheet 1'].forEach(n => { const s = ss.getSheetByName(n); if (s && s.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(s); });
+
   const order = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'DA RCPC Samples', 'Supplies', 'Links'];
-  order.forEach((name, i) => { ss.setActiveSheet(ss.getSheetByName(name)); ss.moveActiveSheet(i + 1); });
+  order.forEach((name, i) => { const s = ss.getSheetByName(name); if (s) { ss.setActiveSheet(s); ss.moveActiveSheet(i + 1); } });
   ss.setActiveSheet(ss.getSheetByName('Dashboard'));
   ss.getSheetByName('Lists').hideSheet();
   onOpen();
-  ui.alert('Tracker ready ✅', 'Each member updates their own tab. The Dashboard updates automatically.\n\nSet the DA RCPC submission date in the yellow cell on the Dashboard.', ui.ButtonSet.OK);
+  ui.alert('Tracker ready ✅',
+    (built.length ? 'Built: ' + built.join(', ') + '\n' : '') +
+    (kept.length ? 'Kept with all their data: ' + kept.join(', ') + '\n' : '') +
+    '\nNothing with data was erased. You can run this again any time.', ui.ButtonSet.OK);
+}
+
+/** true if any of the given columns has a value from firstRow down */
+function hasData_(sh, firstRow, cols) {
+  const last = sh.getLastRow();
+  if (last < firstRow) return false;
+  return cols.some(c => sh.getRange(firstRow, c, last - firstRow + 1, 1).getValues().some(r => r[0] !== '' && r[0] !== false && r[0] !== null));
+}
+
+/** builds a fresh tab; an old empty/summary tab with the same name is swapped out only after the new one exists */
+function replaceTab_(ss, name, build) {
+  const old = ss.getSheetByName(name);
+  if (old) old.setName(name + ' (old ' + Date.now() + ')');
+  try {
+    build(ss);
+  } catch (e) {
+    const half = ss.getSheetByName(name);
+    if (half) ss.deleteSheet(half);
+    if (old) old.setName(name);           // put things back exactly as they were
+    throw e;
+  }
+  if (old) ss.deleteSheet(old);
+}
+
+/** older Samples tabs: add the photo columns the app needs, without touching any rows */
+function upgradeSamplesTab_(ss) {
+  const sh = ss.getSheetByName('DA RCPC Samples');
+  if (!sh) return;
+  const head = sh.getRange(3, 14, 1, 2).getValues()[0];
+  if (!head[0]) sh.getRange(3, 14).setValue('Photo Folder');
+  if (!head[1]) sh.getRange(3, 15).setValue('Angles Taken');
+  sh.getRange(3, 14, 1, 2).setBackground('#37474f').setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
 }
 
 function buildLists_(ss) {
