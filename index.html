@@ -914,7 +914,8 @@ function vRevisions() {
       return '<div class="rev ' + esc(r.status) + '"><input type="checkbox" class="pick" data-change="revsel" data-row="' + r.row + '"' + (S.revSel[r.row] ? ' checked' : '') + ' aria-label="Select item">' +
         '<div class="rc"><div class="' + (warn ? 'warn' : '') + '">' + esc(r.comment) + '</div>' +
         '<div class="small muted">' + esc(r.section) + ' · Assigned: <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span>' +
-        (r.status === 'C' && r.doneBy ? ' · <span class="doneby">✓ Done by ' + esc(r.doneBy) + '</span>' : '') + '</div></div>' +
+        (r.status === 'C' && r.doneBy ? ' · <span class="doneby">✓ Done by ' + esc(r.doneBy) + '</span>' : '') + '</div>' +
+        (r.notes ? '<div class="small" style="margin-top:4px;color:var(--ink)">' + esc(r.notes) + '</div>' : '') + '</div>' +
         '<div class="seg">' + d.lists.revStatuses.map(s => '<button class="' + s + (r.status === s ? ' on' : '') + '" data-action="rev" data-row="' + r.row + '" data-v="' + s + '">' + s + '</button>').join('') + '</div>' +
         '<input type="text" placeholder="Page no." value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page" aria-label="Page number">' +
         '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Signed</label></div>';

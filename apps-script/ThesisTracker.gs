@@ -69,7 +69,7 @@ const TASKS = {
     ['F-11', 'Submit fresh, labeled samples to DA RCPC Davao', 'DA RCPC', 'High', 'Not Started', '', '', 'Bring the printed Sample Log.'],
     ['F-13', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels FA-001, FA-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
     ['F-14', 'Run 🍌 Thesis Tracker → 📷 Connect photo folder (once) so app photos save into the Curated dataset folder', 'DA RCPC', 'High', 'Not Started', '', '', 'Do this before the field collection day.'],
-    ['F-12', 'Lead panel revisions: Problem, Purpose, Objectives, Scope & Limitations', 'Panel Revision', 'High', 'Not Started', '', '', 'See Panel Revisions tab.'],
+    ['F-12', 'Lead panel revisions: Problem, Purpose, Objectives, Scope & Limitations', 'Panel Revision', 'High', 'Done', '', '', 'Done in the Oct 28 paper (see Panel Revisions).'],
   ],
   'Rho': [
     ['R-01', 'Retrain the baseline model from scratch and record results in the Training Results tab', 'Model', 'High', 'Not Started', OCT2, 'trainingResults', ''],
@@ -79,7 +79,7 @@ const TASKS = {
     ['R-05', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels RJ-001, RJ-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
     ['R-08', 'Check all sample photos in the Drive photo folder (3+ angles each, correct names) before adding them to the dataset', 'Dataset', 'Medium', 'Not Started', '', '', 'Curated Banana Leaf Disease Dataset → DA RCPC Sample Photos.'],
     ['R-06', 'Add RCPC-validated images to the dataset and update the per-class counts', 'Dataset', 'Medium', 'Not Started', '', '', 'After RCPC returns results.'],
-    ['R-07', 'Methodology revisions: preprocessing, training split, model construction, hyperparameter tuning', 'Panel Revision', 'High', 'Not Started', '', '', 'See Panel Revisions tab.'],
+    ['R-07', 'Methodology revisions: preprocessing, training split, model construction, hyperparameter tuning', 'Panel Revision', 'High', 'Done', '', '', 'Done by Fe Anne in the Oct 28 paper.'],
   ],
   'Cha': [
     ['C-01', 'Fill in the Dataset Validation Letter', 'Letters', 'Medium', 'Done', '', 'validationLetter', ''],
@@ -91,54 +91,56 @@ const TASKS = {
     ['C-10', 'Before submission: check the Sample Log is complete for all three batches (FA, RJ, CP)', 'DA RCPC', 'High', 'Not Started', '', '', 'Every submitted bag needs disease, date, site and 3+ photos.'],
     ['C-07', 'Write up the DA RCPC validation process in Methodology – Data Collection', 'Paper', 'Medium', 'Not Started', '', '', ''],
     ['C-09', 'Paper 2.1.2 Local Test Set: replace [name] / [position] with the DA RCPC validator, fill in [phone model], and fix the "August 90" collection dates', 'Paper', 'High', 'Not Started', '', 'thesisDoc', 'Do this once RCPC returns the validation.'],
-    ['C-08', 'Formatting revisions: CCS concepts, general terms, keywords, tables/figures, IEEE refs, ACM format', 'Panel Revision', 'High', 'Not Started', '', '', 'See Panel Revisions tab.'],
+    ['C-08', 'Formatting revisions: CCS concepts, general terms, keywords, tables/figures, IEEE refs, ACM format', 'Panel Revision', 'High', 'In Progress', '', '', 'Fe Anne did these in the Oct 28 paper. Only left: fix the Grad-CAM citation [36]→[35] and renumber so citations follow first appearance.'],
   ],
 };
 
-// [Item, Section, Panel comment, Owner, Status]
+// [Item, Section, Panel comment, Assigned to, Status, Page in paper, Note]
+// Status/page/notes come from comparing the paper before ("acm wrong") and after ("Thesis Documentation", Oct 28, 2026).
+// Every complied item was revised by Fe Anne (Done By = Fe Anne), whoever it was assigned to.
 const REVISIONS = [
-  ['1', 'Title Page', 'Title must be under 20 words (current title is 10 words)', 'Fe Anne', 'NC'],
-  ['1', 'Title Page', 'Change title (finalize new title)', 'Fe Anne', 'NC'],
-  ['2', 'Abstract', 'NA for Capstone 1', '—', 'NA'],
-  ['3', 'CCS Concepts', 'Use the ACM Computing Classification Scheme (dl.acm.org/ccs)', 'Cha', 'NC'],
-  ['4', 'General Terms', 'Use only the allowed ACM general terms (e.g., Algorithms, Performance, Experimentation)', 'Cha', 'NC'],
-  ['5', 'Keywords', 'Limit to 5 keywords', 'Cha', 'NC'],
-  ['6', 'Background – Problem', 'Establish the problems to provide a significant solution', 'Fe Anne', 'NC'],
-  ['6', 'Background – Problem', 'Indicate the main problem of the baseline (re-read the baseline paper)', 'Fe Anne + Rho', 'NC'],
-  ['6', 'Background – Problem', 'Add real banana symptom data aside from the 900 original images (DA RCPC samples)', 'Fe Anne', 'NC'],
-  ['6', 'Background – Problem', 'Review similar banana leaf studies for additional diseases; rectify datasets to find the main source of confusion', 'Rho', 'NC'],
-  ['6', 'Background – Problem', '⚠ If the baseline study changes, the architecture changes too → re-defense required', 'Team', 'NC'],
-  ['6', 'Related Literature', 'State the main problems of the baseline and which ones the proposed model addresses', 'Fe Anne + Rho', 'NC'],
-  ['6', 'Approach', 'State the solutions of the proposed model based on the identified problems', 'Rho', 'NC'],
-  ['7', 'Purpose & Description', 'Revise the purpose to address the problem indicated in the baseline study', 'Fe Anne', 'NC'],
-  ['7', 'Purpose & Description', 'State which problem of the baseline algorithm the study addresses', 'Fe Anne', 'NC'],
-  ['8', 'Objectives', 'Revise objectives to a CS (not IT) approach', 'Fe Anne + Rho', 'NC'],
-  ['8', 'Objectives', 'Objective: replicate the preprocessing method of the baseline', 'Rho', 'NC'],
-  ['8', 'Objectives', 'Objective: "To enhance the … by …"', 'Rho', 'NC'],
-  ['8', 'Objectives', 'Objective: evaluate baseline vs proposed (accuracy, precision, F1, confusion matrix)', 'Rho', 'NC'],
-  ['8', 'Objectives', 'Objective: assess the proposed model on local or other datasets', 'Rho', 'NC'],
-  ['9', 'Scope & Limitations', 'Two paragraphs only: 1st = scope, 2nd = limitations', 'Fe Anne', 'NC'],
-  ['10', 'Methodology – Data Collection', 'Aside from the 900 original images, test and add more relevant datasets', 'Rho', 'NC'],
-  ['10', 'Methodology – Preprocessing', 'Follow the preprocessing of the baseline', 'Rho', 'NC'],
-  ['10', 'Methodology – Training Split', 'Use the same training split as the baseline', 'Rho', 'NC'],
-  ['10', 'Methodology – Model Construction', '⚠ Add a sample computation of the detection', 'Rho', 'NC'],
-  ['10', 'Methodology – Model Construction', '⚠ Show the changes from the baseline to the proposed model', 'Rho', 'NC'],
-  ['10', 'Methodology – Training Config', 'Add hyperparameter tuning to determine which setting gives the better result', 'Rho', 'NC'],
-  ['11', 'Results & Discussion', 'NA for Capstone 1', '—', 'NA'],
-  ['12', 'Conclusion & Recommendation', 'NA for Capstone 1', '—', 'NA'],
-  ['13', 'Tables & Figures', 'Captions in Times New Roman 9-pt bold, numbered (Table 1 / Figure 1)', 'Cha', 'NC'],
-  ['13', 'Tables & Figures', 'Figure captions centered below; table captions centered above', 'Cha', 'NC'],
-  ['13', 'Tables & Figures', 'Add a brief discussion of every table', 'Cha + Rho', 'NC'],
-  ['13', 'Tables & Figures', 'Arrange tables/figures properly; adjust the font inside tables', 'Cha', 'NC'],
-  ['13', 'Tables & Figures', 'Add more references', 'Cha', 'NC'],
-  ['14', 'References', 'Every in-text citation appears in References; follow IEEE style', 'Cha', 'NC'],
-  ['14', 'References', 'Add more references from 2022 onward', 'Cha + Fe Anne', 'NC'],
-  ['14', 'References', 'Number citations in order of appearance [1] … [n]', 'Cha', 'NC'],
-  ['15', 'Others', 'Page numbers bottom-center; justify paragraphs', 'Cha', 'NC'],
-  ['15', 'Others', 'Replace propose/proposal/proponents with "study"/"researchers"; third person', 'Cha', 'NC'],
-  ['15', 'Others', 'Past tense for what was done; present tense for general truths and what the paper covers', 'Cha', 'NC'],
-  ['15', 'Others', 'Follow ACM formatting (alignment, spacing); remove non-ACM components; citations in sequence', 'Cha', 'NC'],
-  ['15', 'Output / Project', 'Output must show the baseline result and the proposed model', 'Rho', 'NC'],
+  ['1', 'Title Page', 'Title must be under 20 words', 'Fe Anne', 'C', '1', 'Title is 10 words.'],
+  ['1', 'Title Page', 'Change title (finalize new title)', 'Fe Anne', 'NC', '', 'Title is unchanged. Confirm with the panel whether a new title is still required.'],
+  ['2', 'Abstract', 'NA for Capstone 1', '—', 'NA', '', ''],
+  ['3', 'CCS Concepts', 'Use the ACM Computing Classification Scheme (dl.acm.org/ccs)', 'Cha', 'C', '1', 'Heading changed from "Categories and Subject Descriptors" to ACM "CCS Concepts".'],
+  ['4', 'General Terms', 'Use only the allowed ACM general terms (e.g., Algorithms, Performance, Experimentation)', 'Cha', 'C', '1', 'Algorithms, Performance, Design, Experimentation: all on the allowed list.'],
+  ['5', 'Keywords', 'Limit to 5 keywords', 'Cha', 'C', '1', 'Exactly 5 keywords now (was 4).'],
+  ['6', 'Background – Problem', 'Establish the problems to provide a significant solution', 'Fe Anne', 'C', '1–2', 'Background rewritten around the Black Sigatoka / Cordana confusion.'],
+  ['6', 'Background – Problem', 'Indicate the main problem of the baseline (re-read the baseline paper)', 'Fe Anne + Rho', 'C', '2', 'States the baseline misclassified 160 of 600 Cordana images (26.67%) as Black Sigatoka.'],
+  ['6', 'Background – Problem', 'Add real banana symptom data aside from the 900 original images (DA RCPC samples)', 'Fe Anne', 'C', '4–5', 'Combined dataset of 4,740 images from six public datasets + a local test set from Tugbok.'],
+  ['6', 'Background – Problem', 'Review similar banana leaf studies for additional diseases; rectify datasets to find the main source of confusion', 'Rho', 'C', '2, 13', 'Table 1 related studies; new section 2.5.6 Analysis of the Source of Confusion.'],
+  ['6', 'Background – Problem', '⚠ If the baseline study changes, the architecture changes too → re-defense required', 'Team', 'NA', '', 'Baseline kept (Jiménez et al. [15]), so no re-defense is triggered.'],
+  ['6', 'Related Literature', 'State the main problems of the baseline and which ones the proposed model addresses', 'Fe Anne + Rho', 'C', '2', 'Table 1 Matrix of Related EfficientNetB0 Studies with a Gaps / Limitations column.'],
+  ['6', 'Approach', 'State the solutions of the proposed model based on the identified problems', 'Rho', 'C', '3', 'Paragraph mapping each change (Coordinate Attention, dual pooling, LayerNorm) to a baseline problem.'],
+  ['7', 'Purpose & Description', 'Revise the purpose to address the problem indicated in the baseline study', 'Fe Anne', 'C', '3', '1.2 rewritten around the baseline misclassification.'],
+  ['7', 'Purpose & Description', 'State which problem of the baseline algorithm the study addresses', 'Fe Anne', 'C', '3', 'Names the 160/600 Cordana → Black Sigatoka errors.'],
+  ['8', 'Objectives', 'Revise objectives to a CS (not IT) approach', 'Fe Anne + Rho', 'C', '3', 'Seven model-centred specific objectives (1.3.2.1–1.3.2.7).'],
+  ['8', 'Objectives', 'Objective: replicate the preprocessing method of the baseline', 'Rho', 'C', '3', '1.3.2.1'],
+  ['8', 'Objectives', 'Objective: "To enhance the … by …"', 'Rho', 'C', '3', '1.3.2.2'],
+  ['8', 'Objectives', 'Objective: evaluate baseline vs proposed (accuracy, precision, F1, confusion matrix)', 'Rho', 'C', '3', '1.3.2.4'],
+  ['8', 'Objectives', 'Objective: assess the proposed model on local or other datasets', 'Rho', 'C', '3', '1.3.2.5 (Tugbok local images)'],
+  ['9', 'Scope & Limitations', 'Two paragraphs only: 1st = scope, 2nd = limitations', 'Fe Anne', 'C', '3', ''],
+  ['10', 'Methodology – Data Collection', 'Aside from the 900 original images, test and add more relevant datasets', 'Rho', 'C', '4–5', '2.1 / Table 2: 4,740 images (1,580 per class).'],
+  ['10', 'Methodology – Preprocessing', 'Follow the preprocessing of the baseline', 'Rho', 'C', '6', '2.2 Data Preparation'],
+  ['10', 'Methodology – Training Split', 'Use the same training split as the baseline', 'Rho', 'C', '6', '2.2.2: same 80/20 split, done before augmentation.'],
+  ['10', 'Methodology – Model Construction', '⚠ Add a sample computation of the detection', 'Rho', 'C', '9', 'New 2.3.3 Sample Computation (Tables 6–7).'],
+  ['10', 'Methodology – Model Construction', '⚠ Show the changes from the baseline to the proposed model', 'Rho', 'C', '7–8', 'Table 5 Comparison of the Baseline and Enhanced Architectures + Figure 6.'],
+  ['10', 'Methodology – Training Config', 'Add hyperparameter tuning to determine which setting gives the better result', 'Rho', 'C', '10', 'New 2.4.2 Hyperparameter Tuning (grid search) + 2.4.3 Ablation Experiments.'],
+  ['11', 'Results & Discussion', 'NA for Capstone 1', '—', 'NA', '', ''],
+  ['12', 'Conclusion & Recommendation', 'NA for Capstone 1', '—', 'NA', '', ''],
+  ['13', 'Tables & Figures', 'Captions in Times New Roman 9-pt bold, numbered (Table 1 / Figure 1)', 'Cha', 'C', 'all', '13 tables and 6 figures numbered in order.'],
+  ['13', 'Tables & Figures', 'Figure captions centered below; table captions centered above', 'Cha', 'C', 'all', ''],
+  ['13', 'Tables & Figures', 'Add a brief discussion of every table', 'Cha + Rho', 'C', '2–13', 'Every table (1–13) is referred to and explained in the text.'],
+  ['13', 'Tables & Figures', 'Arrange tables/figures properly; adjust the font inside tables', 'Cha', 'C', 'all', ''],
+  ['13', 'Tables & Figures', 'Add more references', 'Cha', 'C', '13–14', '22 → 37 references.'],
+  ['14', 'References', 'Every in-text citation appears in References; follow IEEE style', 'Cha', 'C', '13–14', ''],
+  ['14', 'References', 'Add more references from 2022 onward', 'Cha + Fe Anne', 'C', '13–14', '28 of 37 references are from 2022 or later (was 16 of 22).'],
+  ['14', 'References', 'Number citations in order of appearance [1] … [n]', 'Cha', 'NC', '3, 13–14', 'One fix left: "Grad-CAM [36]" on p.3 should cite Selvaraju et al. [35] ([36] is the McNemar paper), and that reference must move to [29] (renumber 29–34 → 30–35) so numbering follows first appearance.'],
+  ['15', 'Others', 'Page numbers bottom-center; justify paragraphs', 'Cha', 'C', 'all', ''],
+  ['15', 'Others', 'Replace propose/proposal/proponents with "study"/"researchers"; third person', 'Cha', 'C', 'all', 'No "propose/proposal/proponents" left (was 12) and no "we/our" (was 2).'],
+  ['15', 'Others', 'Past tense for what was done; present tense for general truths and what the paper covers', 'Cha', 'C', 'all', 'Future "will" removed throughout (was 41).'],
+  ['15', 'Others', 'Follow ACM formatting (alignment, spacing); remove non-ACM components; citations in sequence', 'Cha', 'NC', 'all', 'ACM layout done; only the citation-order fix above remains.'],
+  ['15', 'Output / Project', 'Output must show the baseline result and the proposed model', 'Rho', 'NC', '', 'For the Capstone 2 output (results not part of Capstone 1).'],
 ];
 
 // Starting rows for the Expenses tab: [Item, Purpose, Qty, Unit cost, Paid by / buyer, Notes]  (category: Sample collection)
@@ -233,6 +235,7 @@ function setupTracker() {
   upgradeExpensesTab_(ss);
   upgradeLists_(ss);
   upgradeDoneByColumns_(ss);
+  applyPaperReviewOct28_(ss);
   ensureWeeklyBackup_();
 
   // summary tabs: always refreshed (they only hold formulas)
@@ -306,6 +309,45 @@ function upgradeDoneByColumns_(ss) {
   CFG.members.forEach(m => { const sh = ss.getSheetByName(m.tab); if (sh) head(sh, 3, 10, 'Done By'); });
   const rev = ss.getSheetByName('Panel Revisions'); if (rev) head(rev, 3, 9, 'Done By');
   const smp = ss.getSheetByName('DA RCPC Samples'); if (smp) head(smp, 3, 16, 'GPS (lat, lng)');
+}
+
+/**
+ * One-time update from the Oct 28 paper review, for tabs that already had data before it:
+ * panel items get their status / page / note and Done By = Fe Anne; F-12 and R-07 become Done by Fe Anne.
+ * Only fills items still marked NC with no page, so it never overwrites something the team set by hand.
+ */
+function applyPaperReviewOct28_(ss) {
+  const props = PropertiesService.getScriptProperties();
+  if (props.getProperty('PAPER_REVIEW_OCT28')) return;
+  const rev = ss.getSheetByName('Panel Revisions');
+  if (rev && rev.getLastRow() >= 4) {
+    const rows = rev.getRange(4, 1, rev.getLastRow() - 3, 9).getValues();
+    rows.forEach((r, i) => {
+      const hit = REVISIONS.find(x => x[2] === r[2] || x[2].replace(/^⚠ /, '') === String(r[2]).replace(/^⚠ /, '') || (x[0] === String(r[0]) && String(r[2]).indexOf(x[2].slice(0, 25)) === 0));
+      if (!hit || (r[4] && r[4] !== 'NC') || r[5]) return;
+      const row = i + 4;
+      rev.getRange(row, 5).setValue(hit[4]);
+      if (hit[5]) rev.getRange(row, 6).setNumberFormat('@').setValue(hit[5]);
+      if (hit[6] && !r[7]) rev.getRange(row, 8).setValue(hit[6]);
+      rev.getRange(row, 9).setValue(hit[4] === 'C' ? 'Fe Anne' : '');
+    });
+  }
+  const mark = (tab, id, status, note) => {
+    const sh = ss.getSheetByName(tab);
+    if (!sh || sh.getLastRow() < 4) return;
+    const v = sh.getRange(4, 1, sh.getLastRow() - 3, 5).getValues();
+    v.forEach((r, i) => {
+      if (r[0] !== id || r[4] === 'Done') return;
+      const row = i + 4;
+      sh.getRange(row, 5).setValue(status);
+      if (status === 'Done') { sh.getRange(row, 9).setValue(new Date()); sh.getRange(row, 10).setValue('Fe Anne'); }
+      if (note) sh.getRange(row, 8).setValue(note);
+    });
+  };
+  mark('Fe Anne', 'F-12', 'Done', 'Done in the Oct 28 paper (see Panel Revisions).');
+  mark('Rho', 'R-07', 'Done', 'Done by Fe Anne in the Oct 28 paper.');
+  mark('Cha', 'C-08', 'In Progress', 'Fe Anne did these in the Oct 28 paper. Only left: fix the Grad-CAM citation [36]→[35] and renumber so citations follow first appearance.');
+  props.setProperty('PAPER_REVIEW_OCT28', new Date().toISOString());
 }
 
 /* ---------- weekly backup: a dated copy of this spreadsheet, newest 8 kept ---------- */
@@ -406,7 +448,7 @@ function buildMemberTab_(ss, m) {
     const today = new Date();
     sh.getRange(4, 9, data.length, 1).setValues(data.map(t => [t[4] === 'Done' ? today : '']));
     // who did the already-finished ones: paper work was done by Fe Anne, the rest by the task's owner
-    sh.getRange(4, 10, data.length, 1).setValues(data.map(t => [t[4] === 'Done' ? (t[2] === 'Paper' ? 'Fe Anne' : m.tab) : '']));
+    sh.getRange(4, 10, data.length, 1).setValues(data.map(t => [t[4] === 'Done' ? (t[2] === 'Paper' || t[2] === 'Panel Revision' ? 'Fe Anne' : m.tab) : '']));
   }
 
   sh.getRange(4, 3, n, 1).setDataValidation(listRule_(ss, 3));
@@ -492,7 +534,11 @@ function buildRevisions_(ss) {
     .setBackground('#fff3e0').setFontStyle('italic').setFontColor('#424242');
   headers_(sh, 3, H, '#37474f');
   const n = REVISIONS.length;
-  sh.getRange(4, 1, n, 5).setValues(REVISIONS);
+  sh.getRange(4, 1, n, 5).setValues(REVISIONS.map(r => r.slice(0, 5)));
+  sh.getRange(4, 6, n, 1).setValues(REVISIONS.map(r => [r[5] || '']));
+  sh.getRange(4, 8, n, 1).setValues(REVISIONS.map(r => [r[6] || '']));
+  sh.getRange(4, 9, n, 1).setValues(REVISIONS.map(r => [r[4] === 'C' ? 'Fe Anne' : '']));
+  sh.getRange(4, 6, n, 1).setNumberFormat('@');
   sh.getRange(4, 5, n, 1).setDataValidation(listRule_(ss, 5));
   sh.getRange(4, 7, n, 1).insertCheckboxes();
   sh.getRange(4, 1, n, H.length).setVerticalAlignment('middle');
