@@ -26,8 +26,8 @@
 :root{
   --bg:#f7f6ef; --card:#ffffff; --ink:#1f3b33; --muted:#5f6f66; --line:#e2e5d6; --soft:#eef2e4;
   --brand:#1f4b3a; --brand-ink:#ffffff; --leaf:#588d10; --leaf-soft:#eaf2da; --banana:#588d10; --banana-soft:#eef4e0;
-  --red:#b83226; --red-soft:#fbe9e6; --amber:#9a5c00; --amber-soft:#fff1d6;
-  --ok:#3f7a12; --ok-soft:#e8f2da; --blue:#1d5fa8; --blue-soft:#e6effa;
+  --red:#b83226; --red-soft:#fbe9e6; --amber:#4a6a1a; --amber-soft:#eef3df;
+  --ok:#3f7a12; --ok-soft:#e8f2da; --blue:#2c6a57; --blue-soft:#e2efe9;
   --shadow:0 1px 2px rgba(31,59,51,.05),0 8px 24px rgba(31,59,51,.06);
   --r:14px; --hfont:"League Spartan","Hanken Grotesk",system-ui,sans-serif;
 }
@@ -35,8 +35,8 @@
   :root{
     --bg:#101612; --card:#18211b; --ink:#e4ece5; --muted:#97a69b; --line:#28342c; --soft:#1f2a22;
     --brand:#9ccf6a; --brand-ink:#10190f; --leaf:#9ccf6a; --leaf-soft:#1f2c18; --banana:#9ccf6a; --banana-soft:#1f2c18;
-    --red:#f08376; --red-soft:#381e1a; --amber:#f1b65c; --amber-soft:#33281a;
-    --ok:#9ccf6a; --ok-soft:#1d2b17; --blue:#86b8f0; --blue-soft:#1a2634; --shadow:none;
+    --red:#f08376; --red-soft:#381e1a; --amber:#c3dc8f; --amber-soft:#243020;
+    --ok:#9ccf6a; --ok-soft:#1d2b17; --blue:#8fd0b8; --blue-soft:#18302a; --shadow:none;
   }
 }
 *{box-sizing:border-box}
@@ -125,6 +125,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(
 .task{display:grid;grid-template-columns:150px minmax(0,1fr) 150px 40px;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;padding:12px 14px}
 .task.overdue{background:var(--red-soft)}
 .task.soon{background:var(--amber-soft)}
+.resume button{background:var(--card)!important;border-color:var(--line)!important;border-left:4px solid var(--leaf)!important}
 .task.done{opacity:.6}
 .task.done .t-title{text-decoration:line-through}
 .t-title{font-weight:600}
@@ -230,7 +231,7 @@ tr.filled td.id{color:var(--ok)}
 .sc{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
 .sc.sub{background:var(--ok-soft)}
 .sc-top{display:flex;gap:10px;align-items:center}
-.lbl{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;font-size:17px;background:#fffbe6;color:#3b3000;border:1px dashed #c9b458;border-radius:6px;padding:2px 8px;letter-spacing:.02em}
+.lbl{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;font-size:17px;background:var(--bg);color:var(--brand);border:1px dashed var(--leaf);border-radius:6px;padding:2px 8px;letter-spacing:.02em}
 .sc-own{font-size:12px;font-weight:700;color:var(--c)}
 .cam-btn{border:0;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer;background:var(--soft);color:var(--ink);white-space:nowrap}
 .cam-btn.ok{background:var(--ok-soft);color:var(--ok)}
@@ -245,9 +246,9 @@ tr.filled td.id{color:var(--ok)}
 .sc-sum:hover{background:var(--soft)}
 .sc-sum .ttl{font-weight:700;font-size:15px}
 .sc-sum .meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px;color:var(--muted)}
-.pill{background:var(--soft);border-radius:999px;padding:2px 9px;font-weight:600;font-size:12px;color:var(--ink)}
-.pill.ok{background:var(--ok-soft);color:var(--ok)}
-.pill.warn{background:var(--amber-soft);color:var(--amber)}
+.tagp{background:var(--soft);border-radius:999px;padding:2px 9px;font-weight:600;font-size:12px;color:var(--ink)}
+.tagp.ok{background:var(--ok-soft);color:var(--ok)}
+.tagp.warn{background:var(--amber-soft);color:var(--amber)}
 .morebtn{margin-left:auto;background:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;color:var(--ink);cursor:pointer}
 .morebtn:hover{background:var(--soft)}
 .qchip{display:inline-flex;align-items:center;gap:6px;background:var(--amber-soft);color:var(--amber);border-radius:999px;padding:4px 10px;font-weight:700;font-size:12.5px}
@@ -257,7 +258,7 @@ tr.filled td.id{color:var(--ok)}
 .cam[hidden]{display:none}
 .cam-sheet{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
 @media (min-width:700px){.cam{align-items:center}.cam-sheet{border-radius:20px}}
-.cam-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:30px;font-weight:800;background:#fffbe6;color:#3b3000;border:2px dashed #c9b458;border-radius:8px;padding:2px 12px;display:inline-block}
+.cam-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:30px;font-weight:800;background:var(--bg);color:var(--brand);border:2px dashed var(--leaf);border-radius:8px;padding:2px 12px;display:inline-block}
 .shot{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:8px}
 .shot .th{width:64px;height:64px;border-radius:10px;background:var(--soft);display:grid;place-items:center;overflow:hidden;font-size:22px;color:var(--muted)}
 .shot .th img{width:100%;height:100%;object-fit:cover}
@@ -285,7 +286,7 @@ tr.filled td.id{color:var(--ok)}
 .tile .badge{position:absolute;right:3px;bottom:3px;font-size:11px;background:rgba(0,0,0,.6);color:#fff;border-radius:6px;padding:0 4px}
 .tile.cur{border-color:var(--leaf);box-shadow:0 0 0 2px color-mix(in srgb,var(--leaf) 35%,transparent)}
 .strip-cap{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-size:10.5px;color:var(--muted);text-align:center;margin-top:4px;line-height:1.2}
-.tape{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:44px;font-weight:800;letter-spacing:.04em;background:#f6efd2;color:#2b2200;border-radius:6px;padding:8px 18px;display:inline-block;transform:rotate(-1.5deg);box-shadow:0 2px 0 #d9cc9a;margin:10px 0 6px}
+.tape{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:44px;font-weight:800;letter-spacing:.04em;background:#f4f2e8;color:#1f3b33;border:2px dashed var(--leaf);border-radius:6px;padding:8px 18px;display:inline-block;transform:rotate(-1.5deg);box-shadow:0 2px 0 var(--line);margin:10px 0 6px}
 .fsteps{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
 .fsteps li{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14.5px}
 .fsteps input[type=checkbox]{width:22px;height:22px;flex:none}
@@ -295,6 +296,17 @@ tr.filled td.id{color:var(--ok)}
 
 /* new sample / supplies / task editing */
 .newsample{font-size:16px;padding:14px 20px;border-radius:14px}
+.viewbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--leaf);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}
+.viewbar b{font-size:15px}
+.viewbar .small{color:var(--muted)}
+.resume{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.resume button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--amber-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--amber) 35%,transparent);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:600}
+.resume button .lbl{font-size:15px}
+.resume button .go{margin-left:auto;font-weight:800;color:var(--amber);white-space:nowrap}
+.ready-off{font-size:12.5px;font-weight:700;opacity:.9;margin-top:6px}
+.photo-pill{border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px;white-space:nowrap;background:var(--soft)}
+.photo-pill.ok{background:var(--ok-soft);color:var(--ok)}
+.photo-pill.part{background:var(--amber-soft);color:var(--amber)}
 .batch .newsample{background:#fff;color:var(--brand)}
 .iconbtn{border:1px solid var(--line);background:var(--card);border-radius:10px;width:36px;height:36px;cursor:pointer;font-size:15px;flex:none}
 .iconbtn.on{border-color:var(--brand);background:var(--soft)}
@@ -388,7 +400,7 @@ details.card summary::-webkit-details-marker{display:none}
 header{padding-top:env(safe-area-inset-top)}
 .hd-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .install{border:1px solid var(--brand);background:transparent;color:var(--brand);border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer}
-.offline{background:#7a4b00;color:#fff;text-align:center;font-size:12.5px;font-weight:700;padding:6px 16px}
+.offline{background:#34453c;color:#fff;text-align:center;font-size:12.5px;font-weight:700;padding:6px 16px}
 .login{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:linear-gradient(120deg,#f4f5e8 0%,#e3ebd0 100%)}
 @media (prefers-color-scheme: dark){.login{background:linear-gradient(120deg,#121a15,#1a2a1f)}}
 .login[hidden]{display:none}
@@ -495,6 +507,12 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
    ========================================================= */
 const API_URL = String(window.TRACKER_API_URL || '').trim();
 const DEMO = !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API_URL);
+// Phones and tablets can take photos; laptops/desktops only VIEW the sample collection.
+const UA = navigator.userAgent;
+const IS_PHONE = /Android|iPhone|iPad|iPod|Mobile|Silk|Kindle/i.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1) ||
+  /[?&]phone\b/.test(location.search);   // ?phone forces phone mode (for testing)
+document.documentElement.classList.add(IS_PHONE ? 'is-phone' : 'is-desktop');
+const CAM_STORE = 'bt:cam';
 const TOKEN_STORE = 'bt:token', ACCT_STORE = 'bt:acct', DATA_STORE = 'bt:data', INSTALL_SKIP = 'bt:installSkip';
 const TEAM = [
   { tab: 'Fe Anne', name: 'Fe Anne Malasarte', role: 'Team Leader', color: '#6a1b9a', prefix: 'FA' },
@@ -721,7 +739,11 @@ function load(quiet) {
     if (outbox().length) { const e = new Error('pending'); e.network = true; throw e; }
     return call('getData');
   }).then(d => {
-    S.data = d; setOffline(false);
+    // a sample started on this phone that the server hasn't confirmed yet must not disappear (e.g. the app was closed mid-save)
+    const fresh = new Set((d.samples || []).map(x => x.id));
+    const unconfirmed = ((S.data && S.data.samples) || []).filter(x => !x.row && !fresh.has(x.id));
+    unconfirmed.forEach(x => { d.samples.push(x); call('createSample', x.id).then(r => { const y = sampleById(x.id); if (y && r) { y.row = r.row; persist(); } }).catch(() => {}); });
+    S.data = d; setOffline(false); persist();
     if (!quiet || !isTyping()) render();
     renderCam();
   }).catch(e => {
@@ -815,7 +837,7 @@ function finishSignIn(r) {
   signIn(r.user);
   S.sampleFilter = null;
   toast('Hi ' + r.user + ' 👋', 1500);
-  load().then(flushPhotos);
+  load().then(() => { resumeCam(); return flushPhotos(); });
 }
 function logout() {
   if (!confirm('Log out of this device?')) return;
@@ -1177,6 +1199,7 @@ function paperNumbers() {
 }
 
 function newSample() {
+  if (!IS_PHONE || S.cam) return;          // no double labels from a double tap
   const id = nextLabel(S.user);
   S.data.samples.push({ row: 0, id, disease: '', date: localDay(), site: '', by: S.user, photos: '',
     cotton: false, bagged: false, submitted: '', validated: '', notes: '', folder: '', angles: [] });
@@ -1202,17 +1225,26 @@ function vSamples() {
       (m ? '<span class="dot"></span>' : '') + esc(label) + ' · ' + n + '</button>';
   }).join('');
   const qn = Object.keys(S.queued).length;
+  const unfinished = mine.filter(x => takenSet(x).size < MIN_ANGLES).sort((a, b) => labelNum(a.id) - labelNum(b.id));
+  const offlineReady = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
+  const top = IS_PHONE
+    ? '<div class="batch">' +
+        '<div><div class="k">Next label</div><div class="big">' + esc(next) + '</div>' +
+        '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' · ' + withPhotos + ' with photos</div>' +
+        '<div class="ready-off">' + (offlineReady ? '✓ Works without signal' : '⚠ Open once with signal before the farm') + '</div></div>' +
+        '<div class="sp"></div>' +
+        '<button class="btn newsample" data-action="newSample">＋ New sample 📷</button></div>' +
+      (unfinished.length ? '<div class="resume">' + unfinished.slice(0, 3).map(x =>
+        '<button data-action="cam" data-id="' + esc(x.id) + '"><span class="lbl">' + esc(x.id) + '</span><span>' + takenSet(x).size + ' of ' + MIN_ANGLES + ' photos</span><span class="go">Finish →</span></button>').join('') + '</div>' : '')
+    : '<div class="viewbar"><div><b>👀 Viewing only</b><div class="small">Add samples and take photos with the app on your phone.</div></div><div class="sp"></div>' +
+        (d.photoFolderUrl ? '<a class="btn ghost" href="' + esc(d.photoFolderUrl) + '" target="_blank" rel="noopener">📁 All photos ↗</a>' : '') + '</div>';
 
-  return '<div class="batch">' +
-      '<div><div class="k">Next label</div><div class="big">' + esc(next) + '</div>' +
-      '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' · ' + withPhotos + ' with photos</div></div>' +
-      '<div class="sp"></div>' +
-      '<button class="btn newsample" data-action="newSample">＋ New sample 📷</button></div>' +
+  return top +
     '<div class="row filters"><div class="chips">' + chips + '</div><div class="sp"></div>' +
       (qn ? '<span class="qchip">⏳ ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') + '</div>' +
     paperCard() +
     '<div class="scards">' + (rows.map(sampleCard).join('') ||
-      '<div class="empty" style="grid-column:1/-1">No samples yet. At the farm, tap <b>＋ New sample</b> for each leaf.</div>') + '</div>';
+      '<div class="empty" style="grid-column:1/-1">' + (IS_PHONE ? 'No samples yet. At the farm, tap <b>＋ New sample</b> for each leaf.' : 'No samples yet. They appear here as the team adds them on their phones.') + '</div>') + '</div>';
 }
 
 function paperCard() {
@@ -1236,20 +1268,24 @@ function sampleCard(x) {
   const sel = (v, field) => '<select data-change="sample" ' + at + ' data-field="' + field + '"><option value=""></option>' +
     cls.map(c => '<option' + (c === v ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select>';
   const match = x.validated ? (x.validated === x.disease ? '<span class="match y">✓ RCPC agrees</span>' : '<span class="match n">✗ RCPC says ' + esc(x.validated) + '</span>') : '';
-  const key = 'smp_' + x.id, open = !!S.open[key];
+  const key = 'smp_' + x.id, open = IS_PHONE && !!S.open[key];
   const pills = [
-    x.disease ? '<span class="pill">' + esc(x.disease) + '</span>' : '<span class="pill warn">No disease yet</span>',
-    x.bagged ? '<span class="pill ok">✓ Bagged</span>' : '',
-    x.submitted ? '<span class="pill ok">Sent ' + esc(fmt(x.submitted).replace(/^\w+, /, '')) + '</span>' : '',
+    x.disease ? '<span class="tagp">' + esc(x.disease) + '</span>' : '<span class="tagp warn">No disease yet</span>',
+    x.bagged ? '<span class="tagp ok">✓ Bagged</span>' : '',
+    x.submitted ? '<span class="tagp ok">Sent ' + esc(fmt(x.submitted).replace(/^\w+, /, '')) + '</span>' : '',
     match].join('');
-  const toggle = '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
+  const toggle = !IS_PHONE ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
+  const photoBtn = IS_PHONE
+    ? '<button class="cam-btn ' + camCls + '" data-action="cam" ' + at + '>📷 ' + (n + q) + '/5' + (n >= MIN_ANGLES ? ' ✓' : '') + '</button>'
+    : '<span class="photo-pill ' + (n >= MIN_ANGLES ? 'ok' : n ? 'part' : '') + '">' + n + ' photo' + (n === 1 ? '' : 's') + (n >= MIN_ANGLES ? ' ✓' : '') + '</span>';
   return '<div class="sc' + (x.submitted ? ' sub' : '') + '" style="--c:' + m.color + '">' +
     '<div class="sc-top"><span class="lbl">' + esc(x.id) + '</span><span class="sc-own">' + esc(owner) + '</span><span class="sp"></span>' +
-      (q ? '<span class="qchip">⏳ ' + q + '</span>' : '') +
-      '<button class="cam-btn ' + camCls + '" data-action="cam" ' + at + '>📷 ' + (n + q) + '/5' + (n >= MIN_ANGLES ? ' ✓' : '') + '</button></div>' +
-    (open ? '' : '<div class="sc-sum" data-action="toggleCard" data-v="' + esc(key) + '"><div class="meta">' + pills + '</div>' +
+      (q ? '<span class="qchip">⏳ ' + q + '</span>' : '') + photoBtn + '</div>' +
+    (open ? '' : '<div class="sc-sum"' + (IS_PHONE ? ' data-action="toggleCard" data-v="' + esc(key) + '"' : ' style="cursor:default"') + '><div class="meta">' + pills + '</div>' +
       '<div class="meta">' + esc(x.site || 'No site') + ' · ' + esc(x.date ? fmt(x.date).replace(/^\w+, /, '') : '—') + '</div></div>' +
-      '<div class="sc-foot">' + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">Photos ↗</a>' : '') + toggle + '</div></div>') +
+      (x.notes && !IS_PHONE ? '<div class="meta">' + esc(x.notes) + '</div>' : '') +
+      '<div class="sc-foot">' + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">' + (IS_PHONE ? 'Photos ↗' : '🖼 View photos ↗') + '</a>' : '') +
+      (!IS_PHONE && gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">📍 Location</a>' : '') + toggle + '</div></div>') +
     (!open ? '' : '<div class="sc-grid">' +
       '<label>Suspected disease' + sel(x.disease, 'disease') + '</label>' +
       '<label>Collected<input type="date" value="' + esc(x.date) + '" data-change="sample" ' + at + ' data-field="date"></label>' +
@@ -1269,11 +1305,37 @@ function sampleCard(x) {
 
 /* ---------- camera (inside DA RCPC Samples): guided 3 required + 2 optional, then label reminder ---------- */
 function openCam(id, stage) {
+  if (!IS_PHONE) { toast('Take photos with the app on your phone.', 2500); return; }
   S.cam = { id: id, stage: stage || 'shoot', more: false };
+  saveCamState();
   document.getElementById('cam').hidden = false;
   renderCam();
+  keepAwake(true);
 }
-function closeCam() { S.cam = null; document.getElementById('cam').hidden = true; render(); }
+function closeCam() { S.cam = null; store.del(CAM_STORE); keepAwake(false); document.getElementById('cam').hidden = true; render(); }
+// Remember where we are, so if Android closes the app while the camera is open we come straight back to this sample.
+function saveCamState(waitingForShot) {
+  if (!S.cam) return;
+  let prev = {}; try { prev = JSON.parse(store.get(CAM_STORE) || '{}') || {}; } catch (e) {}
+  const waiting = waitingForShot === undefined ? !!prev.waiting && prev.id === S.cam.id : !!waitingForShot;
+  store.set(CAM_STORE, JSON.stringify({ id: S.cam.id, stage: S.cam.stage, angle: S.cam.angle || 0, waiting: waiting, at: Date.now() }));
+}
+function resumeCam() {
+  let c = null; try { c = JSON.parse(store.get(CAM_STORE) || 'null'); } catch (e) {}
+  if (!c || !IS_PHONE || !S.data || S.cam) return;
+  if (Date.now() - c.at > 6 * 3600 * 1000 || !sampleById(c.id)) { store.del(CAM_STORE); return; }
+  S.view = 'samples'; render();
+  openCam(c.id, c.stage);
+  if (c.waiting) toast('Welcome back to ' + c.id + '. The last photo didn\'t come through. Please take it again.', 5000, true);
+}
+let wakeLock = null;
+function keepAwake(on) {          // screen stays on while collecting
+  try {
+    if (on && 'wakeLock' in navigator && !wakeLock) navigator.wakeLock.request('screen').then(l => { wakeLock = l; l.addEventListener('release', () => { wakeLock = null; }); }).catch(() => {});
+    if (!on && wakeLock) { wakeLock.release(); wakeLock = null; }
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.cam) keepAwake(true); });
 function busyAngles(id) {
   return Object.keys(S.uploading).concat(Object.keys(S.waiting), Object.keys(S.queued), Object.keys(S.preparing))
     .filter(k => k.lastIndexOf(id + '_', 0) === 0).map(k => +k.slice(id.length + 1));
@@ -1357,6 +1419,7 @@ function camFinishHtml(x) {
 function takeShot(angle) {
   if (!S.cam || !angle) return;
   S.cam.angle = angle;
+  saveCamState(true);
   const inp = document.getElementById('camInput');
   inp.value = '';
   inp.click();
@@ -1418,7 +1481,7 @@ const PhotoQ = (() => {
     t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error);
   }));
   return {
-    put: (k, v) => run('readwrite', st => st.put(v, k)).catch(() => {}),
+    put: (k, v) => run('readwrite', st => st.put(v, k)),      // errors bubble up: a photo must never vanish silently
     del: k => run('readwrite', st => st.delete(k)).catch(() => {}),
     all: () => run('readonly', st => st.getAll()).catch(() => []),
   };
@@ -1477,16 +1540,27 @@ async function flushPhotos() {
 }
 
 async function acceptShot(job, thumb) {
+  try {
+    await PhotoQ.put(job.id + '_' + job.angle, job);  // kept on the phone until Drive confirms
+  } catch (e) {
+    if (!navigator.onLine) {                          // can't keep it and can't send it: say so loudly
+      toast('⚠ Phone storage is full. ' + fname(job.id, job.angle) + ' was NOT saved. Free up space, then retake it.', 7000, true);
+      renderCam(); return;
+    }
+    toast('Phone storage is full. Uploading ' + fname(job.id, job.angle) + ' now, so keep the app open.', 4000, true);
+  }
   S.thumbs[job.id + '_' + job.angle] = thumb;
-  await PhotoQ.put(job.id + '_' + job.angle, job);  // kept on the phone until Drive confirms
+  if (navigator.vibrate) navigator.vibrate(40);       // little buzz = photo kept
   queueUpload(job);
   if (S.cam && job.angle > MIN_ANGLES) S.cam.more = false;
+  saveCamState(false);
   renderCam();
 }
 document.getElementById('camInput').addEventListener('change', async e => {
   const file = e.target.files && e.target.files[0];
-  if (!file || !S.cam) return;
+  if (!file || !S.cam) { saveCamState(false); return; }
   const id = S.cam.id, angle = S.cam.angle, key = id + '_' + angle;
+  saveCamState(false);
   S.preparing[key] = true; renderCam();          // the next tap moves on to the next angle right away
   try {
     const p = await shrinkPhoto(file);
@@ -1517,8 +1591,8 @@ function vSupplies() {
     const at = 'data-change="supply" data-row="' + s.row + '"' + dis;
     const rk = receiptKey(s.row), rq = S.queued[rk], rup = S.uploading[rk] || S.waiting[rk] || S.preparing[rk];
     const receiptBtn = s.tempId || (!s.bought && !s.receipt && !rq && !rup) ? '' : rup ? '<span class="qchip">' + SPIN + 'Uploading receipt</span>' : rq ? '<span class="qchip">📴 receipt saved on phone</span>' :
-      s.receipt ? '<a class="rcpt" href="' + esc(s.receipt) + '" target="_blank" rel="noopener">🧾 Receipt</a><button class="iconbtn" data-action="receipt" data-row="' + s.row + '" title="Retake receipt" aria-label="Retake receipt photo">📷</button>' :
-      '<button class="cam-btn none" data-action="receipt" data-row="' + s.row + '">📷 Receipt</button>';
+      s.receipt ? '<a class="rcpt" href="' + esc(s.receipt) + '" target="_blank" rel="noopener">🧾 Receipt</a><button class="iconbtn" data-action="receipt" data-row="' + s.row + '" title="Replace receipt" aria-label="Replace receipt">' + (IS_PHONE ? '📷' : '⬆') + '</button>' :
+      '<button class="cam-btn none" data-action="receipt" data-row="' + s.row + '">' + (IS_PHONE ? '📷 Receipt' : '⬆ Upload receipt') + '</button>';
     const key = 'exp_' + s.row, open = !!S.open[key] || !s.item;
     const toggle = s.tempId ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
     const sumMeta = [s.category, (s.qty || 1) + ' × ' + (s.cost !== '' && s.cost != null ? peso(+s.cost) : 'no price'), s.assigned ? 'by ' + s.assigned : 'Nobody yet', s.date ? fmt(s.date).replace(/^\w+, /, '') : ''].filter(Boolean).map(esc).join(' · ');
@@ -1644,7 +1718,7 @@ document.addEventListener('click', e => {
   else if (a === 'cam') { openCam(el.dataset.id); }
   else if (a === 'camClose') {
     const x = sampleById(S.cam.id), n = takenSet(x).size;
-    if (n >= MIN_ANGLES) { S.cam.stage = 'finish'; renderCam(); }   // never skip the labeling reminder
+    if (n >= MIN_ANGLES) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }   // never skip the labeling reminder
     else if (confirm('Only ' + n + ' of ' + MIN_ANGLES + ' required photos for ' + x.id + '. Close anyway?\nYou can finish later: tap 📷 on ' + x.id + '.')) closeCam();
   }
   else if (a === 'camShot') { takeShot(+v); }
@@ -1687,7 +1761,7 @@ document.addEventListener('click', e => {
       items.forEach(t => { const x = member(t.tab).tasks.find(y => y.row === t.row); if (x) x.due = date; });
     }).then(() => toast('Moved ' + items.length + ' task(s) to ' + fmt(date), 2200));
   }
-  else if (a === 'camFinish') { S.cam.stage = 'finish'; renderCam(); }
+  else if (a === 'camFinish') { S.cam.stage = 'finish'; saveCamState(); renderCam(); }
   else if (a === 'camDone') { closeCam(); }
   else if (a === 'camNextSample') { closeCam(); newSample(); }
   else if (a === 'camDisease' || a === 'camSite') {
@@ -1830,7 +1904,7 @@ function startApp() {
   const c = cached(); if (c) S.data = c.d;
   if (!store.get(TOKEN_STORE) || !acct || !TEAM.some(m => m.tab === acct.user)) { lock(); return; }
   signIn(acct.user);                 // stays signed in on this device, online or offline
-  load().then(flushPhotos);
+  load().then(() => { resumeCam(); return flushPhotos(); });
 }
 if (!isStandalone && !store.get(INSTALL_SKIP)) {
   document.getElementById('install').hidden = false;      // first: offer the app
