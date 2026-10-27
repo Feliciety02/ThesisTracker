@@ -1,7 +1,7 @@
 {
   "name": "Banana Thesis Tracker",
   "short_name": "Thesis Tracker",
-  "description": "Task tracker for the Banana Leaf Disease Classification thesis team",
+  "description": "Tasks, DA RCPC samples, photos and expenses for the banana leaf disease thesis team",
   "id": "./",
   "start_url": "./",
   "scope": "./",

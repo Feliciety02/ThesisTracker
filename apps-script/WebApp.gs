@@ -47,7 +47,7 @@ function doPost(e) {
       getData: getData, updateTask: updateTask, addTask: addTask, updateRevision: updateRevision,
       updateSample: updateSample, updateSupply: updateSupply, setRcpcDate: setRcpcDate,
       uploadPhoto: uploadPhoto, createSample: createSample,
-      deleteTask: deleteTask, addSupply: addSupply, deleteSupply: deleteSupply,
+      deleteTask: deleteTask, addSupply: addSupply, deleteSupply: deleteSupply, uploadReceipt: uploadReceipt,
     };
     const fn = actions[req.fn];
     if (!fn) throw new Error('Unknown action: ' + req.fn);
@@ -104,11 +104,12 @@ function describe_(fn, a) {
     const r = ss.getSheetByName(a[0]).getRange(Number(a[1]), 1, 1, 2).getValues()[0];
     return 'deleted task ' + r[0] + ' "' + short_(r[1], 50) + '"';
   }
-  if (fn === 'addSupply') return 'added supply "' + short_(a[0] && a[0].item, 40) + '"';
-  if (fn === 'deleteSupply') return 'deleted supply "' + short_(ss.getSheetByName('Supplies').getRange(Number(a[0]), 1).getValue(), 40) + '"';
+  if (fn === 'addSupply') return 'added expense "' + short_(a[0] && a[0].item, 40) + '"';
+  if (fn === 'uploadReceipt') return 'attached a receipt to "' + short_(ss.getSheetByName('Expenses').getRange(Number(a[0]), 1).getValue(), 40) + '"';
+  if (fn === 'deleteSupply') return 'deleted expense "' + short_(ss.getSheetByName('Expenses').getRange(Number(a[0]), 1).getValue(), 40) + '"';
   if (fn === 'updateSupply') {
-    const item = ss.getSheetByName('Supplies').getRange(Number(a[0]), 1).getValue();
-    return 'supply "' + short_(item, 40) + '": ' + a[1] + ' → ' + show(a[2]);
+    const item = ss.getSheetByName('Expenses').getRange(Number(a[0]), 1).getValue();
+    return 'expense "' + short_(item, 40) + '": ' + a[1] + ' → ' + show(a[2]);
   }
   if (fn === 'uploadPhoto') {
     const id = a[0];
@@ -224,13 +225,16 @@ function getData() {
   }
 
   const supplies = [];
-  const sup = ss.getSheetByName('Supplies');
+  const sup = ss.getSheetByName('Expenses');
   if (sup) {
     const total = suppliesTotalRow_(sup);
     if (total > 3) {
-      sup.getRange(3, 1, total - 3, 8).getValues().forEach((r, i) => {
+      const srng = sup.getRange(3, 1, total - 3, 11), sfm = srng.getFormulas();
+      srng.getValues().forEach((r, i) => {
         if (!r[0]) return;
+        const rc = parseLink_(sfm[i][10], r[10]);
         supplies.push({
+          category: String(r[8] || ''), date: fmtDate_(r[9], tz), receipt: rc ? rc.url : '',
           row: i + 3, item: String(r[0] || ''), purpose: String(r[1] || ''), qty: r[2] === '' ? '' : Number(r[2]),
           cost: r[3] === '' ? '' : Number(r[3]), assigned: String(r[5] || ''), bought: r[6] === true, notes: String(r[7] || ''),
         });
@@ -251,9 +255,11 @@ function getData() {
     rcpcDate: dash ? fmtDate_(dash.getRange('E4').getValue(), tz) : '',
     members, revisions, samples, supplies,
     activity: readActivity_(tz),
+    photoFolderUrl: folderUrl_('PHOTO_FOLDER_ID_V2'),
+    receiptFolderUrl: folderUrl_('RECEIPT_FOLDER_ID'),
     photoAngles: CFG.photoAngles,
     links: Object.keys(LINKS).map(k => LINKS[k]),
-    lists: { statuses: CFG.statuses, priorities: CFG.priorities, categories: CFG.categories, classes, revStatuses: CFG.revStatuses },
+    lists: { expenseCategories: CFG.expenseCategories, statuses: CFG.statuses, priorities: CFG.priorities, categories: CFG.categories, classes, revStatuses: CFG.revStatuses },
     panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde', 'Mr. Hernando', 'Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
   };
 }
@@ -363,12 +369,12 @@ function updateSample(id, field, value) {
 
 function updateSupply(row, field, value) {
   return withLock_(() => {
-    const sh = sheet_('Supplies');
+    const sh = sheet_('Expenses');
     row = Number(row);
     if (row < 3 || row >= suppliesTotalRow_(sh)) throw new Error('Bad row');
-    const col = { item: 1, purpose: 2, qty: 3, cost: 4, assigned: 6, bought: 7, notes: 8 }[field];
+    const col = { item: 1, purpose: 2, qty: 3, cost: 4, assigned: 6, bought: 7, notes: 8, category: 9, date: 10 }[field];
     if (!col) throw new Error('Field not editable: ' + field);
-    sh.getRange(row, col).setValue(value);
+    sh.getRange(row, col).setValue(field === 'date' ? parseDate_(value) : value);
     return true;
   });
 }
@@ -376,7 +382,7 @@ function updateSupply(row, field, value) {
 function addSupply(x) {
   if (!x || !String(x.item || '').trim()) throw new Error('Item name is required');
   return withLock_(() => {
-    const sh = sheet_('Supplies');
+    const sh = sheet_('Expenses');
     let total = suppliesTotalRow_(sh), row = -1;
     const vals = sh.getRange(3, 1, Math.max(1, total - 3), 1).getValues();
     for (let i = 0; i < vals.length; i++) if (!vals[i][0]) { row = i + 3; break; }
@@ -391,21 +397,26 @@ function addSupply(x) {
     const cost = x.cost === '' || x.cost == null ? '' : Number(x.cost);
     sh.getRange(row, 1, 1, 4).setValues([[String(x.item).trim(), x.purpose || '', qty, cost]]);
     sh.getRange(row, 6).setValue(x.assigned || '');
-    sh.getRange(row, 7).setValue(false);
+    sh.getRange(row, 7).setValue(x.bought === true);
     sh.getRange(row, 8).setValue(x.notes || '');
-    return { row: row, item: String(x.item).trim(), purpose: x.purpose || '', qty: qty, cost: cost, assigned: x.assigned || '', bought: false, notes: x.notes || '' };
+    sh.getRange(row, 9).setValue(x.category || 'Other');
+    sh.getRange(row, 10).setValue(x.date ? parseDate_(x.date) : new Date()).setNumberFormat('mmm d, yyyy');
+    const tz = SpreadsheetApp.getActive().getSpreadsheetTimeZone();
+    return { row: row, item: String(x.item).trim(), purpose: x.purpose || '', qty: qty, cost: cost, assigned: x.assigned || '', bought: x.bought === true,
+             notes: x.notes || '', category: x.category || 'Other', date: fmtDate_(sh.getRange(row, 10).getValue(), tz), receipt: '' };
   });
 }
 
 function deleteSupply(row) {
   return withLock_(() => {
-    const sh = sheet_('Supplies');
+    const sh = sheet_('Expenses');
     row = Number(row);
     if (row < 3 || row >= suppliesTotalRow_(sh)) throw new Error('Bad row');
     sh.getRange(row, 1, 1, 4).clearContent();       // keeps the subtotal formula + checkbox for reuse
     sh.getRange(row, 6).clearContent();
     sh.getRange(row, 7).setValue(false);
     sh.getRange(row, 8).clearContent();
+    sh.getRange(row, 9, 1, 3).clearContent();
     return true;
   });
 }
@@ -485,4 +496,43 @@ function setupPhotoFolder() {
     'Photos from the app are saved here:\nCurated Banana Leaf Disease Dataset / ' + PHOTO_SUBFOLDER + '\n' + f.getUrl() +
     '\n\nNow make a New version of the web app deployment (Deploy → Manage deployments → ✏️ → New version) so the app can save photos.',
     ui.ButtonSet.OK);
+}
+
+function folderUrl_(prop) {
+  const id = PropertiesService.getScriptProperties().getProperty(prop);
+  return id ? 'https://drive.google.com/drive/folders/' + id : '';
+}
+
+/* ---------- expense receipts (Google Drive) ---------- */
+// Receipts stay OUT of the dataset folder: "Banana Thesis – Receipts" in the script owner's Drive, shared with the team.
+function receiptFolder_() {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('RECEIPT_FOLDER_ID');
+  if (id) { try { const f = DriveApp.getFolderById(id); if (!f.isTrashed()) return f; } catch (e) {} }
+  const f = DriveApp.createFolder('Banana Thesis – Receipts');
+  props.setProperty('RECEIPT_FOLDER_ID', f.getId());
+  const me = Session.getEffectiveUser().getEmail();
+  CFG.members.forEach(m => { if (m.email && m.email !== me) { try { f.addEditor(m.email); } catch (e) {} } });
+  return f;
+}
+
+/** Saves a receipt photo for an expense row and links it in the Receipt column. Retaking replaces it. */
+function uploadReceipt(row, b64) {
+  row = Number(row);
+  if (!b64 || String(b64).length < 100) throw new Error('Empty photo');
+  const sh = sheet_('Expenses');
+  if (row < 3 || row >= suppliesTotalRow_(sh)) throw new Error('Bad row');
+  const v = sh.getRange(row, 1, 1, 10).getValues()[0];
+  if (!v[0]) throw new Error('That expense no longer exists');
+  const tz = SpreadsheetApp.getActive().getSpreadsheetTimeZone();
+  const day = Utilities.formatDate(v[9] instanceof Date ? v[9] : new Date(), tz, 'yyyy-MM-dd');
+  const name = 'Receipt_row' + row + '_' + day + '_' + String(v[0]).replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').slice(0, 40) + (v[5] ? '_' + v[5] : '') + '.jpg';
+  const folder = receiptFolder_();
+  const old = folder.getFiles();
+  while (old.hasNext()) { const f = old.next(); if (f.getName().indexOf('Receipt_row' + row + '_') === 0) f.setTrashed(true); }
+  const file = folder.createFile(Utilities.newBlob(Utilities.base64Decode(String(b64).replace(/^data:image\/\w+;base64,/, '')), 'image/jpeg', name));
+  return withLock_(() => {
+    sh.getRange(row, 11).setFormula('=HYPERLINK("' + file.getUrl() + '","Receipt ↗")');
+    return { receipt: file.getUrl() };
+  });
 }

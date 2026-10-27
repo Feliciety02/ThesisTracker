@@ -1,10 +1,10 @@
 // Service worker: lets the app install and open offline.
 // Bump VERSION whenever you change index.html so phones pick up the update.
-const VERSION = 'bt-v6';
+const VERSION = 'bt-v7';
 const SHELL = [
   './', './index.html', './config.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png',
-  './icons/apple-touch-icon.png', './icons/favicon.svg',
+  './icons/apple-touch-icon.png', './icons/favicon.svg', './icons/icon-48.png', './icons/logo.svg',
 ];
 
 self.addEventListener('install', e => {

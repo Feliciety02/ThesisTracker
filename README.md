@@ -1,4 +1,6 @@
-# 🍌 Banana Thesis Tracker
+<p align="center"><img src="icons/logo.svg" width="120" alt="Banana Thesis Tracker logo"></p>
+
+# Banana Thesis Tracker
 
 Installable task tracker app for the thesis
 **"An Enhanced EfficientNetB0 Architecture for Mobile Banana Leaf Disease Classification"**
@@ -20,7 +22,7 @@ Installable task tracker app for the thesis
    - Execute as: **Me**
    - Who has access: **Anyone**
 3. Copy the **Web app URL**. It ends in `/exec`.
-4. In Apps Script, run **setupTracker** (or, in the sheet, **🍌 Thesis Tracker → 🛠 Repair / update tracker**). It is safe to run any time: tabs that already have data — tasks, panel items, DA RCPC samples, supplies — are kept untouched; only missing or empty tabs are built.
+4. In Apps Script, run **setupTracker** (or, in the sheet, **🍌 Thesis Tracker → 🛠 Repair / update tracker**). It is safe to run any time: tabs that already have data — tasks, panel items, DA RCPC samples, expenses — are kept untouched; only missing or empty tabs are built.
 5. Back in the sheet, run **🍌 Thesis Tracker → 📷 Connect photo folder** once. This connects the Curated Banana Leaf Disease Dataset folder (photos go into its **DA RCPC Sample Photos** subfolder) and grants Drive permission. If you deployed before this step, make a **New version** of the deployment.
 
 ### 2. GitHub Pages
@@ -52,8 +54,13 @@ The first time, each member taps their name. The app remembers them on that devi
 - **Back in signal:** open the app. It syncs everything by itself, in order: changes first, then photos. The ⏳ counter disappears when it's done.
 - Don't uninstall the app or clear the browser's data while ⏳ is showing, or the waiting photos are lost.
 
+## Expenses and receipts
+- The **Expenses** page is for anything the thesis costs: sample supplies, printing, transport, food, fees. Anyone can add what they bought, mark who paid, and edit or delete any entry.
+- Tap **📷 Receipt** on an expense to photograph the receipt. It's saved to the Drive folder **Banana Thesis – Receipts** (shared with the team, kept out of the dataset folder) and linked in the sheet. Works offline too.
+- The page shows the total spent, what's still to buy, and how much each person has paid.
+
 ## Everyone is an admin
-All three members can add, edit and delete tasks (✏️ on a task) and supplies (＋ Add, edit any field, 🗑 delete), and edit any sample. Every change is logged with who made it on the sheet's **Activity** tab.
+All three members can add, edit and delete tasks (✏️ on a task) and expenses (＋ Add, edit any field, 🗑 delete), and edit any sample. Every change is logged with who made it on the sheet's **Activity** tab.
 
 ## Updating
 - **Changed `index.html`?** Bump `VERSION` in `sw.js` (for example `bt-v2`) so installed apps pick up the change.

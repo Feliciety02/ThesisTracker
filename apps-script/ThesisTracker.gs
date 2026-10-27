@@ -13,7 +13,7 @@
  *
  *  WHAT IT BUILDS
  *  Dashboard · Fe Anne · Rho · Cha · All Open Tasks · Panel Revisions
- *  DA RCPC Samples · Supplies · Links · Lists (hidden)
+ *  DA RCPC Samples · Expenses · Links · Lists (hidden) · Activity
  *
  *  Each member edits their OWN tab. The Dashboard and "All Open Tasks"
  *  update automatically. Marking a task "Done" stamps the completion date.
@@ -21,7 +21,7 @@
  */
 
 const CFG = {
-  title: '🍌 Banana Leaf Disease Thesis Tracker',
+  title: '🍌 Banana Thesis Tracker',
   thesisTitle: 'An Enhanced EfficientNetB0 Architecture for Mobile Banana Leaf Disease Classification',
   timezone: 'Asia/Manila',
   maxRows: 200,
@@ -37,6 +37,7 @@ const CFG = {
   categories: ['DA RCPC', 'Dataset', 'Model', 'Paper', 'Letters', 'Panel Revision', 'Admin'],
     classes:    ['Cordana Leaf Spot', 'Black Sigatoka', 'Healthy', 'Unsure'],  // the study's 3 classes (Section 1.3 of the paper)
   revStatuses: ['C', 'NC', 'NA'],
+  expenseCategories: ['Sample collection', 'Printing', 'Transport', 'Food', 'Materials', 'Fees', 'Other'],
 };
 
 const DOC = 'https://docs.google.com/document/d/1du8tYoex9vLWZCVAy1BsPHyzAsmjxJSJKiu2rBhTa40/edit';
@@ -63,7 +64,7 @@ const TASKS = {
     ['F-06', 'Request datasets from DA (follow up through DA RCPC)', 'DA RCPC', 'Medium', 'Waiting', '', '', 'Main office redirected us to RCPC.'],
     ['F-07', 'Sort the Curated Banana Leaf Disease Dataset folder (with Cha)', 'Dataset', 'High', 'Not Started', OCT2, 'curatedFolder', 'Shared with Cha (C-04).'],
     ['F-08', 'Contact DA RCPC Davao: confirm submission day, office hours, and samples needed per class', 'DA RCPC', 'High', 'Not Started', '', '', 'Put the agreed date on the Dashboard (yellow cell).'],
-    ['F-09', 'Buy supplies: cotton, plastic bags, markers, masking tape', 'DA RCPC', 'High', 'Not Started', '', '', 'See Supplies tab.'],
+    ['F-09', 'Buy supplies: cotton, plastic bags, markers, masking tape', 'DA RCPC', 'High', 'Not Started', '', '', 'See Expenses tab.'],
     ['F-10', 'Lead field collection of fresh banana leaf samples (whole team)', 'DA RCPC', 'High', 'Not Started', '', '', 'Collect close to submission day so leaves stay fresh.'],
     ['F-11', 'Submit fresh, labeled samples to DA RCPC Davao', 'DA RCPC', 'High', 'Not Started', '', '', 'Bring the printed Sample Log.'],
     ['F-13', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels FA-001, FA-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
@@ -140,7 +141,7 @@ const REVISIONS = [
   ['15', 'Output / Project', 'Output must show the baseline result and the proposed model', 'Rho', 'NC'],
 ];
 
-// [Item, Purpose, Qty, Unit cost, Assigned, Notes]
+// Starting rows for the Expenses tab: [Item, Purpose, Qty, Unit cost, Paid by / buyer, Notes]  (category: Sample collection)
 const SUPPLIES = [
   ['Cotton', 'Wrap cut leaf ends (slightly damp) to keep samples fresh', 1, '', 'Fe Anne', 'Required by DA RCPC'],
   ['Plastic bags (resealable)', 'One bag per sample', 1, '', 'Fe Anne', 'Required by DA RCPC'],
@@ -200,6 +201,9 @@ function setupTracker() {
   // leftovers from older versions / interrupted runs
   ss.getSheets().forEach(s => { if (/^__temp__/.test(s.getName()) && ss.getSheets().length > 1) ss.deleteSheet(s); });
 
+  // older versions called the Expenses tab "Supplies": rename it (data stays) and add the new columns
+  if (ss.getSheetByName('Supplies') && !ss.getSheetByName('Expenses')) ss.getSheetByName('Supplies').setName('Expenses');
+
   const built = [], kept = [];
   const rcpcDate = (() => { const d = ss.getSheetByName('Dashboard'); return d ? d.getRange('E4').getValue() : ''; })();
 
@@ -209,7 +213,7 @@ function setupTracker() {
     ...CFG.members.map(m => [m.tab, s => buildMemberTab_(s, m), sh => hasData_(sh, 4, [2])]),
     ['Panel Revisions', buildRevisions_, sh => hasData_(sh, 4, [3])],
     ['DA RCPC Samples', buildSamples_, sh => hasData_(sh, 4, [2, 3, 4, 6, 10, 11, 13])],
-    ['Supplies', buildSupplies_, sh => hasData_(sh, 3, [1])],
+    ['Expenses', buildExpenses_, sh => hasData_(sh, 3, [1])],
   ];
   dataTabs.forEach(([name, build, hasData]) => {
     const sh = ss.getSheetByName(name);
@@ -218,6 +222,8 @@ function setupTracker() {
     built.push(name);
   });
   upgradeSamplesTab_(ss);
+  upgradeExpensesTab_(ss);
+  upgradeLists_(ss);
 
   // summary tabs: always refreshed (they only hold formulas)
   [['Links', buildLinks_], ['All Open Tasks', buildOpenTasks_], ['Dashboard', buildDashboard_]].forEach(([name, build]) => replaceTab_(ss, name, build));
@@ -226,7 +232,7 @@ function setupTracker() {
   // tidy: an untouched blank "Sheet1" can go
   ['Sheet1', 'Sheet 1'].forEach(n => { const s = ss.getSheetByName(n); if (s && s.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(s); });
 
-  const order = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'DA RCPC Samples', 'Supplies', 'Links'];
+  const order = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'DA RCPC Samples', 'Expenses', 'Links'];
   order.forEach((name, i) => { const s = ss.getSheetByName(name); if (s) { ss.setActiveSheet(s); ss.moveActiveSheet(i + 1); } });
   ss.setActiveSheet(ss.getSheetByName('Dashboard'));
   ss.getSheetByName('Lists').hideSheet();
@@ -259,6 +265,31 @@ function replaceTab_(ss, name, build) {
   if (old) ss.deleteSheet(old);
 }
 
+/** Expenses tab from an older version: add Category / Date / Receipt columns, never touching rows */
+function upgradeExpensesTab_(ss) {
+  const sh = ss.getSheetByName('Expenses');
+  if (!sh) return;
+  const want = { 6: 'Paid By / Buyer', 7: 'Paid?', 9: 'Category', 10: 'Date', 11: 'Receipt' };
+  Object.keys(want).forEach(c => { const cell = sh.getRange(2, +c); if (+c >= 9 ? !cell.getValue() : cell.getValue() !== want[c]) cell.setValue(want[c]); });
+  sh.getRange(2, 1, 1, 11).setBackground('#37474f').setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center').setWrap(true);
+  const total = (() => { const v = sh.getRange(3, 4, Math.max(1, sh.getLastRow() - 2), 1).getValues(); for (let i = 0; i < v.length; i++) if (v[i][0] === 'TOTAL') return i + 3; return sh.getLastRow() + 1; })();
+  const n = Math.max(1, total - 3);
+  sh.getRange(3, 9, n, 1).setDataValidation(listRule_(ss, 7));
+  sh.getRange(3, 10, n, 1).setNumberFormat('mmm d, yyyy');
+  sh.getRange(1, 1, 1, 11).breakApart().merge().setValue('  Thesis Expenses · anyone can add what they bought or paid for');
+  [190, 260, 60, 110, 110, 120, 70, 180, 140, 110, 130].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  sh.setConditionalFormatRules([rule_('=$G3=TRUE', sh.getRange(3, 1, n, 11), '#e8f5e9', null)]);
+}
+
+/** Lists tab from an older version: add the expense categories column */
+function upgradeLists_(ss) {
+  const sh = ss.getSheetByName('Lists');
+  if (!sh || sh.getRange(1, 7).getValue()) return;
+  const col = ['Expense Category', ...CFG.expenseCategories];
+  sh.getRange(1, 7, col.length, 1).setValues(col.map(v => [v]));
+  sh.getRange(1, 7).setFontWeight('bold');
+}
+
 /** older Samples tabs: add the photo columns the app needs, without touching any rows */
 function upgradeSamplesTab_(ss) {
   const sh = ss.getSheetByName('DA RCPC Samples');
@@ -278,6 +309,7 @@ function buildLists_(ss) {
     ['Disease Class', ...CFG.classes],
     ['Revision Status', ...CFG.revStatuses],
     ['Owner', ...CFG.members.map(m => m.tab), 'Team'],
+    ['Expense Category', ...CFG.expenseCategories],
   ];
   cols.forEach((col, c) => sh.getRange(1, c + 1, col.length, 1).setValues(col.map(v => [v])));
   sh.getRange(1, 1, 1, cols.length).setFontWeight('bold');
@@ -474,30 +506,29 @@ function buildSamples_(ss) {
   ]);
 }
 
-function buildSupplies_(ss) {
-  const sh = ss.insertSheet('Supplies');
+function buildExpenses_(ss) {
+  const sh = ss.insertSheet('Expenses');
   sh.setTabColor('#6d4c41');
-  const H = ['Item', 'Purpose', 'Qty', 'Unit Cost (₱)', 'Subtotal (₱)', 'Assigned To', 'Bought?', 'Notes'];
-  banner_(sh, 1, '  Supplies for DA RCPC Sample Collection', H.length, '#6d4c41', 15);
+  const H = ['Item', 'Purpose', 'Qty', 'Unit Cost (₱)', 'Subtotal (₱)', 'Paid By / Buyer', 'Paid?', 'Notes', 'Category', 'Date', 'Receipt'];
+  banner_(sh, 1, '  Thesis Expenses · anyone can add what they bought or paid for', H.length, '#6d4c41', 15);
   headers_(sh, 2, H, '#37474f');
-  const n = SUPPLIES.length + 6;
+  const n = SUPPLIES.length + 40;
   sh.getRange(3, 1, SUPPLIES.length, 4).setValues(SUPPLIES.map(s => s.slice(0, 4)));
   sh.getRange(3, 6, SUPPLIES.length, 1).setValues(SUPPLIES.map(s => [s[4]]));
   sh.getRange(3, 8, SUPPLIES.length, 1).setValues(SUPPLIES.map(s => [s[5]]));
+  sh.getRange(3, 9, SUPPLIES.length, 1).setValues(SUPPLIES.map(() => ['Sample collection']));
   sh.getRange(3, 5, n, 1).setFormulaR1C1('=IF(OR(RC3="",RC4=""),"",RC3*RC4)');
   sh.getRange(3, 6, n, 1).setDataValidation(listRule_(ss, 6));
   sh.getRange(3, 7, n, 1).insertCheckboxes();
+  sh.getRange(3, 9, n, 1).setDataValidation(listRule_(ss, 7));
+  sh.getRange(3, 10, n, 1).setNumberFormat('mmm d, yyyy');
   sh.getRange(3, 4, n, 2).setNumberFormat('₱#,##0.00');
   const totalRow = 3 + n;
   sh.getRange(totalRow, 4).setValue('TOTAL').setFontWeight('bold').setHorizontalAlignment('right');
   sh.getRange(totalRow, 5).setFormula('=SUM(E3:E' + (totalRow - 1) + ')').setNumberFormat('₱#,##0.00').setFontWeight('bold');
-  [190, 320, 60, 110, 110, 110, 80, 180].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  [190, 260, 60, 110, 110, 120, 70, 180, 140, 110, 130].forEach((w, i) => sh.setColumnWidth(i + 1, w));
   sh.setFrozenRows(2);
-  sh.setConditionalFormatRules([
-    rule_('=$G3=TRUE', sh.getRange(3, 1, n, H.length), '#e8f5e9', '#9e9e9e', true),
-    SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('Suggested').setFontColor('#9e9e9e').setItalic(true)
-      .setRanges([sh.getRange(3, 8, n, 1)]).build(),
-  ]);
+  sh.setConditionalFormatRules([rule_('=$G3=TRUE', sh.getRange(3, 1, n, H.length), '#e8f5e9', null)]);
 }
 
 function buildLinks_(ss) {
@@ -568,7 +599,7 @@ function buildDashboard_(ss) {
     ['Collected samples with 3+ photos', '=COUNTIFS(\'DA RCPC Samples\'!C4:C,"<>",\'DA RCPC Samples\'!F4:F,">=3")', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
     ['Samples submitted to RCPC', '=COUNTA(\'DA RCPC Samples\'!J4:J)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
     ['Samples validated by RCPC', '=COUNTA(\'DA RCPC Samples\'!K4:K)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!J4:J))', '#2e7d32'],
-    ['Supplies bought', '=COUNTIF(Supplies!G3:G,TRUE)', '=COUNTA(Supplies!A3:A)', '#6d4c41'],
+    ['Expenses paid / bought', '=COUNTIF(Expenses!G3:G,TRUE)', '=MAX(1,COUNTA(Expenses!A3:A))', '#6d4c41'],
   ];
   ms.forEach((x, i) => {
     const r = mr + 1 + i;
@@ -627,7 +658,7 @@ function emailOpenTasks() {
       (rows.length ? '<table style="border-collapse:collapse"><tr style="background:#37474f;color:#fff"><th ' + td + '>ID</th><th ' + td +
         '>Task</th><th ' + td + '>Status</th><th ' + td + '>Due</th></tr>' + taskRows + '</table>' : '<p>No open tasks 🎉</p>') +
       (myRev.length ? '<h3>Panel revisions not yet complied (' + myRev.length + ')</h3><ul>' + revList + '</ul>' : '') +
-      '<p><a href="' + ss.getUrl() + '">Open the tracker ↗</a></p></div>';
+      '<p><a href="' + APP_URL + '">Open the tracker app ↗</a></p></div>';
 
     MailApp.sendEmail({ to: m.email, subject: '🍌 Thesis tasks — ' + rows.length + ' open', htmlBody: html });
     sent++;

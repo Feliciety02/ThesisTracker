@@ -11,6 +11,12 @@
 <meta name="apple-mobile-web-app-title" content="Thesis Tracker">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-48.png" type="image/png" sizes="48x48">
+<meta property="og:title" content="Banana Thesis Tracker">
+<meta property="og:description" content="Tasks, DA RCPC samples, photos and expenses for the EfficientNetB0 banana leaf disease thesis.">
+<meta property="og:image" content="https://feliciety02.github.io/ThesisTracker/icons/og-image.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <script src="config.js"></script>
 <title>Banana Thesis Tracker</title>
@@ -49,8 +55,8 @@ header .leaves path{fill:none;stroke:#8fa77e;stroke-width:1.2}
 header .wrap{position:relative}
 .hd{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:26px 0 18px;flex-wrap:wrap}
 .brand{display:flex;gap:14px;align-items:center;min-width:0}
-.logo{width:46px;height:46px;border-radius:50%;background:var(--leaf);display:grid;place-items:center;flex:none}
-.logo svg{width:24px;height:24px}
+.logo{width:46px;height:46px;border-radius:12px;overflow:hidden;display:grid;place-items:center;flex:none;box-shadow:0 2px 8px rgba(31,75,58,.18)}
+.logo img{width:100%;height:100%;display:block}
 .eyebrow{font-family:var(--hfont);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--leaf)}
 .brand h1{margin:0;font-family:var(--hfont);font-size:30px;line-height:1;font-weight:800;letter-spacing:-.03em;color:var(--ink)}
 .brand h1 em{font-style:normal;color:var(--leaf)}
@@ -282,8 +288,9 @@ tr.filled td.id{color:var(--ok)}
 .iconbtn:disabled{opacity:.4;cursor:default}
 .ck.big{font-size:14px;font-weight:700}
 .ck.big input{width:20px;height:20px}
-.addsup{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.5fr) 70px 100px 130px auto;gap:8px;align-items:center;padding:12px;margin-bottom:14px}
-@media (max-width:820px){.addsup{grid-template-columns:1fr 1fr}.addsup input[name=item],.addsup input[name=purpose]{grid-column:1/-1}}
+.addsup{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) 64px 100px 110px 140px auto auto;gap:8px;align-items:center;padding:12px;margin-bottom:14px}
+@media (max-width:980px){.addsup{grid-template-columns:1fr 1fr}.addsup input[name=item]{grid-column:1/-1}}
+.rcpt{font-weight:700;text-decoration:none;background:var(--ok-soft);color:var(--ok);border-radius:999px;padding:6px 12px}
 .task-edit{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,2fr) 1fr 1fr minmax(0,2fr) auto;gap:8px;align-items:end;border-top:1px dashed var(--line);padding-top:10px}
 .task-edit label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .task-edit input,.task-edit select{width:100%;text-transform:none;letter-spacing:0;font-weight:500;font-size:14px;color:var(--ink)}
@@ -331,7 +338,7 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
 <body>
 <div id="login" class="login" hidden>
   <div class="login-card">
-    <div class="logo" style="width:52px;height:52px"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
+    <div class="logo" style="width:56px;height:56px"><img src="icons/favicon.svg" alt="" width="56" height="56"></div>
     <div><div class="eyebrow">Welcome</div><h2>Banana Thesis <em style="font-style:normal;color:var(--leaf)">Tracker</em></h2></div>
     <p class="muted small" style="margin:0">Who's using this device? You'll stay logged in until you switch.</p>
     <div class="who-list" id="whoList"></div>
@@ -350,7 +357,7 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
   <div class="wrap">
     <div class="hd">
       <div class="brand">
-        <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
+        <div class="logo"><img src="icons/favicon.svg" alt="" width="46" height="46"></div>
         <div>
           <div class="eyebrow">BSCS Capstone · Task Tracker</div>
           <h1>Banana Thesis <em>Tracker</em></h1>
@@ -374,6 +381,7 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
   <div class="cam-sheet" role="dialog" aria-modal="true" aria-label="Sample photos"><div id="camBody"></div></div>
 </div>
 <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+<input type="file" id="rcptInput" accept="image/*" capture="environment" hidden>
 
 <script>
 /* =========================================================
@@ -420,7 +428,7 @@ async function call(fn, ...args) {
 
 /* ---------- sample data for preview ---------- */
 const Demo = (() => {
-  const iso = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  const iso = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const DOC = 'https://docs.google.com/document/d/1du8tYoex9vLWZCVAy1BsPHyzAsmjxJSJKiu2rBhTa40/edit';
   const L = {
     da: { label: 'DA Questions', url: DOC + '?tab=t.masbs5zb7cep' },
@@ -446,7 +454,7 @@ const Demo = (() => {
     T('F-09','Buy supplies: cotton, plastic bags, markers, masking tape','DA RCPC','High','Not Started',3,''),
     T('F-10','Lead field collection of fresh banana leaf samples (whole team)','DA RCPC','High','Not Started',8,''),
     T('F-11','Submit fresh, labeled samples to DA RCPC Davao','DA RCPC','High','Not Started',10,''),
-    T('F-13','Collect + photograph YOUR sample batch FA-001 → FA-020 (3–5 angles each, app camera)','DA RCPC','High','Not Started',8,'','Write FA-### on masking tape.'),
+    T('F-13','Collect + photograph your samples: tap ＋ New sample for each leaf (FA-001, FA-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
     T('F-12','Lead panel revisions: Problem, Purpose, Objectives, Scope & Limitations','Panel Revision','High','Not Started',14,''),
   ];
   r = 4;
@@ -455,7 +463,7 @@ const Demo = (() => {
     T('R-02','Re-curate the dataset','Dataset','High','In Progress',2,'cf'),
     T('R-03','Record the image count for each class','Dataset','Medium','Not Started',3,''),
     T('R-04','Send public dataset links to Cha for citation','Dataset','Medium','Not Started',2,'ps'),
-    T('R-05','Collect + photograph YOUR sample batch RJ-001 → RJ-020 (3–5 angles each, app camera)','DA RCPC','High','Not Started',8,'','Write RJ-### on masking tape.'),
+    T('R-05','Collect + photograph your samples: tap ＋ New sample for each leaf (RJ-001, RJ-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
     T('R-06','Add RCPC-validated images to the dataset and update class counts','Dataset','Medium','Not Started','',''),
     T('R-07','Methodology revisions: preprocessing, split, model construction, tuning','Panel Revision','High','Not Started',14,''),
   ];
@@ -466,7 +474,7 @@ const Demo = (() => {
     T('C-03','Fill in the new docs file, including the public dataset link from Rho','Paper','Medium','Done','','td'),
     T('C-04','Sort the Curated Banana Leaf Disease Dataset folder (with Fe Anne)','Dataset','High','In Progress',2,'cf'),
     T('C-05','Cite the public dataset sources in the paper (IEEE)','Paper','Medium','Waiting','','ps','Waiting for R-04.'),
-    T('C-06','Collect + photograph YOUR sample batch CP-001 → CP-020 (3–5 angles each, app camera)','DA RCPC','High','Not Started',8,'','Write CP-### on masking tape.'),
+    T('C-06','Collect + photograph your samples: tap ＋ New sample for each leaf (CP-001, CP-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
     T('C-07','Write up the DA RCPC validation process in Methodology','Paper','Medium','Not Started','',''),
     T('C-08','Formatting revisions: CCS, keywords, tables/figures, IEEE refs, ACM format','Panel Revision','High','Not Started',14,''),
   ];
@@ -495,7 +503,7 @@ const Demo = (() => {
     ['Masking tape','Labels on each bag',1,40,'Fe Anne',false],
     ['Cooler / ice box','Keep samples cool during transport',1,'','',false],
     ['Pruning shears / scissors','Clean cuts when collecting',1,'','',false],
-  ].map((x, i) => ({ row: i + 3, item: x[0], purpose: x[1], qty: x[2], cost: x[3], assigned: x[4], bought: x[5], notes: '' }));
+  ].map((x, i) => ({ row: i + 3, item: x[0], purpose: x[1], qty: x[2], cost: x[3], assigned: x[4], bought: x[5], notes: '', category: 'Sample collection', date: x[5] ? iso(-2) : '', receipt: x[5] ? 'https://drive.google.com/' : '' }));
   const data = {
     title: 'Banana Leaf Disease Thesis Tracker',
     thesisTitle: 'An Enhanced EfficientNetB0 Architecture for Mobile Banana Leaf Disease Classification',
@@ -509,12 +517,13 @@ const Demo = (() => {
     revisions: R, samples, supplies, links: Object.values(L),
     activity: [
       { when: 'Today, 8:12 PM', who: 'Rho', what: 'changed R-01 "Retrain the baseline model…" status → In Progress' },
-      { when: 'Today, 7:40 PM', who: 'Cha', what: 'checked "Bagged & Labeled" for sample BL-001' },
+      { when: 'Today, 7:40 PM', who: 'Cha', what: 'sample FA-001: bagged → ✔' },
       { when: 'Today, 6:05 PM', who: 'Fe Anne', what: 'set the DA RCPC submission date' },
     ],
     lists: { statuses: ['Not Started','In Progress','Waiting','Done'], priorities: ['High','Medium','Low'],
       categories: ['DA RCPC','Dataset','Model','Paper','Letters','Panel Revision','Admin'],
-      classes: ['Cordana Leaf Spot','Black Sigatoka','Healthy','Unsure'], revStatuses: ['C','NC','NA'] },
+      classes: ['Cordana Leaf Spot','Black Sigatoka','Healthy','Unsure'], revStatuses: ['C','NC','NA'],
+      expenseCategories: ['Sample collection','Printing','Transport','Food','Materials','Fees','Other'] },
     panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde','Mr. Hernando','Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
   };
   return {
@@ -522,11 +531,12 @@ const Demo = (() => {
     createSample: id => ({ id, row: 100 + S.data.samples.length }),
     deleteTask: () => true,
     deleteSupply: () => true,
-    addSupply: x => ({ row: 50 + S.data.supplies.length, item: x.item, purpose: x.purpose || '', qty: x.qty === '' ? 1 : +x.qty, cost: x.cost === '' ? '' : +x.cost, assigned: x.assigned || '', bought: false, notes: '' }),
+    addSupply: x => ({ row: 50 + S.data.supplies.length, item: x.item, purpose: x.purpose || '', qty: x.qty === '' ? 1 : +x.qty, cost: x.cost === '' ? '' : +x.cost, assigned: x.assigned || '', bought: !!x.bought, notes: '', category: x.category || 'Other', date: x.date || iso(0), receipt: '' }),
+    uploadReceipt: () => ({ receipt: 'https://drive.google.com/' }),
     uploadPhoto: (id, angle) => {
       const sm = S.data.samples.find(x => x.id === id);
       const angles = sm.angles.concat(sm.angles.indexOf(angle) < 0 ? [angle] : []).sort((a, b) => a - b);
-      return { angles, photos: angles.length, folder: 'https://drive.google.com/drive/folders/1OxFuhfrEIChjzVFISjBL0J8yrMM2af-P', date: sm.date || new Date().toISOString().slice(0, 10) };
+      return { angles, photos: angles.length, folder: 'https://drive.google.com/drive/folders/1OxFuhfrEIChjzVFISjBL0J8yrMM2af-P', date: sm.date || localDay() };
     },
     addTask: (tab, t) => {
       const m = S.data.members.find(x => x.tab === tab);
@@ -541,12 +551,13 @@ const Demo = (() => {
    State + helpers
    ========================================================= */
 const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {} };
-const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Supplies'],['links','Links']];
+const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Expenses'],['links','Links']];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 const toDate = s => s ? new Date(s + 'T00:00:00') : null;
 const daysUntil = s => s ? Math.round((toDate(s) - today()) / 864e5) : null;
 const fmt = s => s ? toDate(s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '—';
+function localDay(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }  // today on the phone's clock, not UTC
 const slug = s => String(s).toLowerCase().replace(/[^a-z]+/g, '-');
 const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
 const peso = n => '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -765,7 +776,7 @@ function vOverview() {
   const supItems = d.supplies.filter(s => s.item), bought = supItems.filter(s => s.bought).length;
   const ms = [
     ['Panel revisions complied', revDone, revApplic.length, 'var(--brand)'],
-    ['Supplies bought', bought, supItems.length, 'var(--leaf)'],
+    ['Expenses paid / bought', bought, supItems.length, 'var(--leaf)'],
     ['Collected samples submitted to RCPC', submitted, Math.max(collected, 1), 'var(--leaf)', submitted + ' of ' + collected + ' collected'],
     ['Submitted samples validated by RCPC', validated, Math.max(submitted, 1), 'var(--leaf)', validated + ' of ' + submitted + ' submitted'],
   ].map(x => '<div class="ms"><div><b style="text-align:left;display:block">' + x[0] + '</b><span class="small muted">' + (x[4] || x[1] + ' of ' + x[2]) + '</span></div>' +
@@ -910,7 +921,7 @@ function nextLabel(tab) {
 }
 function newSample() {
   const id = nextLabel(S.user);
-  S.data.samples.push({ row: 0, id, disease: '', date: new Date().toISOString().slice(0, 10), site: '', by: S.user, photos: '',
+  S.data.samples.push({ row: 0, id, disease: '', date: localDay(), site: '', by: S.user, photos: '',
     cotton: false, bagged: false, submitted: '', validated: '', notes: '', folder: '', angles: [] });
   S.sampleFilter = S.user;
   save('createSample', [id]).then(r => { if (r && sampleById(id)) sampleById(id).row = r.row; });
@@ -1102,17 +1113,19 @@ const PhotoQ = (() => {
 })();
 
 let uploadChain = Promise.resolve();
+function jobKey(job) { return job.key || (job.id + '_' + job.angle); }
 function queueUpload(job) {           // uploads go one at a time so the phone stays responsive
-  const key = job.id + '_' + job.angle;
+  const key = jobKey(job);
   if (S.uploading[key] || S.waiting[key]) return uploadChain;
   S.waiting[key] = true; delete S.queued[key]; renderCam(); updateSyncChip();
   uploadChain = uploadChain.then(() => sendPhoto(job));
   return uploadChain;
 }
 async function sendPhoto(job) {
-  const key = job.id + '_' + job.angle;
+  const key = jobKey(job);
   delete S.waiting[key];
   S.uploading[key] = true; delete S.queued[key]; renderCam();
+  if (job.kind === 'receipt') return sendReceipt(job, key);
   try {
     const patch = await call('uploadPhoto', job.id, job.angle, job.b64);
     const sm = S.data && sampleById(job.id);
@@ -1127,6 +1140,22 @@ async function sendPhoto(job) {
   delete S.uploading[key];
   renderCam(); updateSyncChip();
   if (!S.cam && S.view === 'samples' && !isTyping()) render();
+}
+async function sendReceipt(job, key) {
+  try {
+    const patch = await call('uploadReceipt', job.row, job.b64);
+    const x = S.data && S.data.supplies.find(s => s.row === job.row);
+    if (x && patch) { Object.assign(x, patch); persist(); }
+    await PhotoQ.del(key);
+    toast('Receipt saved ✓', 1500);
+  } catch (e) {
+    if (e.auth) { delete S.uploading[key]; lock(e.message); return; }
+    if (e.network) { S.queued[key] = job; toast('📴 Receipt saved on this phone. It uploads when there\'s signal.', 3000); }
+    else { await PhotoQ.del(key); toast('Receipt not saved: ' + e.message, 4000, true); }
+  }
+  delete S.uploading[key];
+  updateSyncChip();
+  if (S.view === 'supplies' && !isTyping()) render();
 }
 async function flushPhotos() {
   if (!navigator.onLine || !S.user) return;
@@ -1152,40 +1181,84 @@ document.getElementById('camInput').addEventListener('change', async e => {
   } catch (err) { delete S.preparing[key]; renderCam(); toast(err.message || String(err), 4000, true); }
 });
 
-/* ---------- Supplies (add · edit · delete) ---------- */
+/* ---------- Expenses (everyone adds what they bought or paid for; optional receipt photo) ---------- */
+function expenseTotal(s) { return (Number(s.qty) || 0) * (Number(s.cost) || 0); }
+function receiptKey(row) { return 'rcpt_' + row; }
 function vSupplies() {
-  const d = S.data, ppl = TEAM.map(m => m.tab);
-  const items = d.supplies.filter(s => s.item);
-  const total = items.reduce((a, s) => a + (Number(s.qty) || 0) * (Number(s.cost) || 0), 0);
-  const bought = items.filter(s => s.bought).length;
-  const pplSel = (v, attrs) => '<select ' + attrs + '><option value="">Nobody yet</option>' + ppl.map(p => '<option' + (p === v ? ' selected' : '') + '>' + esc(p) + '</option>').join('') + '</select>';
+  const d = S.data, ppl = TEAM.map(m => m.tab), cats = d.lists.expenseCategories || ['Sample collection', 'Printing', 'Transport', 'Food', 'Materials', 'Fees', 'Other'];
+  const all = d.supplies.filter(s => s.item);
+  const f = S.expFilter || 'All';
+  const items = all.filter(s => f === 'All' || (f === 'Mine' ? s.assigned === S.user : f === 'To buy' ? !s.bought : s.category === f))
+    .sort((a, b) => (a.bought - b.bought) || String(b.date || '').localeCompare(String(a.date || '')));
+  const paid = all.filter(s => s.bought), toBuy = all.filter(s => !s.bought);
+  const sum = arr => arr.reduce((a, s) => a + expenseTotal(s), 0);
+  const perPerson = ppl.map(p => { const m = TEAM.find(t => t.tab === p); return '<span class="chip" style="--c:' + m.color + ';cursor:default"><span class="dot"></span>' + esc(p) + ' paid ' + peso(sum(paid.filter(s => s.assigned === p))) + '</span>'; }).join('');
+  const sel = (arr, v, attrs, blank) => '<select ' + attrs + '>' + (blank ? '<option value="">' + blank + '</option>' : '') + arr.map(p => '<option' + (p === v ? ' selected' : '') + '>' + esc(p) + '</option>').join('') + '</select>';
+  const chips = ['All', 'Mine', 'To buy', ...cats.filter(c => all.some(s => s.category === c))].map(c =>
+    '<button class="chip ' + (f === c ? 'on' : '') + '" data-action="expFilter" data-v="' + esc(c) + '">' + esc(c) + '</button>').join('');
   const card = s => {
-    const at = 'data-change="supply" data-row="' + s.row + '"' + (s.tempId ? ' disabled' : '');
-    const sub = s.qty !== '' && s.cost !== '' && s.cost != null ? peso(s.qty * s.cost) : '—';
+    const dis = s.tempId ? ' disabled' : '';
+    const at = 'data-change="supply" data-row="' + s.row + '"' + dis;
+    const rk = receiptKey(s.row), rq = S.queued[rk], rup = S.uploading[rk] || S.waiting[rk] || S.preparing[rk];
+    const receiptBtn = s.tempId ? '' : rup ? '<span class="qchip">⬆ receipt…</span>' : rq ? '<span class="qchip">📴 receipt saved on phone</span>' :
+      s.receipt ? '<a class="rcpt" href="' + esc(s.receipt) + '" target="_blank" rel="noopener">🧾 Receipt</a><button class="iconbtn" data-action="receipt" data-row="' + s.row + '" title="Retake receipt" aria-label="Retake receipt photo">📷</button>' :
+      '<button class="cam-btn none" data-action="receipt" data-row="' + s.row + '">📷 Receipt</button>';
     return '<div class="sc supc' + (s.bought ? ' sub' : '') + '" style="--c:var(--leaf)">' +
-      '<div class="sc-top"><label class="ck big"><input type="checkbox" ' + (s.bought ? 'checked' : '') + ' ' + at + ' data-field="bought" aria-label="Bought">' + (s.bought ? 'Bought' : 'To buy') + '</label>' +
-        '<span class="sp"></span>' + (s.tempId ? '<span class="qchip">⏳ waiting to sync</span>' : '<b>' + sub + '</b>') +
-        '<button class="iconbtn" data-action="delSupply" data-row="' + s.row + '"' + (s.tempId ? ' disabled' : '') + ' aria-label="Delete ' + esc(s.item) + '" title="Delete">🗑</button></div>' +
+      '<div class="sc-top"><label class="ck big"><input type="checkbox" ' + (s.bought ? 'checked' : '') + ' ' + at + ' data-field="bought" aria-label="Paid">' + (s.bought ? 'Paid' : 'To buy') + '</label>' +
+        '<span class="sp"></span>' + (s.tempId ? '<span class="qchip">⏳ waiting to sync</span>' : '<b>' + (s.cost !== '' && s.cost != null ? peso(expenseTotal(s)) : '—') + '</b>') +
+        '<button class="iconbtn" data-action="delSupply" data-row="' + s.row + '"' + dis + ' aria-label="Delete ' + esc(s.item) + '" title="Delete">🗑</button></div>' +
       '<div class="sc-grid">' +
         '<label class="wide">Item<input type="text" value="' + esc(s.item) + '" ' + at + ' data-field="item"></label>' +
-        '<label class="wide">Purpose<input type="text" value="' + esc(s.purpose) + '" placeholder="What it\'s for" ' + at + ' data-field="purpose"></label>' +
+        '<label>Category' + sel(cats, s.category, at + ' data-field="category"', 'Choose…') + '</label>' +
+        '<label>Date<input type="date" value="' + esc(s.date) + '" ' + at + ' data-field="date"></label>' +
         '<label>Qty<input type="number" min="0" value="' + esc(s.qty) + '" ' + at + ' data-field="qty"></label>' +
         '<label>Unit cost (₱)<input type="number" min="0" step="0.01" value="' + esc(s.cost) + '" ' + at + ' data-field="cost"></label>' +
-        '<label>Assigned to' + pplSel(s.assigned, at + ' data-field="assigned"') + '</label>' +
-        '<label>Notes<input type="text" value="' + esc(s.notes) + '" ' + at + ' data-field="notes"></label>' +
-      '</div></div>';
+        '<label>Paid by / buyer' + sel(ppl, s.assigned, at + ' data-field="assigned"', 'Nobody yet') + '</label>' +
+        '<label>Purpose<input type="text" value="' + esc(s.purpose) + '" placeholder="What it\'s for" ' + at + ' data-field="purpose"></label>' +
+        '<label class="wide">Notes<input type="text" value="' + esc(s.notes) + '" ' + at + ' data-field="notes"></label>' +
+      '</div>' +
+      '<div class="sc-foot">' + receiptBtn + '</div></div>';
   };
-  return '<div class="row" style="margin-bottom:12px"><h2 style="margin:0">Supplies</h2><div class="sp"></div>' +
-      '<span class="small muted">' + bought + ' of ' + items.length + ' bought</span><b style="margin-left:10px">Total ' + peso(total) + '</b></div>' +
+  return '<div class="row" style="margin-bottom:12px"><h2 style="margin:0">Expenses</h2><div class="sp"></div>' +
+      '<span class="small muted">Anyone can add what they bought or paid for. Snap the receipt if you have one.</span></div>' +
+    '<div class="stats" style="margin-bottom:12px">' +
+      '<div class="stat"><div class="k">Spent so far</div><div class="v">' + peso(sum(paid)) + '</div><div class="small muted">' + paid.length + ' paid</div></div>' +
+      '<div class="stat"><div class="k">Still to buy</div><div class="v">' + peso(sum(toBuy)) + '</div><div class="small muted">' + toBuy.length + ' item' + (toBuy.length === 1 ? '' : 's') + '</div></div>' +
+      '<div class="stat" style="grid-column:span 2"><div class="k">Paid by each of you</div><div class="chips" style="margin-top:8px">' + perPerson + '</div></div>' +
+    '</div>' +
     '<form id="addSupply" class="card addsup">' +
-      '<input type="text" name="item" placeholder="New item (e.g. Zip bags)" required aria-label="Item">' +
-      '<input type="text" name="purpose" placeholder="Purpose (optional)" aria-label="Purpose">' +
+      '<input type="text" name="item" placeholder="What did you buy? (e.g. Printing, 3 copies)" required aria-label="Item">' +
+      sel(cats, 'Printing', 'name="category" aria-label="Category"') +
       '<input type="number" name="qty" min="0" value="1" aria-label="Quantity">' +
       '<input type="number" name="cost" min="0" step="0.01" placeholder="₱ each" aria-label="Unit cost">' +
-      pplSel(S.user, 'name="assigned" aria-label="Assigned to"') +
+      sel(ppl, S.user, 'name="assigned" aria-label="Paid by"') +
+      '<input type="date" name="date" value="' + localDay() + '" aria-label="Date">' +
+      '<label class="ck"><input type="checkbox" name="bought" checked>Already paid</label>' +
       '<button class="btn" type="submit">＋ Add</button></form>' +
-    '<div class="scards">' + (items.map(card).join('') || '<div class="empty" style="grid-column:1/-1">No supplies yet. Add the first one above.</div>') + '</div>';
+    '<div class="row" style="margin-bottom:12px"><div class="chips">' + chips + '</div></div>' +
+    '<div class="scards">' + (items.map(card).join('') || '<div class="empty" style="grid-column:1/-1">Nothing here yet. Add your first expense above.</div>') + '</div>';
 }
+
+function takeReceipt(row) {
+  S.rcptRow = row;
+  const inp = document.getElementById('rcptInput');
+  inp.value = '';
+  inp.click();
+}
+document.getElementById('rcptInput').addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0], row = S.rcptRow;
+  if (!file || !row) return;
+  const key = receiptKey(row);
+  S.preparing[key] = true; render();
+  try {
+    const p = await shrinkPhoto(file);
+    delete S.preparing[key];
+    const job = { kind: 'receipt', key, row, b64: p.full.split(',')[1], at: Date.now() };
+    await PhotoQ.put(key, job);
+    queueUpload(job);
+    render();
+  } catch (err) { delete S.preparing[key]; render(); toast(err.message || String(err), 4000, true); }
+});
 
 /* ---------- Links ---------- */
 const ICON = {
@@ -1199,6 +1272,8 @@ function vLinks() {
   const card = (url, title, sub, icon) => '<a class="lnk" href="' + esc(url) + '" target="_blank" rel="noopener"><div class="ic">' + ICON[icon] + '</div><div style="min-width:0"><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div></a>';
   return '<h2>Project links</h2><div class="links">' +
     card(d.sheetUrl, 'Tracker Google Sheet', 'Same data as this website', 'sheet') +
+    (d.photoFolderUrl ? card(d.photoFolderUrl, 'DA RCPC Sample Photos', 'Every sample photo, named by label', 'folder') : '') +
+    (d.receiptFolderUrl ? card(d.receiptFolderUrl, 'Expense receipts', 'Receipt photos from the Expenses page', 'folder') : '') +
     d.links.map(l => card(l.url, l.label, /drive\.google/.test(l.url) ? 'Google Drive folder' : 'Thesis Google Doc', /drive\.google/.test(l.url) ? 'folder' : 'doc')).join('') +
     '</div><div class="section"><h2>Team</h2><div class="links">' +
     d.members.map(m => card('mailto:' + m.email, m.name, m.role + ' · ' + m.email, 'mail')).join('') + '</div></div>';
@@ -1245,6 +1320,8 @@ document.addEventListener('click', e => {
     S.editTask = null;
     save('deleteTask', [tab, row], () => { const m = member(tab); m.tasks = m.tasks.filter(x => x.row !== row); });
   }
+  else if (a === 'receipt') { takeReceipt(+el.dataset.row); }
+  else if (a === 'expFilter') { S.expFilter = v; render(); }
   else if (a === 'delSupply') {
     const row = +el.dataset.row, x = S.data.supplies.find(s => s.row === row);
     if (!confirm('Delete "' + x.item + '" from supplies?')) return;
@@ -1266,7 +1343,7 @@ document.addEventListener('change', e => {
     save('updateTask', [tab, row, field, val], () => {
       const t = member(tab).tasks.find(x => x.row === row);
       t[field] = val;
-      if (field === 'status') t.completed = val === 'Done' ? new Date().toISOString().slice(0, 10) : '';
+      if (field === 'status') t.completed = val === 'Done' ? localDay() : '';
     });
   } else if (k === 'rev') {
     save('updateRevision', [row, field, val], () => { S.data.revisions.find(r => r.row === row)[field] = val; });
@@ -1304,13 +1381,14 @@ document.addEventListener('submit', e => {
       toast('Task added to ' + tab, 1600);
     });
   } else if (f.id === 'addSupply') {
-    const x = { item: f.item.value.trim(), purpose: f.purpose.value.trim(), qty: f.qty.value === '' ? '' : +f.qty.value,
-      cost: f.cost.value === '' ? '' : +f.cost.value, assigned: f.assigned.value, notes: '' };
+    const x = { item: f.item.value.trim(), purpose: '', qty: f.qty.value === '' ? '' : +f.qty.value,
+      cost: f.cost.value === '' ? '' : +f.cost.value, assigned: f.assigned.value, notes: '',
+      category: f.category.value, date: f.date.value, bought: f.bought.checked, receipt: '' };
     if (!x.item) return;
     f.reset(); f.item.blur();
     save('addSupply', [x], null, () => {
       const tempId = 'tmp' + Date.now();
-      S.data.supplies.push(Object.assign({ row: 0, tempId, bought: false }, x));
+      S.data.supplies.push(Object.assign({ row: 0, tempId }, x));
       return { tempId };
     }).then(res => {
       if (!res) return;
@@ -1347,7 +1425,7 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
 }
 
 /* start */
-PhotoQ.all().then(jobs => { (jobs || []).forEach(j => { S.queued[j.id + '_' + j.angle] = j; }); updateSyncChip(); });
+PhotoQ.all().then(jobs => { (jobs || []).forEach(j => { S.queued[jobKey(j)] = j; }); updateSyncChip(); });
 setInterval(() => { if (navigator.onLine && (outbox().length || Object.keys(S.queued).length)) flushOutbox().then(flushPhotos); }, 45000);
 // ask the browser to keep offline photos/changes even when storage is tight
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
