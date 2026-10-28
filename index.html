@@ -180,12 +180,12 @@ form.add{display:grid;grid-template-columns:minmax(0,2fr) 130px 150px 150px 120p
 .seg button{border:0;background:var(--card);padding:6px 12px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--muted)}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button.on.C{background:var(--ok);color:#fff}
-.seg button.on.NC{background:var(--red);color:#fff}
+.seg button.on.NC{background:var(--ink);color:var(--card)}
 .seg button.on.NA{background:var(--muted);color:var(--card)}
 .pgl{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted)}
 .pgl input{width:100%;min-width:0}
 label.ck{display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600;cursor:pointer}
-@media (max-width:720px){.rev{grid-template-columns:1fr 1fr}.rev .rc{grid-column:1/-1}}
+
 
 /* tables */
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
@@ -362,8 +362,16 @@ tr.filled td.id{color:var(--ok)}
 .bulk .btn{background:#fff;color:var(--brand)}
 .bulk .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.45)}
 .rev .pick{width:20px;height:20px}
-.rev{grid-template-columns:24px minmax(0,1fr) 170px 120px 70px}
-@media (max-width:720px){.rev{grid-template-columns:24px 1fr 1fr}.rev .rc{grid-column:2/-1}.rev .seg{grid-column:2/-1;justify-self:start}.rev .pgl{grid-column:2}}
+.rev{grid-template-columns:24px minmax(0,1fr) auto}
+.rev.solo{grid-template-columns:minmax(0,1fr) auto}
+.rctl{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.rctl .seg button{padding:8px 12px;font-size:13px}
+.rmore{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.rmore .pgl input{width:70px}
+@media (max-width:720px){.rev,.rev.solo{grid-template-columns:24px minmax(0,1fr)}.rev.solo{grid-template-columns:minmax(0,1fr)}
+  .rctl{grid-column:1/-1;align-items:stretch}.rev:not(.solo) .rctl{grid-column:2/-1}
+  .rctl .seg{display:grid;grid-template-columns:1.4fr 1fr .8fr}.rctl .seg button{padding:10px 8px}}
+
 .doneby{color:var(--ok);font-weight:700}
 .resched{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--red-soft);color:var(--red);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:600}
 .paper{white-space:pre-wrap;background:var(--soft);border-radius:10px;padding:12px;font-size:14px;line-height:1.55}
@@ -447,6 +455,16 @@ header{padding-top:env(safe-area-inset-top)}
 .auth-links{display:flex;justify-content:center;gap:18px;margin-top:-2px}
 .auth-links .linkbtn{font-size:13.5px;padding:6px 2px;display:inline-flex;align-items:center}
 .login-err:empty{display:none}
+.pwwrap{position:relative;display:block}
+.pwwrap input{width:100%;padding-right:78px!important}
+.pwbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--soft);border:0;border-radius:8px;padding:7px 10px;font-weight:700;font-size:12.5px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0}
+.pwbtn:hover{background:var(--line)}
+.fhint{font-size:12px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0;min-height:1em}
+.fhint.ok{color:var(--ok)}.fhint.warn{color:var(--red)}
+.searchwrap{position:relative;display:inline-block}
+.searchwrap input{padding-right:34px!important}
+.searchwrap .clr{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);cursor:pointer;font-size:13px}
+input[type=search]::-webkit-search-cancel-button{display:none}
 .login-err{background:var(--red-soft,#fdecea);border-radius:10px;padding:10px 12px}
 .login-card label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--muted)}
 .login-card label input{color:var(--ink);font-weight:500}
@@ -892,6 +910,10 @@ function lock(msg) {               // show sign-in (also used when the server sa
 function renderAuth(err) {
   const a = S.auth, f = document.getElementById('authBody');
   const field = (label, html) => '<label>' + label + html + '</label>';
+  const shown = !!a.showPw;
+  const pwField = (label, auto, extra, hint) => '<label>' + label + '<span class="pwwrap"><input type="' + (shown ? 'text' : 'password') + '" name="pw" autocomplete="' + auto + '" autocapitalize="off" spellcheck="false" required' + (extra || '') + '>' +
+      '<button type="button" class="pwbtn" data-action="pwToggle" aria-pressed="' + shown + '" aria-label="' + (shown ? 'Hide password' : 'Show password') + '">' + (shown ? '🙈 Hide' : '👁 Show') + '</button></span>' +
+      '<span class="fhint" id="pwHint">' + (hint || '') + '</span></label>';
   const pill = '<div class="acct-pill"><span class="av">' + esc((a.email || '?')[0].toUpperCase()) + '</span><span>' + esc(a.email) + '</span></div>' +
     '<input type="email" name="email" autocomplete="username" value="' + esc(a.email) + '" hidden>';
   const title = document.getElementById('authTitle'), sub = document.getElementById('authSub');
@@ -905,33 +927,35 @@ function renderAuth(err) {
   } else if (a.step === 'password') {
     title.textContent = 'Welcome back'; sub.textContent = 'Enter your password.';
     f.innerHTML = pill +
-      field('Password', '<input type="password" name="pw" autocomplete="current-password" required>') +
+      pwField('Password', 'current-password') +
       '<button class="btn" type="submit"' + busyBtn(a.busy, 'Log in', 'Logging in…') + '</button>' +
       '<div class="auth-links"><button type="button" class="linkbtn" data-action="authForgot"' + busyBtn(a.sending, 'Forgot password?', 'Sending code…') + '</button></div>';
   } else {
     title.textContent = 'Set your password'; sub.textContent = 'We emailed you a 6-digit code.';
     f.innerHTML = pill +
-      field('6-digit code', '<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" required>') +
-      field('New password', '<input type="password" name="pw" autocomplete="new-password" minlength="8" placeholder="8+ characters" required>') +
+      field('6-digit code', '<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="123456" required>') +
+      pwField('New password', 'new-password', ' minlength="8" placeholder="8+ characters" value="' + esc(a.keepPw || '') + '" data-newpw="1"', pwLenHint(a.keepPw || '')) +
       '<button class="btn" type="submit"' + busyBtn(a.busy, 'Set password', 'Saving…') + '</button>' +
       '<div class="auth-links"><button type="button" class="linkbtn" data-action="authResend"' + busyBtn(a.sending, 'Send a new code', 'Sending…') + '</button></div>';
   }
   document.getElementById('loginErr').textContent = err || '';
   const first = f.querySelector('input:not([hidden])'); if (first) setTimeout(() => first.focus(), 30);
 }
+function pwLenHint(v) { const n = (v || '').length; return n >= 8 ? '✓ Long enough' : n ? n + ' of 8 characters' : 'At least 8 characters'; }
 async function authSubmit(form) {
   const a = S.auth;
   if (a.busy) return;
   // read what was typed BEFORE redrawing the form
   const email = form.email ? form.email.value.trim().toLowerCase() : a.email;
-  const pw = form.pw ? form.pw.value : '', code = form.code ? form.code.value.trim() : '';
+  const pw = form.pw ? form.pw.value : '', code = form.code ? form.code.value.replace(/\D/g, '') : '';
   if (a.step === 'email') a.email = email;
+  if (a.step === 'code') a.keepPw = pw;          // a wrong code shouldn't make them retype the password
   a.busy = true; renderAuth('');
   try {
     if (a.step === 'email') {
       if (!a.email) throw new Error('Enter your email.');
       const r = await call('authStart', a.email);
-      a.step = r.hasPassword ? 'password' : 'code';
+      a.step = r.hasPassword ? 'password' : 'code'; a.keepPw = '';
     } else if (a.step === 'password') {
       finishSignIn(await call('authLogin', a.email, pw));
       return;
@@ -1163,7 +1187,8 @@ function vTasks() {
   const defMember = S.member !== 'All' ? S.member : d.members[0].tab;
 
   return '<div class="row" style="margin-bottom:14px"><h2 style="margin:0">Tasks</h2><div class="sp"></div>' +
-    '<input type="search" id="q" placeholder="Search" value="' + esc(S.q) + '" style="width:220px"></div>' +
+    '<span class="searchwrap"><input type="search" id="q" placeholder="Search tasks" value="' + esc(S.q) + '" style="width:220px" aria-label="Search tasks">' +
+      '<button type="button" class="clr" id="qClear" data-action="clearSearch" aria-label="Clear search"' + (S.q ? '' : ' hidden') + '>✕</button></span></div>' +
     '<div class="addwrap' + (S.addTaskOpen ? ' open' : '') + '"><button class="btn ' + (S.addTaskOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddTask">' + (S.addTaskOpen ? '✕ Cancel' : '＋ Add task') + '</button>' +
     '<form class="add card" id="addForm" style="padding:12px">' +
     '<label class="fl wide">Task<input type="text" name="task" placeholder="What needs doing?" required></label>' +
@@ -1226,22 +1251,24 @@ function vRevisions() {
   const d = S.data;
   const owners = ['All', ...d.members.map(m => m.tab), 'Team'];
   const ownerChips = owners.map(o => '<button class="chip ' + (S.revOwner === o ? 'on' : '') + '" data-action="revOwner" data-v="' + esc(o) + '">' + esc(o === 'All' ? 'Everyone' : o) + '</button>').join('');
-  const stChips = [['All','All'],['NC','Not complied'],['C','Complied'],['NA','N/A']].map(([k, l]) => '<button class="chip ' + (S.revStatus === k ? 'on' : '') + '" data-action="revStatus" data-v="' + k + '">' + l + '</button>').join('');
+  const stChips = [['All','All'],['NC','Not yet'],['C','Complied'],['NA','N/A']].map(([k, l]) => '<button class="chip ' + (S.revStatus === k ? 'on' : '') + '" data-action="revStatus" data-v="' + k + '">' + l + '</button>').join('');
   const list = d.revisions.filter(r => (S.revOwner === 'All' || r.owner.indexOf(S.revOwner) > -1) && (S.revStatus === 'All' || r.status === S.revStatus));
   const applic = d.revisions.filter(r => r.status !== 'NA'), c = applic.filter(r => r.status === 'C').length;
   const groups = [];
   list.forEach(r => { const g = groups[groups.length - 1]; if (g && g.item === r.item) g.rows.push(r); else groups.push({ item: r.item, rows: [r] }); });
+  const multi = list.length > 1;            // selecting only makes sense with more than one item
+  const SEG = { C: '✓ Complied', NC: 'Not yet', NA: 'N/A' };
   const body = groups.length ? groups.map(g => '<div class="rgroup"><div class="rhead"><span class="rnum">' + esc(g.item) + '</span><h3 style="margin:0">' + esc(g.rows[0].section.split(' – ')[0]) + '</h3></div>' +
     g.rows.map(r => {
       const warn = r.comment.charAt(0) === '⚠';
-      return '<div class="rev ' + esc(r.status) + '"><input type="checkbox" class="pick" data-change="revsel" data-row="' + r.row + '"' + (S.revSel[r.row] ? ' checked' : '') + ' aria-label="Select item">' +
+      return '<div class="rev ' + esc(r.status) + (multi ? '' : ' solo') + '">' + (multi ? '<input type="checkbox" class="pick" data-change="revsel" data-row="' + r.row + '"' + (S.revSel[r.row] ? ' checked' : '') + ' aria-label="Select item">' : '') +
         '<div class="rc"><div class="' + (warn ? 'warn' : '') + '">' + esc(r.comment) + '</div>' +
         '<div class="small muted">' + esc(r.section) + ' · Assigned: <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span>' +
         (r.status === 'C' && r.doneBy ? ' · <span class="doneby">✓ Done by ' + esc(r.doneBy) + '</span>' : '') + '</div>' +
         (r.notes ? '<div class="small" style="margin-top:4px;color:var(--ink)">' + esc(r.notes) + '</div>' : '') + '</div>' +
-        '<div class="seg">' + d.lists.revStatuses.map(s => '<button class="' + s + (r.status === s ? ' on' : '') + '" data-action="rev" data-row="' + r.row + '" data-v="' + s + '">' + s + '</button>').join('') + '</div>' +
-        '<label class="pgl">Page<input type="text" inputmode="numeric" placeholder="—" value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page"></label>' +
-        '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Signed</label></div>';
+        '<div class="rctl"><div class="seg" role="group" aria-label="Status">' + ['C', 'NC', 'NA'].map(s => '<button class="' + s + (r.status === s ? ' on' : '') + '" data-action="rev" data-row="' + r.row + '" data-v="' + s + '" aria-pressed="' + (r.status === s) + '">' + SEG[s] + '</button>').join('') + '</div>' +
+        (r.status === 'C' ? '<div class="rmore"><label class="pgl">Page no.<input type="text" inputmode="numeric" placeholder="e.g. 12" value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page"></label>' +
+          '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Adviser signed</label></div>' : '') + '</div></div>';
     }).join('') + '</div>').join('') : '<div class="empty">No revision items match these filters.</div>';
 
   const withPage = applic.filter(r => r.status === 'C' && r.page).length, signed = applic.filter(r => r.status === 'C' && r.signed).length;
@@ -1249,15 +1276,15 @@ function vRevisions() {
   const openBy = d.members.map(m => m.tab + ' ' + applic.filter(r => r.status !== 'C' && r.owner.indexOf(m.tab) > -1).length).join(' · ');
   const nSel = Object.keys(S.revSel).length;
   const bulk = nSel ? '<div class="bulk"><b>' + nSel + ' selected</b><span class="sp"></span>' +
-      '<button class="btn" data-action="revBulk" data-v="C">✓ Complied (by me)</button>' +
-      '<button class="btn ghost" data-action="revBulk" data-v="NC">Not complied</button>' +
+      '<button class="btn" data-action="revBulk" data-v="C">✓ Complied (done by me)</button>' +
+      '<button class="btn ghost" data-action="revBulk" data-v="NC">Not yet</button>' +
       '<button class="btn ghost" data-action="revSelClear">Clear</button></div>' : '';
   return '<div class="row" style="margin-bottom:6px"><h2 style="margin:0">Panel Revisions</h2><div class="sp"></div><b>' + c + ' / ' + applic.length + ' complied</b></div>' +
     '<div class="card" style="padding:14px 16px"><h3 style="margin:0">' + (ready ? '✅ Ready for endorsement' : 'Readiness') + '</h3>' +
-      '<div class="ready"><div><b>' + c + '/' + applic.length + '</b><span>complied</span></div><div><b>' + withPage + '/' + applic.length + '</b><span>page no.</span></div><div><b>' + signed + '/' + applic.length + '</b><span>signed</span></div></div>' +
-      '<div class="small muted">Open: ' + esc(openBy) + '</div></div>' +
+      '<div class="ready"><div><b>' + c + '/' + applic.length + '</b><span>complied</span></div><div><b>' + withPage + '/' + applic.length + '</b><span>with page no.</span></div><div><b>' + signed + '/' + applic.length + '</b><span>adviser signed</span></div></div>' +
+      '<div class="small muted">Not yet complied: ' + esc(openBy) + '</div></div>' +
     '<div class="row filters"><div class="chips">' + ownerChips + '</div><div class="sp"></div><div class="chips">' + stChips + '</div></div>' +
-    '<div class="row" style="margin-bottom:10px"><button class="btn ghost" data-action="revSelAll">☑ Select all (' + list.length + ')</button></div>' +
+    (multi && !nSel ? '<div class="row" style="margin-bottom:10px"><button class="btn ghost" data-action="revSelAll">☑ Select all ' + list.length + ' to update at once</button></div>' : '') +
     bulk + body;
 }
 
@@ -2089,6 +2116,16 @@ document.addEventListener('click', e => {
   const a = el.dataset.action, v = el.dataset.v;
   if (a === 'install') { doInstall(); return; }
   if (a === 'logout') { logout(); return; }
+  if (a === 'pwToggle') {
+    const inp = el.parentNode.querySelector('input');
+    S.auth.showPw = inp.type === 'password';
+    inp.type = S.auth.showPw ? 'text' : 'password';
+    el.textContent = S.auth.showPw ? '🙈 Hide' : '👁 Show';
+    el.setAttribute('aria-pressed', S.auth.showPw); el.setAttribute('aria-label', S.auth.showPw ? 'Hide password' : 'Show password');
+    inp.focus(); const L = inp.value.length; try { inp.setSelectionRange(L, L); } catch (err) {}
+    return;
+  }
+  if (a === 'clearSearch') { S.q = ''; const q = document.getElementById('q'); if (q) { q.value = ''; q.focus(); } el.hidden = true; renderTaskList(); return; }
   if (a === 'authBack') {
     if (S.auth.busy) return;
     if (S.auth.step === 'email') { store.del(INSTALL_SKIP); document.getElementById('login').hidden = true; document.getElementById('install').hidden = false; return; }
@@ -2274,9 +2311,32 @@ document.addEventListener('toggle', e => {
 }, true);
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[role=button][data-action]')) { e.preventDefault(); e.target.click(); }
+  if (e.key === 'Escape') {                       // Esc closes whatever is open (not the camera)
+    if (S.ov) { closeOv(); return; }
+    if (S.editTask) { S.editTask = null; render(); return; }
+    if (S.addTaskOpen || S.addExpOpen || S.addRec) { S.addTaskOpen = S.addExpOpen = false; S.addRec = null; render(); return; }
+    if (e.target.id === 'q' && S.q) { S.q = ''; e.target.value = ''; renderTaskList(); }
+  }
 });
+// Caps Lock warning on password boxes
+['keydown', 'keyup'].forEach(t => document.addEventListener(t, e => {
+  if (!e.target.matches || !e.target.matches('#authForm [name=pw]') || !e.getModifierState) return;
+  const h = document.getElementById('pwHint'); if (!h) return;
+  if (e.getModifierState('CapsLock')) { h.textContent = '⇪ Caps Lock is on'; h.className = 'fhint warn'; }
+  else if (h.textContent.indexOf('Caps') > -1) { const nw = e.target.dataset.newpw; h.textContent = nw ? pwLenHint(e.target.value) : ''; h.className = 'fhint' + (nw && e.target.value.length >= 8 ? ' ok' : ''); }
+}));
 document.addEventListener('input', e => {
-  if (e.target.id === 'q') { S.q = e.target.value; renderTaskList(); }
+  const t = e.target;
+  if (t.id === 'q') { S.q = t.value; const c = document.getElementById('qClear'); if (c) c.hidden = !S.q; renderTaskList(); }
+  if (t.matches && t.matches('#authForm [name=code]')) {          // pasted "123 456" or "123-456" → 123456, then jump to the password
+    const d = t.value.replace(/\D/g, '').slice(0, 6);
+    if (d !== t.value) t.value = d;
+    const pw = document.querySelector('#authForm [name=pw]');
+    if (d.length === 6 && pw && !pw.value) pw.focus();
+  }
+  if (t.matches && t.matches('#authForm [data-newpw]')) {
+    const h = document.getElementById('pwHint'); if (h && h.textContent.indexOf('Caps') < 0) { h.textContent = pwLenHint(t.value); h.className = 'fhint' + (t.value.length >= 8 ? ' ok' : ''); }
+  }
 });
 
 document.addEventListener('submit', e => {
