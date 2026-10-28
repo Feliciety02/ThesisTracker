@@ -30,8 +30,8 @@ function doGet() {
     '.c{background:#fff;border-radius:18px;padding:28px 24px;max-width:360px;margin:16px;text-align:center;box-shadow:0 8px 24px rgba(31,59,51,.1)}' +
     'h1{font-size:24px;margin:8px 0}p{color:#5f6f66;font-size:14px}' +
     'a{display:block;background:#1f4b3a;color:#fff;text-decoration:none;font-weight:bold;padding:14px;border-radius:12px;margin-top:16px}</style></head>' +
-    '<body><div class="c"><div style="font-size:40px">🍌</div><h1>Banana Thesis Tracker</h1>' +
-    '<p>✅ The tracker server is running. This link is only the connection to the Google Sheet. Open the app to use the tracker.</p>' +
+    '<body><div class="c"><h1>Banana Thesis Tracker</h1>' +
+    '<p>The tracker server is running. This link is only the connection to the Google Sheet. Open the app to use the tracker.</p>' +
     '<a href="' + APP_URL + '" target="_top">Open the tracker app</a></div></body></html>';
   return HtmlService.createHtmlOutput(html).setTitle('Banana Thesis Tracker')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -66,6 +66,7 @@ function doPost(e) {
       try { what = describe_(req.fn, args); } catch (err) {}   // described before the change (so deletes keep their names)
       const result = fn.apply(null, args);   // writes return only what changed (fast)
       try { logActivity_(user, what); } catch (err) { /* never block a save on the log */ }
+      try { const auto = autoLinks_(); if (auto.length) logActivity_('Auto', 'linked updates: ' + auto.join('; ')); } catch (err) { /* linking is a bonus, never a blocker */ }
       bumpVersion_();                        // everyone else's app sees the change within seconds
       return json_({ ok: true, data: result, version: currentVersion_() });
     }
@@ -98,7 +99,7 @@ function short_(t, n) { t = String(t || ''); return t.length > n ? t.slice(0, n 
 
 function describe_(fn, a) {
   const ss = SpreadsheetApp.getActive();
-  const show = v => v === true ? '✔' : v === false ? '✘' : (v === '' || v == null ? '(blank)' : String(v));
+  const show = v => v === true ? 'yes' : v === false ? 'no' : (v === '' || v == null ? '(blank)' : String(v));
   if (fn === 'updateTask') {
     const r = ss.getSheetByName(a[0]).getRange(Number(a[1]), 1, 1, 2).getValues()[0];
     return 'updated ' + r[0] + ' "' + short_(r[1], 50) + '": ' + a[2] + ' → ' + show(a[3]);
@@ -288,7 +289,7 @@ function getData() {
     version: currentVersion_(),
     records: readRecords_(tz),
     settings: readSettings_(),
-    panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde', 'Mr. Hernando', 'Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
+    panel: { adviser: 'Ma\'am Charisse Barbosa', members: ['Mr. Aborde', 'Mr. Hernando', 'Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
   };
 }
 
@@ -407,7 +408,7 @@ function createSample(id) {
     sh.getRange(row, 5).setValue(m.tab);
     sh.getRange(row, 3).setValue(new Date());   // started today
     sh.getRange(row, 7).setFormulaR1C1('=IF(RC6="","",RC1&"_01.jpg … "&RC1&"_"&TEXT(RC6,"00")&".jpg")');
-    sh.getRange(row, 12).setFormulaR1C1('=IF(RC11="","",IF(RC11=RC2,"✓ Match","✗ Differs"))');
+    sh.getRange(row, 12).setFormulaR1C1('=IF(RC11="","",IF(RC11=RC2,"Match","Differs"))');
     sh.getRange(row, 15).setNumberFormat('@');
     return { id: id, row: row };
   });
@@ -563,7 +564,7 @@ function migrateLegacyPhotos_() {
     const id = m[1].toUpperCase();
     f.moveTo(sampleFolder_(id, true)); moved++; ids[id] = 1;
   }
-  if (sh) Object.keys(ids).forEach(id => { const r = sampleRow_(sh, id); if (r > 0) sh.getRange(r, 14).setFormula('=HYPERLINK("' + sampleFolder_(id, false).getUrl() + '","Open photos ↗")'); });
+  if (sh) Object.keys(ids).forEach(id => { const r = sampleRow_(sh, id); if (r > 0) sh.getRange(r, 14).setFormula('=HYPERLINK("' + sampleFolder_(id, false).getUrl() + '","Open photos")'); });
   return moved;
 }
 
@@ -595,12 +596,12 @@ function uploadPhoto(id, angle, b64) {
     const dateCell = sh.getRange(row, 3);
     if (!dateCell.getValue()) dateCell.setValue(new Date());  // first photo = collected today
     const url = folder.getUrl();
-    sh.getRange(row, 14).setFormula('=HYPERLINK("' + url + '","Open photos ↗")');
+    sh.getRange(row, 14).setFormula('=HYPERLINK("' + url + '","Open photos")');
     return { angles: angles, photos: angles.length, folder: url, date: fmtDate_(dateCell.getValue(), tz) };
   });
 }
 
-/** Menu: 🍌 Thesis Tracker → 📷 Connect photo folder. Run once; grants Drive permission. */
+/** Menu: Thesis Tracker → Connect photo folder. Run once; grants Drive permission. */
 function setupPhotoFolder() {
   const ui = SpreadsheetApp.getUi();
   let f;
@@ -611,10 +612,10 @@ function setupPhotoFolder() {
     return;
   }
   let moved = 0; try { moved = migrateLegacyPhotos_(); } catch (e) {}
-  ui.alert('Photo folder connected 📷',
+  ui.alert('Photo folder connected',
     'Photos from the app are saved here, one folder per member and per leaf:\n' + f.getUrl() +
     (moved ? '\n\nMoved ' + moved + ' older photo(s) into their leaf folders.' : '') +
-    '\n\nIf you changed the script, make a New version of the deployment (Deploy → Manage deployments → ✏️ → New version).',
+    '\n\nIf you changed the script, make a New version of the deployment (Deploy → Manage deployments → → New version).',
     ui.ButtonSet.OK);
 }
 
@@ -652,7 +653,7 @@ function uploadReceipt(row, b64) {
   while (old.hasNext()) { const f = old.next(); if (f.getName().indexOf('Receipt_row' + row + '_') === 0) f.setTrashed(true); }
   const file = folder.createFile(Utilities.newBlob(Utilities.base64Decode(String(b64).replace(/^data:image\/\w+;base64,/, '')), 'image/jpeg', name));
   return withLock_(() => {
-    sh.getRange(row, 11).setFormula('=HYPERLINK("' + file.getUrl() + '","Receipt ↗")');
+    sh.getRange(row, 11).setFormula('=HYPERLINK("' + file.getUrl() + '","Receipt")');
     return { receipt: file.getUrl() };
   });
 }
@@ -708,7 +709,7 @@ function exportValidatedDataset() {
 
 function exportValidatedDatasetMenu() {
   const r = exportValidatedDataset();
-  SpreadsheetApp.getUi().alert('Export done 📦', 'Copied ' + r.copied + ' new photo(s).\n\n' +
+  SpreadsheetApp.getUi().alert('Export done', 'Copied ' + r.copied + ' new photo(s).\n\n' +
     Object.keys(r.counts).map(c => c + ': ' + r.counts[c].samples + ' samples, ' + r.counts[c].images + ' images').join('\n') +
     '\n\nFolder: ' + r.folder, SpreadsheetApp.getUi().ButtonSet.OK);
 }
@@ -808,7 +809,7 @@ function revokeTokens_(email) {
 }
 function authLogout(token) { props_().deleteProperty('TOK_' + sha_(String(token || ''))); return true; }
 
-/** Menu: 🔑 Reset someone's password (they get a new code the next time they sign in). */
+/** Menu: Reset someone's password (they get a new code the next time they sign in). */
 function resetMemberPassword() {
   const ui = SpreadsheetApp.getUi();
   const res = ui.prompt('Reset a password', 'Email to reset:\n' + Object.keys(CFG.accounts).join('\n'), ui.ButtonSet.OK_CANCEL);
@@ -833,6 +834,8 @@ function recordLabel_(kind, o) {
   o = o || {};
   if (kind === 'training') return [o.model, o.run].filter(String).join(' · ') || 'run';
   if (kind === 'consults') return [o.with, o.topic].filter(String).join(' · ') || 'consultation';
+  if (kind === 'sources') return o.name || 'source';
+  if (kind === 'ng') return o.item || 'checklist item';
   return o.item || 'item';
 }
 function recordUsed_(R, r) { return R.fields.some((f, i) => f[0] !== 'by' && f[0] !== 'doneBy' && r[i] !== '' && r[i] !== false && r[i] !== null); }
@@ -954,4 +957,79 @@ function submittedOnTime_(collected, submitted) {
   if (!(collected instanceof Date) || !(submitted instanceof Date)) return false;
   const day = d => Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
   return day(submitted) - day(collected) <= 1;
+}
+
+/* ============================================================
+ *  Linked tasks: after every change, related items update themselves.
+ *  Rules only move things FORWARD (never un-tick something a person set).
+ * ============================================================ */
+function autoLinks_() {
+  const ss = SpreadsheetApp.getActive(), done = [];
+  const who = CURRENT_USER || 'Auto';
+  // --- read what the rules need ---
+  const tasks = [];                                       // {tab,row,id,task,category,status}
+  CFG.members.forEach(m => {
+    const sh = ss.getSheetByName(m.tab);
+    if (!sh || sh.getLastRow() < 4) return;
+    sh.getRange(4, 1, sh.getLastRow() - 3, 5).getValues().forEach((r, i) => {
+      if (r[1]) tasks.push({ tab: m.tab, row: i + 4, id: String(r[0]), task: String(r[1]), category: String(r[2]), status: String(r[4] || 'Not Started') });
+    });
+  });
+  const rec = readRecords_(ss.getSpreadsheetTimeZone());
+  const revSh = ss.getSheetByName('Panel Revisions');
+  const revs = revSh && revSh.getLastRow() >= 4 ? revSh.getRange(4, 1, revSh.getLastRow() - 3, 7).getValues().filter(r => r[2]).map(r => ({ owner: String(r[3]), status: String(r[4] || 'NC'), page: String(r[5] || ''), signed: r[6] === true })) : [];
+  const smpSh = ss.getSheetByName('DA RCPC Samples');
+  const samples = smpSh && smpSh.getLastRow() >= 4 ? smpSh.getRange(4, 1, smpSh.getLastRow() - 3, 10).getValues().filter(r => r[0]).map(r => ({ id: String(r[0]), submitted: !!r[9] })) : [];
+  const expSh = ss.getSheetByName('Expenses');
+  let supplies = [];
+  if (expSh) { const tot = suppliesTotalRow_(expSh); if (tot > 3) supplies = expSh.getRange(3, 1, tot - 3, 9).getValues().filter(r => r[0] && r[8] === 'Sample collection').map(r => r[6] === true); }
+
+  // --- helpers that only move forward ---
+  const setTask = (t, status, why) => {
+    const order = { 'Not Started': 0, 'Waiting': 1, 'In Progress': 2, 'Done': 3 };
+    if ((order[t.status] || 0) >= order[status]) return;
+    const sh = ss.getSheetByName(t.tab);
+    sh.getRange(t.row, 5).setValue(status);
+    if (status === 'Done') { if (!sh.getRange(t.row, 9).getValue()) sh.getRange(t.row, 9).setValue(new Date()); if (!sh.getRange(t.row, 10).getValue()) sh.getRange(t.row, 10).setValue(who); }
+    t.status = status; done.push(t.id + ' → ' + status + ' (' + why + ')');
+  };
+  const tasksLike = (re, tab) => tasks.filter(t => re.test(t.task) && (!tab || t.tab === tab));
+  const tickRecord = (kind, re, why) => {
+    const R = RECORDS[kind], sh = ss.getSheetByName(R.tab); if (!sh) return;
+    const doneCol = R.fields.findIndex(f => f[0] === 'done') + 1, byCol = R.fields.findIndex(f => f[0] === 'doneBy') + 1, keyCol = R.fields.findIndex(f => f[0] === 'item') + 1;
+    (rec[kind] || []).filter(x => !x.done && re.test(x.item)).forEach(x => {
+      sh.getRange(x.row, doneCol).setValue(true); if (byCol) sh.getRange(x.row, byCol).setValue(who); x.done = true;
+      done.push(R.tab + ': "' + short_(x.item, 40) + '" ticked (' + why + ')');
+    });
+  };
+
+  // 1) Panel revisions → defense checklist + each member's "Panel Revision" tasks
+  const applic = revs.filter(r => r.status !== 'NA');
+  if (applic.length && applic.every(r => r.status === 'C' && r.page)) tickRecord('defense', /panel revisions complied/i, 'all panel items complied with page no.');
+  if (applic.length && applic.every(r => r.status === 'C' && r.signed)) tickRecord('defense', /adviser signs the revision matrix/i, 'all panel items signed');
+  CFG.members.forEach(m => {
+    const mine = applic.filter(r => r.owner.indexOf(m.tab) > -1);
+    if (mine.length && mine.every(r => r.status === 'C')) tasks.filter(t => t.tab === m.tab && t.category === 'Panel Revision').forEach(t => setTask(t, 'Done', 'all of ' + m.tab + '\'s panel items complied'));
+  });
+  // 2) Sample supplies paid → "Buy supplies"
+  if (supplies.length && supplies.every(Boolean)) tasksLike(/^Buy supplies/i).forEach(t => setTask(t, 'Done', 'all sample supplies paid'));
+  // 3) Samples → each member's "Collect + photograph" task, and "Submit fresh samples"
+  CFG.members.forEach(m => { if (samples.some(x => x.id.indexOf(m.prefix + '-') === 0)) tasksLike(/^Collect \+ photograph your samples/i, m.tab).forEach(t => setTask(t, 'In Progress', 'first sample collected')); });
+  if (samples.some(x => x.submitted)) tasksLike(/^Submit fresh, labeled samples/i).forEach(t => setTask(t, 'Done', 'samples submitted to DA RCPC'));
+  // 4) Training runs → "Retrain the baseline"
+  if ((rec.training || []).some(r => /baseline/i.test(r.model))) tasksLike(/^Retrain the baseline/i).forEach(t => setTask(t, 'Done', 'baseline run logged'));
+  // 5) Dataset sources → Rho's sources task
+  if ((rec.sources || []).length) tasksLike(/online dataset source/i).forEach(t => setTask(t, 'In Progress', 'first source logged'));
+  // 6) Signed minutes consultation → NG checklist item 1 + the consultation task
+  if ((rec.consults || []).some(c => /minute/i.test(c.topic + ' ' + c.feedback) && c.signed)) {
+    tickRecord('ng', /Minutes of the outline defense/i, 'minutes signed by the adviser');
+    tasksLike(/signing of the minutes/i).forEach(t => setTask(t, 'Done', 'minutes signed'));
+  }
+  // 7) NG checklist → its tasks
+  const ng = rec.ng || [];
+  if (ng.length && ng.some(x => x.done)) tasksLike(/NG & Grade Processing checklist|Compile the NG folder/i).forEach(t => setTask(t, 'In Progress', 'NG checklist started'));
+  const folder = ng.filter(x => x.section === 'A2' || x.section === 'A1');
+  if (folder.length && folder.every(x => x.done)) tasksLike(/Compile the NG folder/i).forEach(t => setTask(t, 'Done', 'NG folder complete'));
+  if (ng.length && ng.every(x => x.done)) tasksLike(/NG & Grade Processing checklist/i).forEach(t => setTask(t, 'Done', 'every NG item ticked'));
+  return done;
 }

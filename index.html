@@ -510,8 +510,8 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
 .checklist .auto{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:700}
 details.card>summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}
 details.card>summary::-webkit-details-marker{display:none}
-details.card>summary::after{content:'▾';margin-left:auto;color:var(--muted)}
-details.card[open]>summary::after{content:'▴'}
+details.card>summary::after{content:'';margin-left:auto;width:22px;height:22px;flex:none;background:var(--muted);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M480-344 240-584l43-43 197 197 197-197 43 43-240 240Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M480-344 240-584l43-43 197 197 197-197 43 43-240 240Z'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .2s}
+details.card[open]>summary::after{transform:rotate(180deg)}
 .sheet-table{width:100%;min-width:0;border-collapse:collapse;font-size:13.5px}
 .sheet-table th{position:static}
 .sheet-table td,.sheet-table th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
@@ -561,11 +561,11 @@ h2{font-weight:700;letter-spacing:-.015em}
 .bigcam,.login-card .btn,.addtoggle{border-radius:999px}
 .batch .newsample{border-radius:16px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .bulk .btn{border-radius:999px}
-/* filter chips: 8px corners, tonal + ✓ when selected */
+/* filter chips: 8px corners, tonal + check when selected */
 .chip{border-radius:8px;border:1px solid var(--outline);background:transparent;padding:6px 12px;font-weight:500;color:var(--ink);min-height:32px;display:inline-flex;align-items:center;gap:6px;transition:background-color .15s}
 .chip:hover{background:var(--hover)}
 .chip.on{background:var(--tonal);color:var(--on-tonal);border-color:transparent;font-weight:600}
-.chip.on:not(:has(.dot))::before{content:'✓';font-weight:800;font-size:12px}
+.chip.on:not(:has(.dot))::before{content:'';width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z'/%3E%3C/svg%3E") center/contain no-repeat}
 .chip .dot{margin-right:0}
 /* cards and containers: outlined, softer corners, no heavy shadow */
 .card,.stat,.sc,.lnk,.gal-row,.drow,.rev,.viewbar,.checklist li,.fsteps li{border-radius:16px}
@@ -678,23 +678,68 @@ img,svg,video,table{max-width:100%}
   .brand h1{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:clamp(14px,4.6vw,21px);line-height:1.05}
 }
 @media (max-width:360px){ .logo{width:32px;height:32px} .hd{gap:8px} .brand{gap:8px} }
+
+/* Panel tab */
+.seg2{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--outline);border-radius:999px;overflow:hidden;margin:0 0 14px;max-width:420px}
+.seg2 button{background:transparent;border:0;padding:10px 12px;font-weight:600;color:var(--ink);cursor:pointer;display:inline-flex;gap:6px;align-items:center;justify-content:center;min-height:40px}
+.seg2 button+button{border-left:1px solid var(--outline)}
+.seg2 button.on{background:var(--tonal);color:var(--on-tonal)}
+.revsum{padding:14px 16px;margin-bottom:12px}
+.revsum .big{font-family:var(--hfont);font-size:26px;color:var(--brand)}
+.btn.tonal{background:var(--tonal);color:var(--on-tonal)}
+.btn.text{background:transparent;color:var(--brand);padding:8px 12px;min-height:36px}
+.btn.text:hover{background:var(--hover);box-shadow:none}
+.ritem{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:8px}
+.ritem.sel{grid-template-columns:28px minmax(0,1fr)}
+.ritem.sel>.rbody{grid-column:2}
+.ritem.C{background:var(--ok-soft);border-color:transparent}
+.ritem.NA{opacity:.6}
+.ritem .pick{width:22px;height:22px;margin-top:2px}
+.ract{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.ract .state{display:inline-flex;gap:6px;align-items:center;font-weight:700;color:var(--ok)}
+.ract .state.na{color:var(--muted)}
+.rmore2{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.rmore2 .pgl input{width:90px}
+.ngsec{margin:18px 0 8px}
+.ngsec h3{margin:0}
+.ngsec p{margin:4px 0 0}
+.who{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700}
+.who i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--muted));display:inline-block}
+.srctable td,.srctable th{white-space:nowrap}
+.srctable tfoot td{font-weight:800;border-top:2px solid var(--line)}
+@media (max-width:720px){.ract .btn.tonal{flex:1}}
+
+/* Google Material icons */
+.ic{width:1.2em;height:1.2em;fill:currentColor;vertical-align:-.25em;flex:none;display:inline-block}
+.ic.big{width:32px;height:32px;color:var(--brand)}
+.btn .ic,.chip .ic,.morebtn .ic,.cam-btn .ic,.linkbtn .ic{margin-right:2px}
+.iconbtn .ic{width:20px;height:20px;vertical-align:middle}
+.tagp .ic,.qchip .ic,.doneby .ic{width:1.05em;height:1.05em}
+#toast{display:flex;align-items:center;gap:10px}
+#toast .ic{width:20px;height:20px}
+.installcard{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding:14px 16px}
+.bnav svg{fill:currentColor!important;stroke:none!important}
+.vf-tile .w .ic,.tile .badge .ic,.strip3 .w .ic{width:16px;height:16px;color:#fff;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+.offline .ic{margin-right:6px}
+.warnmark{color:var(--red)}
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><!-- Google Material Symbols (Apache 2.0) --><symbol id="i-check" viewBox="0 -960 960 960"><path d="M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z"/></symbol><symbol id="i-close" viewBox="0 -960 960 960"><path d="m249-207-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/></symbol><symbol id="i-warning" viewBox="0 -960 960 960"><path d="m40-120 440-760 440 760H40Zm104-60h672L480-760 144-180Zm361.5-65.68q8.5-8.67 8.5-21.5 0-12.82-8.68-21.32-8.67-8.5-21.5-8.5-12.82 0-21.32 8.68-8.5 8.67-8.5 21.5 0 12.82 8.68 21.32 8.67 8.5 21.5 8.5 12.82 0 21.32-8.68ZM454-348h60v-224h-60v224Zm26-122Z"/></symbol><symbol id="i-cloud_off" viewBox="0 -960 960 960"><path d="M818-56 703-171H248q-88 0-148-59T40-377q0-80 50.5-134T217-577q2-14 6.5-31.5T236-640L70-806l42-42L861-99l-43 43ZM248-231h397L285-591q-11 15-14.5 34t-3.5 37h-19q-62 0-105 39.5t-43 101q0 61.5 43 105T248-231Zm216-181Zm390 210-47-47q25-17 39-38t14-50q0-43-31-73.5T755-441h-67v-81q0-88-61-147.5T478.47-729q-28.47 0-60.97 9T358-691l-42-42q36-29 77.5-42.5T478-789q111 0 190.5 79T748-520v21q72-1 122 45t50 117q0 35-16.5 73.5T854-202ZM583-470Z"/></symbol><symbol id="i-hourglass_empty" viewBox="0 -960 960 960"><path d="M308-140h344v-127q0-72-50-121.5T480-438q-72 0-122 49.5T308-267v127Zm294-432q50-50 50-122v-126H308v126q0 72 50 122t122 50q72 0 122-50ZM160-80v-60h88v-127q0-71 40-129t106-84q-66-27-106-85t-40-129v-126h-88v-60h640v60h-88v126q0 71-40 129t-106 85q66 26 106 84t40 129v127h88v60H160Z"/></symbol><symbol id="i-open_in_new" viewBox="0 -960 960 960"><path d="M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h279v60H180v600h600v-279h60v279q0 24-18 42t-42 18H180Zm202-219-42-43 398-398H519v-60h321v321h-60v-218L382-339Z"/></symbol><symbol id="i-delete" viewBox="0 -960 960 960"><path d="M261-120q-24.75 0-42.37-17.63Q201-155.25 201-180v-570h-41v-60h188v-30h264v30h188v60h-41v570q0 24-18 42t-42 18H261Zm438-630H261v570h438v-570ZM367-266h60v-399h-60v399Zm166 0h60v-399h-60v399ZM261-750v570-570Z"/></symbol><symbol id="i-photo_camera" viewBox="0 -960 960 960"><path d="M479.5-267q72.5 0 121.5-49t49-121.5q0-72.5-49-121T479.5-607q-72.5 0-121 48.5t-48.5 121q0 72.5 48.5 121.5t121 49Zm0-60q-47.5 0-78.5-31.5t-31-79q0-47.5 31-78.5t78.5-31q47.5 0 79 31t31.5 78.5q0 47.5-31.5 79t-79 31.5ZM140-120q-24 0-42-18t-18-42v-513q0-23 18-41.5t42-18.5h147l73-87h240l73 87h147q23 0 41.5 18.5T880-693v513q0 24-18.5 42T820-120H140Zm0-60h680v-513H645l-73-87H388l-73 87H140v513Zm340-257Z"/></symbol><symbol id="i-keyboard_arrow_down" viewBox="0 -960 960 960"><path d="M480-344 240-584l43-43 197 197 197-197 43 43-240 240Z"/></symbol><symbol id="i-keyboard_arrow_up" viewBox="0 -960 960 960"><path d="M480-554 283-357l-43-43 240-240 240 240-43 43-197-197Z"/></symbol><symbol id="i-upload" viewBox="0 -960 960 960"><path d="M450-313v-371L330-564l-43-43 193-193 193 193-43 43-120-120v371h-60ZM220-160q-24 0-42-18t-18-42v-143h60v143h520v-143h60v143q0 24-18 42t-42 18H220Z"/></symbol><symbol id="i-download" viewBox="0 -960 960 960"><path d="M480-313 287-506l43-43 120 120v-371h60v371l120-120 43 43-193 193ZM220-160q-24 0-42-18t-18-42v-143h60v143h520v-143h60v143q0 24-18 42t-42 18H220Z"/></symbol><symbol id="i-assignment" viewBox="0 -960 960 960"><path d="M180-120q-24.75 0-42.37-17.63Q120-155.25 120-180v-600q0-24.75 17.63-42.38Q155.25-840 180-840h205q5-35 32-57.5t63-22.5q36 0 63 22.5t32 57.5h205q24.75 0 42.38 17.62Q840-804.75 840-780v600q0 24.75-17.62 42.37Q804.75-120 780-120H180Zm0-60h600v-600H180v600Zm100-100h273v-60H280v60Zm0-170h400v-60H280v60Zm0-170h400v-60H280v60Zm224.5-187.5Q515-818 515-832t-10.5-24.5Q494-867 480-867t-24.5 10.5Q445-846 445-832t10.5 24.5Q466-797 480-797t24.5-10.5ZM180-180v-600 600Z"/></symbol><symbol id="i-photo_library" viewBox="0 -960 960 960"><path d="M345-377h391L609-548 506-413l-68-87-93 123Zm-85 177q-24 0-42-18t-18-42v-560q0-24 18-42t42-18h560q24 0 42 18t18 42v560q0 24-18 42t-42 18H260Zm0-60h560v-560H260v560ZM140-80q-24 0-42-18t-18-42v-620h60v620h620v60H140Zm120-740v560-560Z"/></symbol><symbol id="i-content_copy" viewBox="0 -960 960 960"><path d="M300-200q-24 0-42-18t-18-42v-560q0-24 18-42t42-18h440q24 0 42 18t18 42v560q0 24-18 42t-42 18H300Zm0-60h440v-560H300v560ZM180-80q-24 0-42-18t-18-42v-620h60v620h500v60H180Zm120-180v-560 560Z"/></symbol><symbol id="i-location_on" viewBox="0 -960 960 960"><path d="M529.5-510.5Q550-531 550-560t-20.5-49.5Q509-630 480-630t-49.5 20.5Q410-589 410-560t20.5 49.5Q451-490 480-490t49.5-20.5ZM480-159q133-121 196.5-219.5T740-552q0-118-75.5-193T480-820q-109 0-184.5 75T220-552q0 75 65 173.5T480-159Zm0 79Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Zm0-480Z"/></symbol><symbol id="i-arrow_back" viewBox="0 -960 960 960"><path d="m274-450 248 248-42 42-320-320 320-320 42 42-248 248h526v60H274Z"/></symbol><symbol id="i-arrow_forward" viewBox="0 -960 960 960"><path d="M686-450H160v-60h526L438-758l42-42 320 320-320 320-42-42 248-248Z"/></symbol><symbol id="i-check_circle" viewBox="0 -960 960 960"><path d="m421-298 283-283-46-45-237 237-120-120-45 45 165 166Zm59 218q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-156t86-127Q252-817 325-848.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82-31.5 155T763-197.5q-54 54.5-127 86T480-80Zm0-60q142 0 241-99.5T820-480q0-142-99-241t-241-99q-141 0-240.5 99T140-480q0 141 99.5 240.5T480-140Zm0-340Z"/></symbol><symbol id="i-edit" viewBox="0 -960 960 960"><path d="M180-180h44l472-471-44-44-472 471v44Zm-60 60v-128l575-574q8-8 19-12.5t23-4.5q11 0 22 4.5t20 12.5l44 44q9 9 13 20t4 22q0 11-4.5 22.5T823-694L248-120H120Zm659-617-41-41 41 41Zm-105 64-22-22 44 44-22-22Z"/></symbol><symbol id="i-select_check_box" viewBox="0 -960 960 960"><path d="M180-120q-24.75 0-42.37-17.63Q120-155.25 120-180v-600q0-24.75 17.63-42.38Q155.25-840 180-840h600q14 0 25.5 6t18.5 14l-44 44v-4H180v600h600v-343l60-60v403q0 24.75-17.62 42.37Q804.75-120 780-120H180Zm281-168L239-510l42-42 180 180 382-382 42 42-424 424Z"/></symbol><symbol id="i-alarm" viewBox="0 -960 960 960"><path d="M339.5-110q-65.5-28-114-76.5t-77-114Q120-366 120-440.73q0-74.74 28.5-140Q177-646 225.5-695t114-77Q405-800 479-800t139.5 28Q684-744 733-695t77 114.27q28 65.26 28 140 0 74.73-28 140.23-28 65.5-77 114T618.5-110Q553-82 479-82t-139.5-28ZM479-439Zm121 161 42-42-130-130v-190h-60v214l148 148ZM214-867l42 42L92-667l-42-42 164-158Zm530 0 164 158-42 42-164-158 42-42ZM479.04-142Q604-142 691-229.04q87-87.05 87-212Q778-566 690.96-653q-87.05-87-212-87Q354-740 267-652.96q-87 87.05-87 212Q180-316 267.04-229q87.05 87 212 87Z"/></symbol><symbol id="i-notification_important" viewBox="0 -960 960 960"><path d="M450-426h60v-214h-60v214Zm29.98 106q14.02 0 23.52-9.48t9.5-23.5q0-14.02-9.48-23.52t-23.5-9.5q-14.02 0-23.52 9.48t-9.5 23.5q0 14.02 9.48 23.52t23.5 9.5ZM160-200v-60h80v-304q0-84 49.5-150.5T420-798v-22q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v22q81 17 130.5 83.5T720-564v304h80v60H160Zm320-302Zm0 422q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM300-260h360v-304q0-75-52.5-127.5T480-744q-75 0-127.5 52.5T300-564v304Z"/></symbol><symbol id="i-backpack" viewBox="0 -960 960 960"><path d="M220-80q-24.75 0-42.37-17.63Q160-115.25 160-140v-510q0-55 34-95.5t86-50.5v-84h100v80h200v-80h100v84q52 10 86 50.5t34 95.5v510q0 24.75-17.62 42.37Q764.75-80 740-80H220Zm0-60h520v-510q0-38-26-64t-64-26H310q-37.12 0-63.56 26Q220-688 220-650v510Zm400-190h60v-140H280v60h340v80ZM480-440Z"/></symbol><symbol id="i-visibility" viewBox="0 -960 960 960"><path d="M600.5-379.5Q650-429 650-500t-49.5-120.5Q551-670 480-670t-120.5 49.5Q310-571 310-500t49.5 120.5Q409-330 480-330t120.5-49.5Zm-200-41Q368-453 368-500t32.5-79.5Q433-612 480-612t79.5 32.5Q592-547 592-500t-32.5 79.5Q527-388 480-388t-79.5-32.5ZM216-283Q98-366 40-500q58-134 176-217t264-83q146 0 264 83t176 217q-58 134-176 217t-264 83q-146 0-264-83Zm264-217Zm222.5 174.5Q804-391 857-500q-53-109-154.5-174.5T480-740q-121 0-222.5 65.5T102-500q54 109 155.5 174.5T480-260q121 0 222.5-65.5Z"/></symbol><symbol id="i-visibility_off" viewBox="0 -960 960 960"><path d="m629-419-44-44q26-71-27-118t-115-24l-44-44q17-11 38-16t43-5q71 0 120.5 49.5T650-500q0 22-5.5 43.5T629-419Zm129 129-40-40q49-36 85.5-80.5T857-500q-50-111-150-175.5T490-740q-42 0-86 8t-69 19l-46-47q35-16 89.5-28T485-800q143 0 261.5 81.5T920-500q-26 64-67 117t-95 93Zm58 226L648-229q-35 14-79 21.5t-89 7.5q-146 0-265-81.5T40-500q20-52 55.5-101.5T182-696L56-822l42-43 757 757-39 44ZM223-654q-37 27-71.5 71T102-500q51 111 153.5 175.5T488-260q33 0 65-4t48-12l-64-64q-11 5-27 7.5t-30 2.5q-70 0-120-49t-50-121q0-15 2.5-30t7.5-27l-97-97Zm305 142Zm-116 58Z"/></symbol><symbol id="i-folder" viewBox="0 -960 960 960"><path d="M140-160q-24 0-42-18.5T80-220v-520q0-23 18-41.5t42-18.5h281l60 60h339q23 0 41.5 18.5T880-680v460q0 23-18.5 41.5T820-160H140Zm0-60h680v-460H456l-60-60H140v520Zm0 0v-520 520Z"/></symbol><symbol id="i-description" viewBox="0 -960 960 960"><path d="M319-250h322v-60H319v60Zm0-170h322v-60H319v60ZM220-80q-24 0-42-18t-18-42v-680q0-24 18-42t42-18h361l219 219v521q0 24-18 42t-42 18H220Zm331-554v-186H220v680h520v-494H551ZM220-820v186-186 680-680Z"/></symbol><symbol id="i-inventory_2" viewBox="0 -960 960 960"><path d="M180-80q-24.75 0-42.37-17.63Q120-115.25 120-140v-483q-17-6-28.5-21.39T80-680v-140q0-24.75 17.63-42.38Q115.25-880 140-880h680q24.75 0 42.38 17.62Q880-844.75 880-820v140q0 20.22-11.5 35.61T840-623v483q0 24.75-17.62 42.37Q804.75-80 780-80H180Zm0-540v480h600v-480H180Zm-40-60h680v-140H140v140Zm220 260h240v-60H360v60Zm120 40Z"/></symbol><symbol id="i-print" viewBox="0 -960 960 960"><path d="M658-648v-132H302v132h-60v-192h476v192h-60Zm-518 60h680-680Zm599 95q12 0 21-9t9-21q0-12-9-21t-21-9q-12 0-21 9t-9 21q0 12 9 21t21 9Zm-81 313v-192H302v192h356Zm60 60H242v-176H80v-246q0-45.05 30.5-75.53Q141-648 186-648h588q45.05 0 75.53 30.47Q880-587.05 880-542v246H718v176Zm102-236v-186.21Q820-562 806.78-575q-13.23-13-32.78-13H186q-19.55 0-32.77 13.22Q140-561.55 140-542v186h102v-76h476v76h102Z"/></symbol><symbol id="i-content_cut" viewBox="0 -960 960 960"><path d="M782-114 481-415 364-298q11 17 13.5 33t2.5 35q0 64-43 107T230-80q-64 0-107-43T80-230q0-64 43-107t107-43q18 0 35.5 5t36.5 15l116-116-118-118q-17 8-34.5 11t-35.5 3q-64 0-107-43T80-730q0-64 43-107t107-43q64 0 107 43t43 107q0 19-2.5 36T367-662l514 514v34h-99ZM599-527l-66-66 249-249h99v33L599-527ZM294-666q26-26 26-64t-26-64q-26-26-64-26t-64 26q-26 26-26 64t26 64q26 26 64 26t64-26Zm202.5 203.5Q502-468 502-476t-5.5-13.5Q491-495 483-495t-13.5 5.5Q464-484 464-476t5.5 13.5Q475-457 483-457t13.5-5.5ZM294-166q26-26 26-64t-26-64q-26-26-64-26t-64 26q-26 26-26 64t26 64q26 26 64 26t64-26Z"/></symbol><symbol id="i-receipt_long" viewBox="0 -960 960 960"><path d="M222-80q-43.75 0-74.37-30.63Q117-141.25 117-185v-125h127v-570l59.8 60 59.8-60 59.8 60 59.8-60 59.8 60 60-60 60 60 60-60 60 60 60-60v695q0 43.75-30.62 74.37Q781.75-80 738-80H222Zm516-60q20 0 32.5-12.5T783-185v-595H304v470h389v125q0 20 12.5 32.5T738-140ZM357-622v-60h240v60H357Zm0 134v-60h240v60H357Zm333-134q-12 0-21-9t-9-21q0-12 9-21t21-9q12 0 21 9t9 21q0 12-9 21t-21 9Zm0 129q-12 0-21-9t-9-21q0-12 9-21t21-9q12 0 21 9t9 21q0 12-9 21t-21 9ZM221-140h412v-110H177v65q0 20 12.65 32.5T221-140Zm-44 0v-110 110Z"/></symbol><symbol id="i-school" viewBox="0 -960 960 960"><path d="M479-120 189-279v-240L40-600l439-240 441 240v317h-60v-282l-91 46v240L479-120Zm0-308 315-172-315-169-313 169 313 172Zm0 240 230-127v-168L479-360 249-485v170l230 127Zm1-240Zm-1 74Zm0 0Z"/></symbol><symbol id="i-keyboard_capslock" viewBox="0 -960 960 960"><path d="M240-240v-60h480v60H240Zm240-496 235 235-43 43-192-192-188 188-43-43 231-231Z"/></symbol><symbol id="i-sync" viewBox="0 -960 960 960"><path d="M167-160v-60h130l-15-12q-64-51-93-111t-29-134q0-106 62.5-190.5T387-784v62q-75 29-121 96.5T220-477q0 63 23.5 109.5T307-287l30 21v-124h60v230H167Zm407-15v-63q76-29 121-96.5T740-483q0-48-23.5-97.5T655-668l-29-26v124h-60v-230h230v60H665l15 14q60 56 90 120t30 123q0 106-62 191T574-175Z"/></symbol><symbol id="i-add" viewBox="0 -960 960 960"><path d="M450-450H200v-60h250v-250h60v250h250v60H510v250h-60v-250Z"/></symbol><symbol id="i-error" viewBox="0 -960 960 960"><path d="M503.5-289.48q9.5-9.48 9.5-23.5t-9.48-23.52q-9.48-9.5-23.5-9.5t-23.52 9.48q-9.5 9.48-9.5 23.5t9.48 23.52q9.48 9.5 23.5 9.5t23.52-9.48ZM453-433h60v-253h-60v253Zm27.27 353q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></symbol><symbol id="i-mobile_arrow_down" viewBox="0 -960 960 960"><path d="M260-40q-24.75 0-42.37-17.63Q200-75.25 200-100v-760q0-24 18-42t42-18h438q24.75 0 42.38 17.62Q758-884.75 758-860v150q18 3 30 16.95 12 13.96 12 31.63V-587q0 19-12 33t-30 17v437q0 24.75-17.62 42.37Q722.75-40 698-40H260Zm0-60h438v-760H260v760Zm0 0v-760 760Zm220-218 155-155-43-43-82 82v-194h-60v194l-82-82-43 43 155 155Z"/></symbol><symbol id="i-ios_share" viewBox="0 -960 960 960"><path d="M220-80q-24 0-42-18t-18-42v-469q0-24 18-42t42-18h169v60H220v469h520v-469H569v-60h171q24 0 42 18t18 42v469q0 24-18 42t-42 18H220Zm229-267v-457l-88 88-43-43 161-161 161 161-43 43-88-88v457h-60Z"/></symbol><symbol id="i-home" viewBox="0 -960 960 960"><path d="M220-180h150v-250h220v250h150v-390L480-765 220-570v390Zm-60 60v-480l320-240 320 240v480H530v-250H430v250H160Zm320-353Z"/></symbol><symbol id="i-task_alt" viewBox="0 -960 960 960"><path d="M480-80q-85 0-158-30.5T195-195q-54-54-84.5-127T80-480q0-84 30.5-157T195-764q54-54 127-85t158-31q75 0 140 24t117 66l-43 43q-44-35-98-54t-116-19q-145 0-242.5 97.5T140-480q0 145 97.5 242.5T480-140q145 0 242.5-97.5T820-480q0-30-4.5-58.5T802-594l46-46q16 37 24 77t8 83q0 85-31 158t-85 127q-54 54-127 84.5T480-80Zm-59-218L256-464l45-45 120 120 414-414 46 45-460 460Z"/></symbol><symbol id="i-eco" viewBox="0 -960 960 960"><path d="M213-175q-43.59-45-68.3-104Q120-338 120-400q0-73 25.5-133.5T222-645q35-35 87-59t122.5-37.5Q502-755 591-758.5t198 3.5q8 108 5.5 197.5t-16 160.75q-13.5 71.25-38 124.56Q716-218.87 680-183q-51 51-110 77T444-80q-69 0-126.5-23.5T213-175Zm103 0q25 17 58 26t69.92 9Q497-140 547-162t91-64q27-27 46-70.5t31-103Q727-459 731-534t0-165q-94-2-168.5 2.5T431-680q-57 12-98 30.5T266-604q-42 43-64 91t-22 98q0 48 20.5 100.5T251-230q53-98 127-176t157-123q-87 75-141 162.5T316-175Zm0 0Zm0 0Z"/></symbol><symbol id="i-grid_view" viewBox="0 -960 960 960"><path d="M120-510v-330h330v330H120Zm0 390v-330h330v330H120Zm390-390v-330h330v330H510Zm0 390v-330h330v330H510ZM180-570h210v-210H180v210Zm390 0h210v-210H570v210Zm0 390h210v-210H570v210Zm-390 0h210v-210H180v210Zm390-390Zm0 180Zm-180 0Zm0-180Z"/></symbol><symbol id="i-table_chart" viewBox="0 -960 960 960"><path d="M780-121H180q-24 0-42-18t-18-42v-599q0-24 18-42t42-18h600q24 0 42 18t18 42v599q0 24-18 42t-42 18ZM180-639h600v-141H180v141Zm130 60H180v398h130v-398Zm340 0v398h130v-398H650Zm-60 0H370v398h220v-398Z"/></symbol><symbol id="i-mail" viewBox="0 -960 960 960"><path d="M140-160q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h680q24 0 42 18t18 42v520q0 24-18 42t-42 18H140Zm340-302L140-685v465h680v-465L480-462Zm0-60 336-218H145l335 218ZM140-685v-55 520-465Z"/></symbol><symbol id="i-link" viewBox="0 -960 960 960"><path d="M450-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h170v60H280q-58.33 0-99.17 40.76-40.83 40.77-40.83 99Q140-422 180.83-381q40.84 41 99.17 41h170v60ZM325-450v-60h310v60H325Zm185 170v-60h170q58.33 0 99.17-40.76 40.83-40.77 40.83-99Q820-538 779.17-579q-40.84-41-99.17-41H510v-60h170q83 0 141.5 58.5T880-480q0 83-58.5 141.5T680-280H510Z"/></symbol><symbol id="i-dataset" viewBox="0 -960 960 960"><path d="M290-290h140v-140H290v140Zm240 0h140v-140H530v140ZM290-530h140v-140H290v140Zm240 0h140v-140H530v140ZM180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Zm0-600v600-600Z"/></symbol><symbol id="i-database" viewBox="0 -960 960 960"><path d="M480-120q-151 0-255.5-46.5T120-280v-400q0-66 105.5-113T480-840q149 0 254.5 47T840-680v400q0 67-104.5 113.5T480-120Zm0-488q86 0 176.5-26.5T773-694q-27-32-117.5-59T480-780q-88 0-177 26t-117 60q28 35 116 60.5T480-608Zm-1 214q42 0 84-4.5t80.5-13.5q38.5-9 73.5-22t63-29v-155q-29 16-64 29t-74 22q-39 9-80 14t-83 5q-42 0-84-5t-80.5-14q-38.5-9-73-22T180-618v155q27 16 61 29t72.5 22q38.5 9 80.5 13.5t85 4.5Zm1 214q48 0 99-8.5t93.5-22.5q42.5-14 72-31t35.5-35v-125q-28 16-63 28.5T643.5-352q-38.5 9-80 13.5T479-334q-43 0-85-4.5T313.5-352q-38.5-9-72.5-21.5T180-402v126q5 17 34 34.5t72 31q43 13.5 94 22t100 8.5Z"/></symbol><symbol id="i-event" viewBox="0 -960 960 960"><path d="M528-248.18q-28-28.19-28-69Q500-358 528.18-386q28.19-28 69-28Q638-414 666-385.82q28 28.19 28 69Q694-276 665.82-248q-28.19 28-69 28Q556-220 528-248.18ZM180-80q-24 0-42-18t-18-42v-620q0-24 18-42t42-18h65v-60h65v60h340v-60h65v60h65q24 0 42 18t18 42v620q0 24-18 42t-42 18H180Zm0-60h600v-430H180v430Zm0-490h600v-130H180v130Zm0 0v-130 130Z"/></symbol><symbol id="i-home-fill" viewBox="0 -960 960 960"><path d="M160-120v-480l320-240 320 240v480H560v-280H400v280H160Z"/></symbol><symbol id="i-task_alt-fill" viewBox="0 -960 960 960"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q63 0 119.5 18T704-812l-61 61q-36-21-77-33t-86-12q-131 0-223.5 92.5T164-480q0 131 92.5 223.5T480-164q131 0 223.5-92.5T796-480q0-17-1.5-32.5T790-543l68-68q11 31 16.5 63.5T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-55-217L254-469l59-59 113 113 395-395 59 58-455 455Z"/></symbol><symbol id="i-assignment-fill" viewBox="0 -960 960 960"><path d="M180-120q-25 0-42.5-17.5T120-180v-600q0-25 17.5-42.5T180-840h205q5-35 32-57.5t63-22.5q36 0 63 22.5t32 57.5h205q25 0 42.5 17.5T840-780v600q0 25-17.5 42.5T780-120H180Zm100-160h273v-60H280v60Zm0-170h400v-60H280v60Zm0-170h400v-60H280v60Zm224.5-187.5Q515-818 515-832t-10.5-24.5Q494-867 480-867t-24.5 10.5Q445-846 445-832t10.5 24.5Q466-797 480-797t24.5-10.5Z"/></symbol><symbol id="i-eco-fill" viewBox="0 -960 960 960"><path d="M444-80q-42 0-78.5-8T298-112q32-119 87.5-230.5T535-529q-112 54-194.5 150T228-161q-4-4-7.5-7t-7.5-7q-45-45-69-103t-24-122q0-69 26-133t75-113q77-79 200-102.5t368-6.5q19 238-5.5 365T679-183q-48 50-109 76.5T444-80Z"/></symbol><symbol id="i-receipt_long-fill" viewBox="0 -960 960 960"><path d="M222-80q-43.75 0-74.37-30.63Q117-141.25 117-185v-125h127v-570l59.8 60 59.8-60 59.8 60 59.8-60 59.8 60 60-60 60 60 60-60 60 60 60-60v695q0 43.75-30.62 74.37Q781.75-80 738-80H222Zm514.5-60q19.5 0 31.5-12.5t12-32.5v-611H307v536h390v75q0 20 10 32.5t29.5 12.5ZM360-642v-60h240v60H360Zm0 134v-60h240v60H360Zm333-134q-12 0-21-9t-9-21q0-12 9-21t21-9q12 0 21 9t9 21q0 12-9 21t-21 9Zm0 129q-12 0-21-9t-9-21q0-12 9-21t21-9q12 0 21 9t9 21q0 12-9 21t-21 9Z"/></symbol><symbol id="i-grid_view-fill" viewBox="0 -960 960 960"><path d="M120-510v-330h330v330H120Zm0 390v-330h330v330H120Zm390-390v-330h330v330H510Zm0 390v-330h330v330H510Z"/></symbol></svg>
 <div id="install" class="login" hidden>
   <div class="login-card">
     <div class="card-top"><div class="logo" style="width:56px;height:56px"><img src="icons/favicon.svg" alt="" width="56" height="56"></div></div>
     <h2>Get the app</h2>
     <p class="sub">Works offline on the farm.</p>
-    <button class="btn" data-action="installNow" id="installNow">⬇ Install</button>
-    <p class="small muted" id="iosHint" hidden style="margin:0">Tap <b>Share</b> <span aria-hidden="true">⬆</span> then <b>Add to Home Screen</b>.</p>
+    <button class="btn" data-action="installNow" id="installNow"><svg class="ic" aria-hidden="true"><use href="#i-mobile_arrow_down"/></svg> Install</button>
+    <p class="small muted" id="iosHint" hidden style="margin:0">Tap <b>Share</b> <svg class="ic" aria-hidden="true"><use href="#i-ios_share"/></svg> then <b>Add to Home Screen</b>.</p>
     <div class="auth-links"><button class="linkbtn" data-action="installSkip">Not now</button></div>
   </div>
 </div>
 <div id="login" class="login" hidden>
   <form id="authForm" class="login-card" autocomplete="on" novalidate>
     <div class="card-top"><div class="logo" style="width:56px;height:56px"><img src="icons/favicon.svg" alt="" width="56" height="56"></div>
-      <button type="button" class="backbtn" id="authBackBtn" data-action="authBack" hidden>← Back</button></div>
+      <button type="button" class="backbtn" id="authBackBtn" data-action="authBack" hidden><svg class="ic" aria-hidden="true"><use href="#i-arrow_back"/></svg> Back</button></div>
     <h2 id="authTitle">Sign in</h2>
     <p class="sub" id="authSub"></p>
     <div id="authBody"></div>
@@ -720,7 +765,6 @@ img,svg,video,table{max-width:100%}
         </div>
       </div>
       <div class="hd-right">
-        <button class="install" id="installBtn" data-action="install" hidden aria-label="Install app" title="Install app"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span>Install app</span></button>
         <button class="me" id="meChip" data-action="logout" hidden title="Log out"></button>
         <span class="qchip" id="syncChip" hidden></span>
         <div class="pill" id="countPill">DA RCPC submission · <b>set date</b></div>
@@ -828,7 +872,7 @@ const Demo = (() => {
     T('F-09','Buy supplies: cotton, plastic bags, markers, masking tape','DA RCPC','High','Not Started',3,''),
     T('F-10','Lead field collection of fresh banana leaf samples (whole team)','DA RCPC','High','Not Started',8,''),
     T('F-11','Submit fresh, labeled samples to DA RCPC Davao','DA RCPC','High','Not Started',10,''),
-    T('F-13','Collect + photograph your samples: tap ＋ New sample for each leaf (FA-001, FA-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
+    T('F-13','Collect + photograph your samples: tap New sample for each leaf (FA-001, FA-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
     T('F-12','Lead panel revisions: Problem, Purpose, Objectives, Scope & Limitations','Panel Revision','High','Not Started',14,''),
   ];
   r = 4;
@@ -837,7 +881,7 @@ const Demo = (() => {
     T('R-02','Re-curate the dataset','Dataset','High','In Progress',2,'cf'),
     T('R-03','Record the image count for each class','Dataset','Medium','Not Started',3,''),
     T('R-04','Send public dataset links to Cha for citation','Dataset','Medium','Not Started',2,'ps'),
-    T('R-05','Collect + photograph your samples: tap ＋ New sample for each leaf (RJ-001, RJ-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
+    T('R-05','Collect + photograph your samples: tap New sample for each leaf (RJ-001, RJ-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
     T('R-06','Add RCPC-validated images to the dataset and update class counts','Dataset','Medium','Not Started','',''),
     T('R-07','Methodology revisions: preprocessing, split, model construction, tuning','Panel Revision','High','Not Started',14,''),
   ];
@@ -848,7 +892,7 @@ const Demo = (() => {
     T('C-03','Fill in the new docs file, including the public dataset link from Rho','Paper','Medium','Done','','td'),
     T('C-04','Sort the Curated Banana Leaf Disease Dataset folder (with Fe Anne)','Dataset','High','In Progress',2,'cf'),
     T('C-05','Cite the public dataset sources in the paper (IEEE)','Paper','Medium','Waiting','','ps','Waiting for R-04.'),
-    T('C-06','Collect + photograph your samples: tap ＋ New sample for each leaf (CP-001, CP-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
+    T('C-06','Collect + photograph your samples: tap New sample for each leaf (CP-001, CP-002 … automatic)','DA RCPC','High','Not Started',8,'','Copy the label the app shows onto masking tape.'),
     T('C-07','Write up the DA RCPC validation process in Methodology','Paper','Medium','Not Started','',''),
     T('C-08','Formatting revisions: CCS, keywords, tables/figures, IEEE refs, ACM format','Panel Revision','High','Not Started',14,''),
   ];
@@ -858,9 +902,9 @@ const Demo = (() => {
     ['5','Keywords','Limit to 5 keywords','Cha','C'],
     ['6','Background – Problem','Indicate the main problem of the baseline (re-read the baseline paper)','Fe Anne + Rho','NC'],
     ['6','Background – Problem','Add real banana symptom data aside from the 900 original images','Fe Anne','NC'],
-    ['6','Background – Problem','⚠ If the baseline study changes, the architecture changes too → re-defense required','Team','NC'],
+    ['6','Background – Problem','Important: If the baseline study changes, the architecture changes too, so a re-defense is required','Team','NC'],
     ['8','Objectives','Revise objectives to a CS (not IT) approach','Fe Anne + Rho','NC'],
-    ['10','Methodology – Model Construction','⚠ Add a sample computation of the detection','Rho','NC'],
+    ['10','Methodology – Model Construction','Important: Add a sample computation of the detection','Rho','NC'],
     ['11','Results & Discussion','NA for Capstone 1','—','NA'],
     ['14','References','Add more references from 2022 onward','Cha + Fe Anne','NC'],
   ].map((x, i) => ({ row: i + 4, item: x[0], section: x[1], comment: x[2], owner: x[3], status: x[4], page: x[4] === 'C' ? '1' : '', signed: false, notes: '' }));
@@ -890,24 +934,45 @@ const Demo = (() => {
     ],
     revisions: R, samples, supplies, links: Object.values(L),
     activity: [
-      { when: 'Today, 8:12 PM', who: 'Rho', what: 'changed R-01 "Retrain the baseline model…" status → In Progress' },
-      { when: 'Today, 7:40 PM', who: 'Cha', what: 'sample FA-001: bagged → ✔' },
+      { when: 'Today, 8:12 PM', who: 'Rho', what: 'changed R-01 "Retrain the baseline model…" status to In Progress' },
+      { when: 'Today, 7:40 PM', who: 'Cha', what: 'sample FA-001: bagged to yes' },
       { when: 'Today, 6:05 PM', who: 'Fe Anne', what: 'set the DA RCPC submission date' },
     ],
     lists: { statuses: ['Not Started','In Progress','Waiting','Done'], priorities: ['High','Medium','Low'],
       categories: ['DA RCPC','Dataset','Model','Paper','Letters','Panel Revision','Admin'],
       classes: ['Cordana Leaf Spot','Black Sigatoka','Healthy','Unsure'], revStatuses: ['C','NC','NA'],
       expenseCategories: ['Sample collection','Printing','Transport','Food','Materials','Fees','Other'] },
-    panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde','Mr. Hernando','Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
+    panel: { adviser: 'Ma\'am Charisse Barbosa', members: ['Mr. Aborde','Mr. Hernando','Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
     settings: { leafGoal: 30, defenseDate: iso(45) },
     records: {
+      ng: (() => {
+        const T = (section, item, who, done) => ({ section, item, who, done: !!done, doneBy: done ? 'Cha' : '', notes: '' });
+        const per = ['7. Copy of updated exam permit (current exam period)', '9. Research Undergraduate Agreement, signed by the student, parent/guardian and RA',
+          '10. Parental Consent, signed by parent/guardian and subject teacher, notarized, with a copy of the parent/guardian valid ID (3 specimen signatures). AT THE BOTTOM of the folder'];
+        const who = ['Fe Anne', 'Rho', 'Cha'];
+        const rows = [T('A1', 'Photocopy: Title/Outline Defense Evaluation forms of the 3 panel members (with score and signature)', 'Team', 1),
+          T('A1', 'Photocopy: Prototype or Design Checklist, checked and signed by the RA', 'Team'), T('A1', 'Staple the photocopies together', 'Team'),
+          T('A2', 'Get a Red/Blue Starfile folder (A4, with fastener) or Seagull (Excella)', 'Team', 1),
+          T('A2', '1. Minutes of the outline defense (complied, with RA signature). TOP MOST', 'Team'),
+          T('A2', '2. Outline defense evaluation forms from the 3 panelists, with grades', 'Team'), T('A2', '3. Prototype or Design Checklist signed by the RA', 'Team'),
+          T('A2', '4. Printed outline research document (Thesis/Capstone 1)', 'Team'), T('A2', '5. Assignment of Research Personnel', 'Team'),
+          T('A2', '6. Endorsement letter for the outline defense, signed by the RA, ST, RC and Dean', 'Team')]
+          .concat(who.map(w => T('A2', per[0], w))).concat([T('A2', '8. Research Title Form, reviewed and signed by the RA, RC and Dean', 'Team')])
+          .concat(who.map(w => T('A2', per[1], w))).concat(who.map(w => T('A2', per[2], w)))
+          .concat([T('A3', 'Submit the folder to the RC for pre-checking (RC signature and date)', 'Team'), T('B', 'NG grade submitted / processed via CRMS (Subject Teacher signature and date)', 'Team')]);
+        return rows.map((r, i) => Object.assign({ row: i + 3 }, r));
+      })(),
+      sources: [
+        { row: 3, name: 'Banana Leaf Disease Images', link: 'https://www.kaggle.com/', type: 'Kaggle', cordana: 162, sigatoka: 140, healthy: 129, other: 0, license: 'CC BY 4.0', date: iso(-20), notes: 'Used as part of the original 900', by: 'Rho' },
+        { row: 4, name: 'BananaLSD dataset', link: 'https://data.mendeley.com/', type: 'Mendeley Data', cordana: 128, sigatoka: 0, healthy: 129, other: 180, license: 'CC BY 4.0 · cite the authors', date: iso(-18), notes: 'Other = pestalotiopsis, sigatoka (yellow)', by: 'Rho' },
+      ],
       training: [
         { row: 3, date: iso(-9), model: 'Baseline EfficientNetB0', run: 'scratch-1', dataset: 'Curated 900 · 70/15/15', epochs: 30, accuracy: 91.4, precision: 91.0, recall: 90.6, f1: 90.8, size: 16.3, speed: 142, notes: 'Retrained from scratch', by: 'Rho' },
         { row: 4, date: iso(-2), model: 'Enhanced EfficientNetB0', run: 'cbam-1', dataset: 'Curated 900 · 70/15/15', epochs: 30, accuracy: 94.2, precision: 94.0, recall: 93.8, f1: 93.9, size: 17.1, speed: 151, notes: '', by: 'Rho' },
       ],
       consults: [
-        { row: 3, date: iso(-6), with: 'Ms. Barbosa', topic: 'Objectives & scope', feedback: 'Make objectives measurable; CS approach.', action: 'Rewrote objectives 1–3.', status: 'Done', signed: true, by: 'Fe Anne' },
-        { row: 4, date: iso(-1), with: 'Ms. Barbosa', topic: 'DA RCPC validation', feedback: 'Bring the validation letter on submission day.', action: '', status: 'Open', signed: false, by: 'Fe Anne' },
+        { row: 3, date: iso(-6), with: 'Ma\'am Charisse Barbosa', topic: 'Objectives & scope', feedback: 'Make objectives measurable; CS approach.', action: 'Rewrote objectives 1–3.', status: 'Done', signed: true, by: 'Fe Anne' },
+        { row: 4, date: iso(-1), with: 'Ma\'am Charisse Barbosa', topic: 'DA RCPC validation', feedback: 'Bring the validation letter on submission day.', action: '', status: 'Open', signed: false, by: 'Fe Anne' },
       ],
       defense: ['All panel revisions complied, with page numbers|Team', 'Adviser signs the revision matrix|Fe Anne', 'Final dataset counts per class (incl. RCPC-validated)|Rho',
         'Baseline vs enhanced model comparison table (Chapter 4)|Rho', 'Phone app demo works offline|Rho', 'Chapters 4–5 written and proofread|Cha',
@@ -950,10 +1015,11 @@ const Demo = (() => {
 /* =========================================================
    State + helpers
    ========================================================= */
-const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {}, issues: {}, open: {}, more: 'training', ov: null, gallery: false, photoIndex: null };
+const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'NC', panelTab: 'rev', revSelecting: false, ngFilter: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {}, issues: {}, open: {}, more: 'training', ov: null, gallery: false, photoIndex: null };
 const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Expenses'],['more','More']];
 const recs = kind => ((S.data && S.data.records) || {})[kind] || [];
 const settings = () => (S.data && S.data.settings) || {};
+const ic = (n, c) => '<svg class="ic' + (c ? ' ' + c : '') + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 const toDate = s => s ? new Date(s + 'T00:00:00') : null;
@@ -995,7 +1061,10 @@ function stats(m) {
 let toastTimer;
 function toast(msg, ms, err) {
   const el = document.getElementById('toast');
-  el.textContent = msg; el.className = 'show' + (err ? ' err' : '');
+  msg = String(msg);
+  const icon = err ? 'error' : /on this phone|when there's signal/i.test(msg) ? 'cloud_off'
+    : /^(Saved|Copied|Added|Exported|Installed|Synced|Receipt saved|Deleted|Code sent|Hi )/.test(msg) ? 'check_circle' : '';
+  el.innerHTML = (icon ? ic(icon) : '') + '<span>' + esc(msg) + '</span>'; el.className = 'show' + (err ? ' err' : '');
   clearTimeout(toastTimer);
   if (ms) toastTimer = setTimeout(() => el.className = '', ms);
 }
@@ -1030,7 +1099,7 @@ function load(quiet) {
 function setOffline(on, at) {
   const el = document.getElementById('offline');
   el.hidden = !on;
-  if (on) el.textContent = "📴 Offline · saving on this phone";
+  if (on) el.innerHTML = ic('cloud_off') + 'Offline · saving on this phone';
   updateSyncChip();
   const info = document.getElementById('syncInfo');
   if (info) info.textContent = DEMO ? 'Demo data' : on ? 'Offline copy' : '● Live · synced ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -1078,9 +1147,9 @@ function renderAuth(err) {
   document.getElementById('loginErr').textContent = err || '';
   const first = f.querySelector('input:not([hidden])'); if (first) setTimeout(() => first.focus(), 30);
 }
-const EYE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-const EYE_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
-function pwLenHint(v) { const n = (v || '').length; return n >= 8 ? '✓ Long enough' : n ? n + ' of 8 characters' : 'At least 8 characters'; }
+const EYE = ic('visibility');
+const EYE_OFF = ic('visibility_off');
+function pwLenHint(v) { const n = (v || '').length; return n >= 8 ? 'Long enough' : n ? n + ' of 8 characters' : 'At least 8 characters'; }
 async function authSubmit(form) {
   const a = S.auth;
   if (a.busy) return;
@@ -1113,7 +1182,7 @@ function finishSignIn(r) {
   S.auth = null;
   signIn(r.user);
   S.sampleFilter = null;
-  toast('Hi ' + r.user + ' 👋', 1500);
+  toast('Hi ' + r.user, 1500);
   load().then(() => { resumeCam(); return flushPhotos(); });
 }
 function logout() {
@@ -1148,7 +1217,7 @@ function queueWrite(fn, args, meta) {
   const a = outbox();
   a.push(Object.assign({ fn, args, user: S.user, at: Date.now() }, meta || {}));
   setOutbox(a);
-  toast('Saved on this phone ✓ Will sync when there\'s signal.', 2200);
+  toast('Saved on this phone Will sync when there\'s signal.', 2200);
 }
 const SPIN = '<span class="spin-i" aria-hidden="true"></span>';
 // button label while waiting: spinner + short text, and the button can't be tapped twice
@@ -1160,7 +1229,7 @@ function updateSyncChip() {
   el.hidden = !n;
   el.title = n + ' change' + (n > 1 ? 's' : '') + ' waiting to sync';
   if (navigator.onLine && (flushing || Object.keys(S.uploading).length)) el.innerHTML = SPIN + '<span class="lng">Syncing </span>' + n;
-  else el.innerHTML = '⏳ ' + n + '<span class="lng"> to sync</span>';
+  else el.innerHTML = '' + ic('hourglass_empty') + ' ' + n + '<span class="lng"> to sync</span>';
 }
 function flushOutbox() {
   if (flushing) return flushing;
@@ -1190,7 +1259,7 @@ function flushOutbox() {
       }
       const a = outbox(); a.shift(); setOutbox(a);
     }
-    if (synced) { persist(); toast('Synced ' + synced + ' change' + (synced > 1 ? 's' : '') + ' ✓', 1800); }
+    if (synced) { persist(); toast('Synced ' + synced + ' change' + (synced > 1 ? 's' : '') + '', 1800); }
   })().finally(() => { flushing = null; updateSyncChip(); });
   return flushing;
 }
@@ -1204,7 +1273,8 @@ function save(fn, args, apply, onQueued) {
   toast('Saving…');
   return call(fn, ...args).then(d => {
     persist();
-    toast('Saved ✓', 1200);
+    if (!DEMO) setTimeout(checkLive, 1500);   // linked tasks may have updated on the server
+    toast('Saved', 1200);
     return d;
   }).catch(e => {
     if (e.auth) { lock(e.message); return; }
@@ -1229,17 +1299,10 @@ function render() {
     '<button data-view="' + k + '" class="' + (S.view === k ? 'on' : '') + '">' + label +
     (k === 'tasks' && openTasks ? '<span class="count">' + openTasks + '</span>' : '') +
     (k === 'revisions' && openRev ? '<span class="count">' + openRev + '</span>' : '') + '</button>').join('');
-  const ICONS = {
-    overview: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
-    tasks: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 12l3 3 5-6"/>',
-    revisions: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 12h6M9 16h4"/>',
-    samples: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"/>',
-    supplies: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
-    more: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',
-  };
+  const ICONS = { overview: 'home', tasks: 'task_alt', revisions: 'assignment', samples: 'eco', supplies: 'receipt_long', more: 'grid_view' };
   const SHORT = { overview: 'Home', tasks: 'Tasks', revisions: 'Panel', samples: 'Samples', supplies: 'Expenses', more: 'More' };
   document.getElementById('bnav').innerHTML = VIEWS.map(([k]) =>
-    '<button data-view="' + k + '" class="' + (S.view === k ? 'on' : '') + '"' + (S.view === k ? ' aria-current="page"' : '') + '><svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[k] + '</svg>' + SHORT[k] +
+    '<button data-view="' + k + '" class="' + (S.view === k ? 'on' : '') + '"' + (S.view === k ? ' aria-current="page"' : '') + '><svg aria-hidden="true"><use href="#i-' + ICONS[k] + (S.view === k ? '-fill' : '') + '"/></svg>' + SHORT[k] +
     (k === 'tasks' && openTasks ? '<span class="count">' + openTasks + '</span>' : '') +
     (k === 'revisions' && openRev ? '<span class="count">' + openRev + '</span>' : '') + '</button>').join('');
   if (S.view === 'links') { S.view = 'more'; S.more = 'links'; }
@@ -1249,6 +1312,13 @@ function render() {
 }
 
 /* ---------- Overview ---------- */
+/** Shown on Home only while the app isn't installed on this device. */
+function installCard() {
+  if (isStandalone || (!installEvt && !isIOS)) return '';
+  return '<div class="card installcard">' + ic('mobile_arrow_down', 'big') + '<div style="flex:1;min-width:0"><b>Install the app</b><div class="small muted">' +
+    (isIOS ? 'Tap Share ' + ic('ios_share') + ' then Add to Home Screen.' : 'Opens like a normal app and works without signal.') + '</div></div>' +
+    (isIOS ? '' : '<button class="btn" data-action="install">Install</button>') + '</div>';
+}
 function vOverview() {
   const d = S.data, tasks = allTasks();
   const done = tasks.filter(t => t.status === 'Done').length;
@@ -1286,7 +1356,7 @@ function vOverview() {
     '<div class="bar" style="--c:' + x[3] + '"><i style="width:' + pct(x[1], x[2]) + '%"></i></div><b>' + pct(x[1], x[2]) + '%</b></div>').join('');
 
   const lg = leafProgress(), dd = settings().defenseDate, dn = daysUntil(dd);
-  return rcpcAlert() + '<div class="stats s6">' +
+  return rcpcAlert() + installCard() + '<div class="stats s6">' +
     '<div class="stat tap" data-action="gotoView" data-v="tasks" role="button" tabindex="0"><div class="k">Progress</div><div class="v">' + pct(done, tasks.length) + '%</div><div class="small muted">' + done + ' / ' + tasks.length + ' tasks</div></div>' +
     '<div class="stat tap" data-action="gotoView" data-v="tasks" role="button" tabindex="0"><div class="k">Overdue</div><div class="v" style="color:' + (overdue ? 'var(--red)' : 'inherit') + '">' + overdue + '</div><div class="small muted">tasks</div></div>' +
     '<div class="stat tap" data-action="gotoView" data-v="revisions" role="button" tabindex="0"><div class="k">Panel</div><div class="v">' + revDone + '<span class="muted" style="font-size:16px"> / ' + revApplic.length + '</span></div><div class="small muted">complied</div></div>' +
@@ -1328,15 +1398,15 @@ function vTasks() {
 
   return '<div class="row" style="margin-bottom:14px"><h2 style="margin:0">Tasks</h2><div class="sp"></div>' +
     '<span class="searchwrap"><input type="search" id="q" placeholder="Search tasks" value="' + esc(S.q) + '" style="width:220px" aria-label="Search tasks">' +
-      '<button type="button" class="clr" id="qClear" data-action="clearSearch" aria-label="Clear search"' + (S.q ? '' : ' hidden') + '>✕</button></span></div>' +
-    '<div class="addwrap' + (S.addTaskOpen ? ' open' : '') + '"><button class="btn ' + (S.addTaskOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddTask">' + (S.addTaskOpen ? '✕ Cancel' : '＋ Add task') + '</button>' +
+      '<button type="button" class="clr" id="qClear" data-action="clearSearch" aria-label="Clear search"' + (S.q ? '' : ' hidden') + '>' + ic('close') + '</button></span></div>' +
+    '<div class="addwrap' + (S.addTaskOpen ? ' open' : '') + '"><button class="btn ' + (S.addTaskOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddTask">' + (S.addTaskOpen ? '' + ic('close') + ' Cancel' : '' + ic('add') + ' Add task') + '</button>' +
     '<form class="add card" id="addForm" style="padding:12px">' +
     '<label class="fl wide">Task<input type="text" name="task" placeholder="What needs doing?" required></label>' +
     '<label class="fl">For<select name="tab">' + d.members.map(m => '<option' + (m.tab === defMember ? ' selected' : '') + '>' + esc(m.tab) + '</option>').join('') + '</select></label>' +
     '<label class="fl">Due<input type="date" name="due"></label>' +
     '<label class="fl">Category<select name="category">' + opt(L.categories, 'DA RCPC') + '</select></label>' +
     '<label class="fl">Priority<select name="priority">' + opt(L.priorities, 'Medium') + '</select></label>' +
-    '<button class="btn wide" type="submit">＋ Add task</button></form></div>' +
+    '<button class="btn wide" type="submit">' + ic('add') + ' Add task</button></form></div>' +
     '<div class="row filters"><div class="chips">' + memberChips + '</div><div class="sp"></div><div class="chips">' + statusChips + '</div></div>' +
     '<div class="tasks" id="taskList"></div>';
 }
@@ -1352,7 +1422,7 @@ function renderTaskList() {
   const sts = S.data.lists.statuses;
   const overdue = allTasks().filter(t => (S.member === 'All' || t.tab === S.member) && !t.tempId && dueState(t) === 'overdue');
   const nextWeek = (() => { const d = new Date(); d.setDate(d.getDate() + 7); return localDay(d); })();
-  const resched = overdue.length ? '<div class="resched">⚠ ' + overdue.length + ' overdue → <input type="date" id="reschedDate" value="' + nextWeek + '" aria-label="New due date"><button class="btn" data-action="reschedule">Move</button></div>' : '';
+  const resched = overdue.length ? '<div class="resched">' + ic('warning') + ' ' + overdue.length + ' overdue ' + ic('arrow_forward') + ' <input type="date" id="reschedDate" value="' + nextWeek + '" aria-label="New due date"><button class="btn" data-action="reschedule">Move</button></div>' : '';
   el.innerHTML = resched + (list.length ? list.map(t => {
     const st = dueState(t);
     return '<div class="task ' + st + (t.status === 'Done' ? ' done' : '') + '" style="--c:' + t.color + '">' +
@@ -1360,15 +1430,15 @@ function renderTaskList() {
       sts.map(s => '<option' + (s === t.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select>' +
       '<div class="t-main"><div class="t-title">' + esc(t.task) + '</div><div class="t-meta">' +
       (t.status !== 'Done' && t.due ? '<span class="due-pill">' + dueText(t) + '</span>' : '') +
-      '<span class="who">Assigned: ' + esc(t.tab) + '</span><span>' + (t.tempId ? '⏳ waiting to sync' : esc(t.id)) + '</span>' +
-      (t.status === 'Done' && t.doneBy ? '<span class="doneby">✓ Done by ' + esc(t.doneBy) + (t.doneBy !== t.tab ? ' (helped)' : '') + '</span>' : '') +
+      '<span class="who">Assigned: ' + esc(t.tab) + '</span><span>' + (t.tempId ? '' + ic('hourglass_empty') + ' waiting to sync' : esc(t.id)) + '</span>' +
+      (t.status === 'Done' && t.doneBy ? '<span class="doneby">' + ic('check') + ' Done by ' + esc(t.doneBy) + (t.doneBy !== t.tab ? ' (helped)' : '') + '</span>' : '') +
       (t.category ? '<span class="tag">' + esc(t.category) + '</span>' : '') +
       (t.priority ? '<span class="p-' + esc(t.priority) + '">' + esc(t.priority) + '</span>' : '') +
-      (t.link ? '<a href="' + esc(t.link.url) + '" target="_blank" rel="noopener">' + esc(t.link.label) + ' ↗</a>' : '') +
+      (t.link ? '<a href="' + esc(t.link.url) + '" target="_blank" rel="noopener">' + esc(t.link.label) + ' ' + ic('open_in_new') + '</a>' : '') +
       (t.notes ? '<span>' + esc(t.notes) + '</span>' : '') +
       (t.completed ? '<span>Done ' + fmt(t.completed) + '</span>' : '') + '</div></div>' +
       '<input type="date" value="' + esc(t.due) + '" data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="due" aria-label="Due date" style="width:100%"' + (t.tempId ? ' disabled' : '') + '>' +
-      (t.tempId ? '<span></span>' : '<button class="iconbtn' + (S.editTask === t.tab + '_' + t.row ? ' on' : '') + '" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" title="Edit" aria-label="Edit task">✏️</button>') +
+      (t.tempId ? '<span></span>' : '<button class="iconbtn' + (S.editTask === t.tab + '_' + t.row ? ' on' : '') + '" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" title="Edit" aria-label="Edit task">' + ic('edit') + '</button>') +
       (S.editTask === t.tab + '_' + t.row ? taskEditor(t) : '') + '</div>';
   }).join('') : '<div class="empty">No tasks match these filters.</div>');
 }
@@ -1382,50 +1452,88 @@ function taskEditor(t) {
     '<label>Priority<select ' + at + ' data-field="priority">' + opt(L.priorities, t.priority) + '</select></label>' +
     '<label class="wide">Notes<input type="text" value="' + esc(t.notes) + '" ' + at + ' data-field="notes"></label>' +
     '<label>Done by<select ' + at + ' data-field="doneBy"><option value="">—</option>' + opt(TEAM.map(m => m.tab), t.doneBy) + '</select></label><span></span>' +
-    '<div class="row"><button class="btn ghost" data-action="delTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" style="color:var(--red)">🗑 Delete</button>' +
-    '<button class="btn" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '">✓ Done</button></div></div>';
+    '<div class="row"><button class="btn ghost" data-action="delTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" style="color:var(--red)">' + ic('delete') + ' Delete</button>' +
+    '<button class="btn" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '">' + ic('check') + ' Done</button></div></div>';
 }
 
 /* ---------- Panel revisions ---------- */
 function vRevisions() {
-  const d = S.data;
-  const owners = ['All', ...d.members.map(m => m.tab), 'Team'];
-  const ownerChips = owners.map(o => '<button class="chip ' + (S.revOwner === o ? 'on' : '') + '" data-action="revOwner" data-v="' + esc(o) + '">' + esc(o === 'All' ? 'Everyone' : o) + '</button>').join('');
-  const stChips = [['All','All'],['NC','Not yet'],['C','Complied'],['NA','N/A']].map(([k, l]) => '<button class="chip ' + (S.revStatus === k ? 'on' : '') + '" data-action="revStatus" data-v="' + k + '">' + l + '</button>').join('');
-  const list = d.revisions.filter(r => (S.revOwner === 'All' || r.owner.indexOf(S.revOwner) > -1) && (S.revStatus === 'All' || r.status === S.revStatus));
+  const tabs = [['rev', 'Revisions'], ['ng', 'NG checklist']].map(([k, l]) =>
+    '<button role="tab" aria-selected="' + (S.panelTab === k) + '" class="' + (S.panelTab === k ? 'on' : '') + '" data-action="panelTab" data-v="' + k + '">' + (S.panelTab === k ? ic('check') : '') + l + '</button>').join('');
+  return '<h2 style="margin:0 0 10px">Panel</h2><div class="seg2" role="tablist">' + tabs + '</div>' + (S.panelTab === 'ng' ? vNG() : vRevList());
+}
+function vRevList() {
+  const d = S.data, me = S.user;
   const applic = d.revisions.filter(r => r.status !== 'NA'), c = applic.filter(r => r.status === 'C').length;
-  const groups = [];
-  list.forEach(r => { const g = groups[groups.length - 1]; if (g && g.item === r.item) g.rows.push(r); else groups.push({ item: r.item, rows: [r] }); });
-  const multi = list.length > 1;            // selecting only makes sense with more than one item
-  const SEG = { C: '✓ Complied', NC: 'Not yet', NA: 'N/A' };
-  const body = groups.length ? groups.map(g => '<div class="rgroup"><div class="rhead"><span class="rnum">' + esc(g.item) + '</span><h3 style="margin:0">' + esc(g.rows[0].section.split(' – ')[0]) + '</h3></div>' +
-    g.rows.map(r => {
-      const warn = r.comment.charAt(0) === '⚠';
-      return '<div class="rev ' + esc(r.status) + (multi ? '' : ' solo') + '">' + (multi ? '<input type="checkbox" class="pick" data-change="revsel" data-row="' + r.row + '"' + (S.revSel[r.row] ? ' checked' : '') + ' aria-label="Select item">' : '') +
-        '<div class="rc"><div class="' + (warn ? 'warn' : '') + '">' + esc(r.comment) + '</div>' +
-        '<div class="small muted">' + esc(r.section) + ' · Assigned: <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span>' +
-        (r.status === 'C' && r.doneBy ? ' · <span class="doneby">✓ Done by ' + esc(r.doneBy) + '</span>' : '') + '</div>' +
-        (r.notes ? '<div class="small" style="margin-top:4px;color:var(--ink)">' + esc(r.notes) + '</div>' : '') + '</div>' +
-        '<div class="rctl"><div class="seg" role="group" aria-label="Status">' + ['C', 'NC', 'NA'].map(s => '<button class="' + s + (r.status === s ? ' on' : '') + '" data-action="rev" data-row="' + r.row + '" data-v="' + s + '" aria-pressed="' + (r.status === s) + '">' + SEG[s] + '</button>').join('') + '</div>' +
-        (r.status === 'C' ? '<div class="rmore"><label class="pgl">Page no.<input type="text" inputmode="numeric" placeholder="e.g. 12" value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page"></label>' +
-          '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Adviser signed</label></div>' : '') + '</div></div>';
-    }).join('') + '</div>').join('') : '<div class="empty">No revision items match these filters.</div>';
-
   const withPage = applic.filter(r => r.status === 'C' && r.page).length, signed = applic.filter(r => r.status === 'C' && r.signed).length;
   const ready = applic.length && withPage === applic.length && signed === applic.length;
   const openBy = d.members.map(m => m.tab + ' ' + applic.filter(r => r.status !== 'C' && r.owner.indexOf(m.tab) > -1).length).join(' · ');
+  const byOwner = r => S.revOwner === 'All' || r.owner.indexOf(S.revOwner) > -1;
+  const n = st => d.revisions.filter(r => byOwner(r) && (st === 'All' || r.status === st)).length;
+  const stChips = [['NC', 'To do'], ['C', 'Complied'], ['NA', 'N/A'], ['All', 'All']].map(([k, l]) =>
+    '<button class="chip ' + (S.revStatus === k ? 'on' : '') + '" data-action="revStatus" data-v="' + k + '">' + l + ' · ' + n(k) + '</button>').join('') +
+    '<button class="chip ' + (S.revSelecting ? 'on' : '') + '" data-action="revSelecting">' + ic('select_check_box') + 'Select</button>';
+  const owners = ['All', me].concat(d.members.map(m => m.tab).filter(t => t !== me), ['Team']);
+  const ownerChips = owners.map(o => '<button class="chip ' + (S.revOwner === o ? 'on' : '') + '" data-action="revOwner" data-v="' + esc(o) + '">' + esc(o === 'All' ? 'Everyone' : o === me ? 'Mine' : o) + '</button>').join('');
+  const list = d.revisions.filter(r => byOwner(r) && (S.revStatus === 'All' || r.status === S.revStatus));
+  const sel = S.revSelecting;
+  const groups = [];
+  list.forEach(r => { const g = groups[groups.length - 1]; if (g && g.item === r.item) g.rows.push(r); else groups.push({ item: r.item, rows: [r] }); });
+  const body = groups.length ? groups.map(g => '<div class="rgroup"><div class="rhead"><span class="rnum">' + esc(g.item) + '</span><h3 style="margin:0">' + esc(g.rows[0].section.split(' – ')[0]) + '</h3></div>' +
+    g.rows.map(r => {
+      const warn = /^(\u26A0|Important:)/i.test(r.comment), comment = r.comment.replace(/^(\u26A0\uFE0F?|Important:)\s*/i, '');
+      const act = r.status === 'NC'
+        ? '<div class="ract"><button class="btn tonal" data-action="rev" data-row="' + r.row + '" data-v="C">' + ic('check') + ' Mark complied</button>' +
+          '<button class="btn text" data-action="rev" data-row="' + r.row + '" data-v="NA">Not applicable</button></div>'
+        : r.status === 'C'
+        ? '<div class="ract"><span class="state">' + ic('check_circle') + ' Complied' + (r.doneBy ? ' by ' + esc(r.doneBy) : '') + '</span><span class="sp"></span>' +
+          '<button class="btn text" data-action="rev" data-row="' + r.row + '" data-v="NC">Undo</button></div>' +
+          '<div class="rmore2"><label class="pgl">Page no.<input type="text" inputmode="numeric" placeholder="e.g. 12" value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page"></label>' +
+          '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Signed by adviser</label></div>'
+        : '<div class="ract"><span class="state na">Not applicable</span><span class="sp"></span><button class="btn text" data-action="rev" data-row="' + r.row + '" data-v="NC">Undo</button></div>';
+      return '<div class="ritem ' + esc(r.status) + (sel ? ' sel' : '') + '">' + (sel ? '<input type="checkbox" class="pick" data-change="revsel" data-row="' + r.row + '"' + (S.revSel[r.row] ? ' checked' : '') + ' aria-label="Select item">' : '') +
+        '<div class="rbody"><div class="' + (warn ? 'warn' : '') + '">' + (warn ? ic('warning') + ' ' : '') + esc(comment) + '</div>' +
+        '<div class="small muted">' + esc(r.section) + ' · <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span></div>' +
+        (r.notes ? '<div class="small" style="margin-top:4px;color:var(--ink)">' + esc(r.notes) + '</div>' : '') + act + '</div></div>';
+    }).join('') + '</div>').join('') : '<div class="empty">' + (S.revStatus === 'NC' ? 'Nothing left to do here.' : 'No items match these filters.') + '</div>';
   const nSel = Object.keys(S.revSel).length;
-  const bulk = nSel ? '<div class="bulk"><b>' + nSel + ' selected</b><span class="sp"></span>' +
-      '<button class="btn" data-action="revBulk" data-v="C">✓ Complied (done by me)</button>' +
-      '<button class="btn ghost" data-action="revBulk" data-v="NC">Not yet</button>' +
-      '<button class="btn ghost" data-action="revSelClear">Clear</button></div>' : '';
-  return '<div class="row" style="margin-bottom:6px"><h2 style="margin:0">Panel Revisions</h2><div class="sp"></div><b>' + c + ' / ' + applic.length + ' complied</b></div>' +
-    '<div class="card" style="padding:14px 16px"><h3 style="margin:0">' + (ready ? '✅ Ready for endorsement' : 'Readiness') + '</h3>' +
-      '<div class="ready"><div><b>' + c + '/' + applic.length + '</b><span>complied</span></div><div><b>' + withPage + '/' + applic.length + '</b><span>with page no.</span></div><div><b>' + signed + '/' + applic.length + '</b><span>adviser signed</span></div></div>' +
-      '<div class="small muted">Not yet complied: ' + esc(openBy) + '</div></div>' +
-    '<div class="row filters"><div class="chips">' + ownerChips + '</div><div class="sp"></div><div class="chips">' + stChips + '</div></div>' +
-    (multi && !nSel ? '<div class="row" style="margin-bottom:10px"><button class="btn ghost" data-action="revSelAll">☑ Select all ' + list.length + ' to update at once</button></div>' : '') +
-    bulk + body;
+  const bulk = sel ? '<div class="bulk"><b>' + nSel + ' selected</b><span class="sp"></span>' +
+      (nSel ? '<button class="btn" data-action="revBulk" data-v="C">' + ic('check') + ' Complied (by me)</button><button class="btn ghost" data-action="revBulk" data-v="NC">To do</button>' : '') +
+      '<button class="btn ghost" data-action="revSelAll">All ' + list.length + '</button><button class="btn ghost" data-action="revSelecting">Done</button></div>' : '';
+  return '<div class="card revsum"><div class="row" style="align-items:baseline;gap:8px"><b class="big">' + c + ' of ' + applic.length + '</b><span class="muted">complied</span><span class="sp"></span>' +
+      (ready ? '<span class="tagp ok">' + ic('check_circle') + ' Ready for endorsement</span>' : '') + '</div>' +
+      '<div class="bar" style="margin:10px 0 8px"><i style="width:' + pct(c, applic.length) + '%"></i></div>' +
+      '<div class="small muted">' + withPage + ' with page no. · ' + signed + ' signed by adviser · To do: ' + esc(openBy) + '</div></div>' +
+    '<div class="row filters"><div class="chips">' + stChips + '</div><div class="chips">' + ownerChips + '</div></div>' + bulk + body;
+}
+const NG_SECTIONS = {
+  A1: ['Step 1 · Photocopy and staple', 'Photocopy these forms and staple them together.'],
+  A2: ['Step 2 · Original forms and documents', 'Put them in a Red/Blue Starfile folder (A4, with fastener) or Seagull (Excella): minutes on top, parental consents at the bottom.'],
+  A3: ['Pre-checking by the RC', 'The RC/ARC fills out the status (E1, E2, E3, P/D) and signs.'],
+  B: ['NG processing by the Subject Teacher', ''],
+};
+function vNG() {
+  const all = recs('ng'), me = S.user;
+  const shown = all.filter(x => S.ngFilter === 'All' || (S.ngFilter === 'Mine' ? (x.who === me || x.who === 'Team') : !x.done));
+  const done = all.filter(x => x.done).length;
+  const chips = [['All', 'All'], ['Todo', 'To do'], ['Mine', 'Mine + team']].map(([k, l]) => '<button class="chip ' + (S.ngFilter === k ? 'on' : '') + '" data-action="ngFilter" data-v="' + k + '">' + l + '</button>').join('');
+  const row = x => {
+    const m = TEAM.find(t => t.tab === x.who), open = S.open['ng_' + x.row];
+    return '<div class="drow' + (x.done ? ' done' : '') + '"><input type="checkbox" data-change="rec" data-kind="ng" data-row="' + x.row + '" data-field="done"' + (x.done ? ' checked' : '') + (x.tempId ? ' disabled' : '') + ' aria-label="Done">' +
+      '<div style="flex:1;min-width:0"><div class="ditem">' + esc(x.item) + '</div><div class="small muted"><span class="who" style="--c:' + (m ? m.color : 'var(--muted)') + '"><i></i>' + esc(x.who || 'Team') + '</span>' +
+      (x.done && x.doneBy ? ' · <span class="doneby">' + ic('check') + ' ' + esc(x.doneBy) + '</span>' : '') + (x.notes && !open ? ' · ' + esc(x.notes) : '') + '</div>' +
+      (open ? '<div class="sc-grid" style="margin-top:8px">' + recField('ng', x, 'notes', 'Notes', 'area') + '</div>' : '') + '</div>' + recTools('ng', x) + '</div>';
+  };
+  const secs = ['A1', 'A2', 'A3', 'B'].map(k => {
+    const xs = shown.filter(x => x.section === k);
+    if (!xs.length) return '';
+    return '<div class="ngsec"><h3>' + esc(NG_SECTIONS[k][0]) + '</h3>' + (NG_SECTIONS[k][1] ? '<p class="small muted">' + esc(NG_SECTIONS[k][1]) + '</p>' : '') + '</div>' + xs.map(row).join('');
+  }).join('');
+  return '<div class="card revsum"><div class="row" style="align-items:baseline;gap:8px"><b class="big">' + done + ' of ' + all.length + '</b><span class="muted">done</span></div>' +
+      '<div class="bar" style="margin:10px 0 8px"><i style="width:' + pct(done, all.length) + '%"></i></div>' +
+      '<div class="small muted">NG & Grade Processing · Thesis and Capstone Project 1 · Adviser: ' + esc(S.data.panel.adviser) + '</div></div>' +
+    '<div class="row filters"><div class="chips">' + chips + '</div></div>' +
+    (secs || '<div class="empty">' + (all.length ? 'Nothing to show for this filter.' : 'Run setupTracker in the sheet to add the checklist.') + '</div>');
 }
 
 /* ---------- Samples ---------- */
@@ -1477,7 +1585,7 @@ function freshPill(x) {
   const f = freshness(x);
   if (f.st === 'late') return '<span class="tagp bad">Sent late · invalid</span>';
   if (f.st === 'expired') return '<span class="tagp bad">Not sent in time · invalid</span>';
-  if (f.st === 'today') return '<span class="tagp bad">⏰ Send to RCPC today</span>';
+  if (f.st === 'today') return '<span class="tagp bad">' + ic('alarm') + ' Send to RCPC today</span>';
   if (f.st === 'tomorrow') return '<span class="tagp warn">Send to RCPC by ' + esc(dueLabel(f.due)) + '</span>';
   return '';
 }
@@ -1488,8 +1596,8 @@ function rcpcAlert(onSamples) {
   const due = dueLeaves();
   if (!due.length) return '';
   const today = due.filter(x => freshness(x).st === 'today').length;
-  return '<div class="alertcard" ' + (onSamples ? 'data-action="openSheet"' : 'data-action="gotoView" data-v="samples"') + ' role="button" tabindex="0">🚨<div><b>' + due.length + ' lea' + (due.length === 1 ? 'f' : 'ves') + ' must reach DA RCPC ' +
-    (today ? 'today' : 'by ' + esc(dueLabel(freshness(due[0]).due))) + '</b><div class="small">The day after collection, or they become invalid.</div></div><span class="go">' + (onSamples ? 'List →' : 'Send →') + '</span></div>';
+  return '<div class="alertcard" ' + (onSamples ? 'data-action="openSheet"' : 'data-action="gotoView" data-v="samples"') + ' role="button" tabindex="0">' + ic('notification_important') + '<div><b>' + due.length + ' lea' + (due.length === 1 ? 'f' : 'ves') + ' must reach DA RCPC ' +
+    (today ? 'today' : 'by ' + esc(dueLabel(freshness(due[0]).due))) + '</b><div class="small">The day after collection, or they become invalid.</div></div><span class="go">' + (onSamples ? 'List ' + ic('arrow_forward') + '' : 'Send ' + ic('arrow_forward') + '') + '</span></div>';
 }
 
 function paperNumbers() {
@@ -1558,11 +1666,11 @@ function prefarmCard() {
   const { st, auto, supNote } = prefarmState();
   const items = PREFARM.map(([k, label, kind]) => {
     const ok = kind ? auto[k] : !!st.done[k];
-    return '<li class="' + (ok ? 'ok' : '') + '" data-action="prefarm" data-v="' + k + '" role="button" tabindex="0"><span class="bx">' + (ok ? '✓' : '') + '</span>' + esc(label) +
+    return '<li class="' + (ok ? 'ok' : '') + '" data-action="prefarm" data-v="' + k + '" role="button" tabindex="0"><span class="bx">' + (ok ? '' + ic('check') + '' : '') + '</span>' + esc(label) +
       (kind ? '<span class="auto">' + (k === 'supplies' ? supNote : ok ? 'ready' : 'open once with signal') + '</span>' : '') + '</li>';
   });
   const n = PREFARM.filter(([k, , kind]) => kind ? auto[k] : st.done[k]).length;
-  return '<details class="card" style="margin-bottom:14px;padding:14px 16px"' + (S.prefarmOpen ? ' open' : '') + ' data-action="prefarmToggle"><summary>🎒 Before the farm · ' + n + ' of ' + PREFARM.length + ' ready</summary>' +
+  return '<details class="card" style="margin-bottom:14px;padding:14px 16px"' + (S.prefarmOpen ? ' open' : '') + ' data-action="prefarmToggle"><summary>' + ic('backpack') + ' Before the farm · ' + n + ' of ' + PREFARM.length + ' ready</summary>' +
     '<ul class="checklist">' + items.join('') + '</ul></details>';
 }
 function handoverCard() {
@@ -1574,7 +1682,7 @@ function handoverCard() {
     '<p class="small muted" style="margin:4px 0 0">Every leaf must reach DA RCPC the day after it\'s collected.</p>' +
     '<div class="hand" style="grid-template-columns:repeat(' + (invalid ? 3 : 2) + ',1fr)"><div><b>' + due + '</b><span>to send</span></div><div><b>' + sent + '</b><span>sent on time</span></div>' +
       (invalid ? '<div style="background:var(--red-soft)"><b style="color:var(--red)">' + invalid + '</b><span>invalid (late)</span></div>' : '') + '</div>' +
-    '<button class="btn" data-action="openSheet">📝 Submission list</button>' +
+    '<button class="btn" data-action="openSheet">' + ic('assignment') + ' Submission list</button>' +
     '<div class="goalrow"><label class="fl">Leaves goal<input type="number" min="0" inputmode="numeric" placeholder="e.g. 30" value="' + esc(st.leafGoal || '') + '" data-change="setting" data-field="leafGoal"></label></div></div>';
 }
 function vSamples() {
@@ -1599,38 +1707,37 @@ function vSamples() {
     ? '<div class="batch">' +
         '<div><div class="k">Next label</div><div class="big">' + esc(next) + '</div>' +
         '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' · ' + withPhotos + ' with photos</div>' +
-        (!IOS_DEVICE ? '<button class="linkbtn" style="color:#fff;opacity:.9;margin-top:6px;font-size:12.5px" data-action="phoneCopy">📲 Copies on this phone: <b>' + (phoneCopyOn() ? 'On' : 'Off') + '</b></button>' : '') +
         (lp.goal ? '<div class="gbar"><i style="width:' + lp.p + '%"></i></div><div class="small" style="opacity:.9">Team: ' + lp.done + ' of ' + lp.goal + ' leaves with photos</div>' : '') +
         '</div>' +
         '<div class="sp"></div>' +
-        '<button class="btn newsample" data-action="newSample">＋ New sample 📷</button></div>' +
+        '<button class="btn newsample" data-action="newSample">' + ic('add') + ' New sample ' + ic('photo_camera') + '</button></div>' +
       (unfinished.length ? '<div class="resume">' + unfinished.slice(0, 3).map(x =>
-        '<button data-action="cam" data-id="' + esc(x.id) + '"><span class="lbl">' + esc(x.id) + '</span><span>' + takenSet(x).size + ' of ' + MIN_ANGLES + ' photos</span><span class="go">Finish →</span></button>').join('') + '</div>' : '') +
+        '<button data-action="cam" data-id="' + esc(x.id) + '"><span class="lbl">' + esc(x.id) + '</span><span>' + takenSet(x).size + ' of ' + MIN_ANGLES + ' photos</span><span class="go">Finish ' + ic('arrow_forward') + '</span></button>').join('') + '</div>' : '') +
       prefarmCard() + handoverCard()
-    : '<div class="viewbar"><div><b>👀 Viewing only</b><div class="small">Add samples and take photos with the app on your phone.' +
+    : '<div class="viewbar"><div><b>' + ic('visibility') + ' Viewing only</b><div class="small">Add samples and take photos with the app on your phone.' +
         (lp.goal ? ' Team: <b>' + lp.done + ' of ' + lp.goal + '</b> leaves with photos.' : '') + '</div></div><div class="sp"></div>' +
-        '<div class="chips"><button class="chip ' + (!S.gallery ? 'on' : '') + '" data-action="gallery" data-v="0">Cards</button><button class="chip ' + (S.gallery ? 'on' : '') + '" data-action="gallery" data-v="1">🖼 Photos</button></div>' +
-        (d.photoFolderUrl ? '<a class="btn ghost" href="' + esc(d.photoFolderUrl) + '" target="_blank" rel="noopener">📁 Drive ↗</a>' : '') + '</div>' + handoverCard();
+        '<div class="chips"><button class="chip ' + (!S.gallery ? 'on' : '') + '" data-action="gallery" data-v="0">Cards</button><button class="chip ' + (S.gallery ? 'on' : '') + '" data-action="gallery" data-v="1">' + ic('photo_library') + ' Photos</button></div>' +
+        (d.photoFolderUrl ? '<a class="btn ghost" href="' + esc(d.photoFolderUrl) + '" target="_blank" rel="noopener">' + ic('folder') + ' Drive ' + ic('open_in_new') + '</a>' : '') + '</div>' + handoverCard();
 
   return rcpcAlert(true) + top +
     '<div class="row filters"><div class="chips">' + chips + '</div><div class="sp"></div>' +
-      (qn ? '<span class="qchip">⏳ ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') + '</div>' +
+      (qn ? '<span class="qchip">' + ic('hourglass_empty') + ' ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') + '</div>' +
     paperCard() +
     (!IS_PHONE && S.gallery ? galleryHtml(rows) : '<div class="scards">' + (rows.map(sampleCard).join('') ||
-      '<div class="empty" style="grid-column:1/-1">' + (IS_PHONE ? 'No samples yet. At the farm, tap <b>＋ New sample</b> for each leaf.' : 'No samples yet. They appear here as the team adds them on their phones.') + '</div>') + '</div>');
+      '<div class="empty" style="grid-column:1/-1">' + (IS_PHONE ? 'No samples yet. At the farm, tap <b>' + ic('add') + ' New sample</b> for each leaf.' : 'No samples yet. They appear here as the team adds them on their phones.') + '</div>') + '</div>');
 }
 
 function paperCard() {
   const p = paperNumbers(), d = S.data;
   if (!p.n) return '';                      // nothing to show until DA RCPC results are in the sheet
   const rows = p.per.map(r => '<tr><td>' + esc(r.c) + '</td><td style="text-align:right">' + r.n + '</td><td style="text-align:right">' + r.img + '</td></tr>').join('');
-  return '<details class="card" style="margin-bottom:14px"' + (S.paperOpen ? ' open' : '') + ' data-action="paperToggle"><summary>📄 Paper numbers · ' +
+  return '<details class="card" style="margin-bottom:14px"' + (S.paperOpen ? ' open' : '') + ' data-action="paperToggle"><summary>' + ic('description') + ' Paper numbers · ' +
       (p.n ? p.n + ' RCPC-confirmed leaves, ' + p.imgs + ' images' : '<span class="muted" style="font-weight:600">waiting for RCPC results</span>') + '</summary>' +
     '<table style="width:100%;min-width:0;margin:10px 0"><thead><tr><th>Class (RCPC)</th><th style="text-align:right">Leaves</th><th style="text-align:right">Images</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<div class="paper" id="paperText">' + esc(p.text) + '</div>' +
-    '<div class="row" style="margin-top:10px">' + (p.n ? '<button class="btn" data-action="copyPaper">📋 Copy</button>' : '') +
-    (p.useVal ? '<button class="btn ghost" data-action="exportSet"' + busyBtn(S.exporting, '📦 Export for training', 'Exporting…') + '</button>' : '') +
-    (d.exportFolderUrl ? '<a href="' + esc(d.exportFolderUrl) + '" target="_blank" rel="noopener">Open exported set ↗</a>' : '') + '</div>' +
+    '<div class="row" style="margin-top:10px">' + (p.n ? '<button class="btn" data-action="copyPaper">' + ic('content_copy') + ' Copy</button>' : '') +
+    (p.useVal ? '<button class="btn ghost" data-action="exportSet"' + busyBtn(S.exporting, '' + ic('inventory_2') + ' Export for training', 'Exporting…') + '</button>' : '') +
+    (d.exportFolderUrl ? '<a href="' + esc(d.exportFolderUrl) + '" target="_blank" rel="noopener">Open exported set ' + ic('open_in_new') + '</a>' : '') + '</div>' +
     '<p class="small muted" style="margin:8px 0 0">Fill in yourself: phone model, validator\'s name.</p></details>';
 }
 
@@ -1646,21 +1753,21 @@ function sampleCard(x) {
   const pills = [
     freshPill(x),
     !['late', 'expired'].includes(freshness(x).st) ? (x.validated ? '<span class="tagp ok">RCPC: ' + esc(x.validated) + '</span>' : x.submitted ? '<span class="tagp warn">Waiting for RCPC</span>' : '') : '',
-    x.bagged ? '<span class="tagp ok">✓ Bagged</span>' : '',
+    x.bagged ? '<span class="tagp ok">' + ic('check') + ' Bagged</span>' : '',
     freshness(x).st === 'ok' ? '<span class="tagp ok">Sent ' + esc(fmt(x.submitted).replace(/^\w+, /, '')) + '</span>' : '',
     x.disease && !x.validated ? '<span class="tagp">Our guess: ' + esc(x.disease) + '</span>' : ''].join('');
-  const toggle = !IS_PHONE ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
+  const toggle = !IS_PHONE ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ' + ic('keyboard_arrow_up') + '' : 'Edit ' + ic('keyboard_arrow_down') + '') + '</button>';
   const photoBtn = IS_PHONE
-    ? '<button class="cam-btn ' + camCls + '" data-action="cam" ' + at + '>📷 ' + Math.min(n + q, MAX_ANGLES) + '/' + MAX_ANGLES + (n >= MIN_ANGLES ? ' ✓' : '') + '</button>'
-    : '<span class="photo-pill ' + (n >= MIN_ANGLES ? 'ok' : n ? 'part' : '') + '">' + n + ' photo' + (n === 1 ? '' : 's') + (n >= MIN_ANGLES ? ' ✓' : '') + '</span>';
+    ? '<button class="cam-btn ' + camCls + '" data-action="cam" ' + at + '>' + ic('photo_camera') + ' ' + Math.min(n + q, MAX_ANGLES) + '/' + MAX_ANGLES + (n >= MIN_ANGLES ? ' ' + ic('check') + '' : '') + '</button>'
+    : '<span class="photo-pill ' + (n >= MIN_ANGLES ? 'ok' : n ? 'part' : '') + '">' + n + ' photo' + (n === 1 ? '' : 's') + (n >= MIN_ANGLES ? ' ' + ic('check') + '' : '') + '</span>';
   return '<div class="sc' + (x.submitted ? ' sub' : '') + '" style="--c:' + m.color + '">' +
     '<div class="sc-top"><span class="lbl">' + esc(x.id) + '</span><span class="sc-own">' + esc(owner) + '</span><span class="sp"></span>' +
-      (q ? '<span class="qchip">⏳ ' + q + '</span>' : '') + photoBtn + '</div>' +
+      (q ? '<span class="qchip">' + ic('hourglass_empty') + ' ' + q + '</span>' : '') + photoBtn + '</div>' +
     (open ? '' : '<div class="sc-sum"' + (IS_PHONE ? ' data-action="toggleCard" data-v="' + esc(key) + '"' : ' style="cursor:default"') + '><div class="meta">' + pills + '</div>' +
       '<div class="meta">' + esc(x.site || 'No site') + ' · ' + esc(x.date ? fmt(x.date).replace(/^\w+, /, '') : '—') + '</div></div>' +
       (x.notes && !IS_PHONE ? '<div class="meta">' + esc(x.notes) + '</div>' : '') +
-      '<div class="sc-foot">' + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">' + (IS_PHONE ? 'Photos ↗' : '🖼 View photos ↗') + '</a>' : '') +
-      (!IS_PHONE && gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">📍 Location</a>' : '') + toggle + '</div></div>') +
+      '<div class="sc-foot">' + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">' + (IS_PHONE ? 'Photos ' + ic('open_in_new') + '' : '' + ic('photo_library') + ' View photos ' + ic('open_in_new') + '') + '</a>' : '') +
+      (!IS_PHONE && gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">' + ic('location_on') + ' Location</a>' : '') + toggle + '</div></div>') +
     (!open ? '' : '<div class="sc-grid">' +
       '<label>Our guess (optional)' + sel(x.disease, 'disease') + '</label>' +
       '<label>Collected<input type="date" value="' + esc(x.date) + '" data-change="sample" ' + at + ' data-field="date"></label>' +
@@ -1670,11 +1777,11 @@ function sampleCard(x) {
     '<div class="sc-foot">' +
       '<label class="ck"><input type="checkbox" ' + (x.cotton ? 'checked' : '') + ' data-change="sample" ' + at + ' data-field="cotton">Cotton</label>' +
       '<label class="ck"><input type="checkbox" ' + (x.bagged ? 'checked' : '') + ' data-change="sample" ' + at + ' data-field="bagged">Bagged &amp; labeled</label>' +
-      match + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">Photos in Drive ↗</a>' : '') +
-      (gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">📍 Location</a>' : '') +
+      match + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">Photos in Drive ' + ic('open_in_new') + '</a>' : '') +
+      (gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">' + ic('location_on') + ' Location</a>' : '') +
     '</div>' +
     '<div class="sc-notes"><input type="text" value="' + esc(x.notes) + '" placeholder="Notes" aria-label="Notes" data-change="sample" ' + at + ' data-field="notes"></div>' +
-    '<div class="sc-foot"><button class="btn ghost" style="color:var(--red)" data-action="delSample" data-id="' + esc(x.id) + '">🗑 Delete sample</button><span class="sp"></span>' + toggle + '</div></div>');
+    '<div class="sc-foot"><button class="btn ghost" style="color:var(--red)" data-action="delSample" data-id="' + esc(x.id) + '">' + ic('delete') + ' Delete sample</button><span class="sp"></span>' + toggle + '</div></div>');
 }
 
 /* ---------- overlay: submission list (print) ---------- */
@@ -1693,14 +1800,14 @@ function sheetHtml() {
   const rows = list.map((x, i) => '<tr class="' + (o.sel[x.id] ? '' : 'noprint') + (lateOn(x) ? ' late' : '') + '"><td class="noprint"><input type="checkbox" data-change="sheetSel" data-id="' + esc(x.id) + '"' + (o.sel[x.id] ? ' checked' : '') + ' aria-label="Include ' + esc(x.id) + '"></td>' +
     '<td><b style="font-family:ui-monospace,monospace">' + esc(x.id) + '</b></td><td>' + esc(x.date ? fmt(x.date).replace(/^\w+, /, '') : '—') + (lateOn(x) ? '<div class="small noprint">late: due ' + esc(fmt(addDays(x.date, 1)).replace(/^\w+, /, '')) + '</div>' : '') + '</td><td>' + esc(x.site || '—') + '</td><td class="hs">' + esc(ownerOf(x.id)) + '</td>' +
     '<td class="hs">' + (x.angles || []).length + '</td><td>' + esc(x.notes || '') + '</td></tr>').join('');
-  return '<div class="cam-head noprint"><div><div class="eyebrow">DA RCPC hand-over</div><h2 style="margin:4px 0 0">📝 Submission list</h2></div><span class="sp"></span>' +
-      '<button class="iconbtn" data-action="ovClose" aria-label="Close">✕</button></div>' +
+  return '<div class="cam-head noprint"><div><div class="eyebrow">DA RCPC hand-over</div><h2 style="margin:4px 0 0">' + ic('assignment') + ' Submission list</h2></div><span class="sp"></span>' +
+      '<button class="iconbtn" data-action="ovClose" aria-label="Close">' + ic('close') + '</button></div>' +
     '<div class="printable">' +
       '<h2 style="margin:14px 0 2px">Banana leaf samples for DA RCPC Davao</h2>' +
       '<div class="small">' + esc(S.data.thesisTitle) + '<br>Fe Anne Malasarte · Rho Alphone Jornadal · Charisse Priego · BSCS, University of Mindanao</div>' +
       '<div class="row" style="margin:12px 0;gap:10px"><label class="fl" style="width:170px">Hand-over date<input type="date" value="' + esc(o.date) + '" data-change="sheetDate"></label>' +
         '<b style="align-self:end;padding-bottom:8px">' + sel.length + ' sample' + (sel.length === 1 ? '' : 's') + '</b></div>' +
-      (lateSel ? '<p class="small noprint" style="color:var(--red);font-weight:700;margin:0 0 8px">⚠ ' + lateSel + ' leaf' + (lateSel > 1 ? 'ves' : '') + ' would arrive later than the day after collection and become invalid.</p>' : '') +
+      (lateSel ? '<p class="small noprint" style="color:var(--red);font-weight:700;margin:0 0 8px">' + ic('warning') + ' ' + lateSel + ' leaf' + (lateSel > 1 ? 'ves' : '') + ' would arrive later than the day after collection and become invalid.</p>' : '') +
       (expired ? '<p class="small muted noprint" style="margin:0 0 8px">' + expired + ' leaf' + (expired > 1 ? 'ves' : '') + ' missed the next-day deadline and can\'t be submitted.</p>' : '') +
       (list.length ? '<div class="tscroll"><table class="sheet-table"><thead><tr><th class="noprint"></th><th>Label</th><th>Collected</th><th>Site</th><th class="hs">By</th><th class="hs">Photos</th><th>Notes</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
         : '<div class="empty">No samples waiting to be sent.</div>') +
@@ -1708,8 +1815,8 @@ function sheetHtml() {
       '<div class="sign"><div>Submitted by (name &amp; signature)</div><div>Received by DA RCPC (name, signature, date)</div></div>' +
     '</div>' +
     '<div class="row noprint" style="margin-top:16px;gap:8px">' +
-      '<button class="btn ghost" data-action="sheetPrint"' + (sel.length ? '' : ' disabled') + '>🖨 Print / save PDF</button>' +
-      (IS_PHONE ? '<button class="btn" data-action="sheetSubmit"' + (sel.length ? '' : ' disabled') + '>✓ Mark ' + sel.length + ' as submitted</button>' : '') + '</div>';
+      '<button class="btn ghost" data-action="sheetPrint"' + (sel.length ? '' : ' disabled') + '>' + ic('print') + ' Print / save PDF</button>' +
+      (IS_PHONE ? '<button class="btn" data-action="sheetSubmit"' + (sel.length ? '' : ' disabled') + '>' + ic('check') + ' Mark ' + sel.length + ' as submitted</button>' : '') + '</div>';
 }
 /* ---------- desktop photo gallery ---------- */
 function loadPhotoIndex() {
@@ -1785,19 +1892,7 @@ function angleState(x, a) {
 function photoStatusLine(x) {
   const states = [1, 2, 3, 4, 5].map(a => angleState(x, a)).filter(Boolean);
   const up = states.filter(s => s === 'up' || s === 'prep').length, q = states.filter(s => s === 'q').length;
-  return up ? SPIN + 'Uploading ' + up + ' photo' + (up > 1 ? 's' : '') + '…' : esc(q ? '📴 ' + q + ' photo' + (q > 1 ? 's' : '') + ' saved on this phone · uploads when there\'s signal' : states.length ? '✓ All photos saved to Drive' : '');
-}
-/* A copy of each photo is also saved on the phone (Gallery → Download), named by its label: FA-001_01.jpg, not IMG_2026… */
-const PHONE_COPY = 'bt:phoneCopy';
-const IOS_DEVICE = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const phoneCopyOn = () => IS_PHONE && !IOS_DEVICE && store.get(PHONE_COPY) !== '0';
-function saveToPhone(blob, name) {
-  try {
-    const url = URL.createObjectURL(blob), a = document.createElement('a');
-    a.href = url; a.download = name; a.style.display = 'none';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 20000);
-  } catch (e) { /* the Drive copy is the one that matters */ }
+  return up ? SPIN + 'Uploading ' + up + ' photo' + (up > 1 ? 's' : '') + '…' : q ? ic('cloud_off') + ' ' + q + ' photo' + (q > 1 ? 's' : '') + ' saved on this phone · uploads when there\'s signal' : states.length ? ic('check') + ' All photos saved to Drive' : '';
 }
 let camStream = null;
 const liveCamOK = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext;
@@ -1831,16 +1926,16 @@ function renderCam() {
   const names = angleNames(), target = S.cam.target || nextAngle(x), n = takenSet(x).size;
   document.getElementById('vfTop').innerHTML = '<span class="tag">' + esc(x.id) + '</span><div style="min-width:0">' +
     (target ? '<b>' + target + ' of ' + MAX_ANGLES + ' · ' + esc(names[target - 1]) + '</b><div class="small">' + esc(ANGLE_HINTS[target - 1] || '') + '</div>'
-            : '<b>All ' + MAX_ANGLES + ' photos taken ✓</b><div class="small">Tap a photo to retake it</div>') + '</div>' +
-    '<button class="vf-x" data-action="camClose" aria-label="Close">✕</button>';
+            : '<b>All ' + MAX_ANGLES + ' photos taken ' + ic('check') + '</b><div class="small">Tap a photo to retake it</div>') + '</div>' +
+    '<button class="vf-x" data-action="camClose" aria-label="Close">' + ic('close') + '</button>';
   document.getElementById('vfBot').innerHTML = '<div class="vf-tiles">' + names.map((nm, i) => {
       const a = i + 1, k = x.id + '_' + a, st = angleState(x, a), th = S.thumbs[k];
-      const w = S.issues[k] ? '⚠️' : st === 'q' ? '📴' : st === 'done' && !th ? '' : '';
+      const w = S.issues[k] ? '' + ic('warning') + '' : st === 'q' ? '' + ic('cloud_off') + '' : st === 'done' && !th ? '' : '';
       return '<button class="vf-tile' + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '"><span class="im">' +
-        (th ? '<img src="' + th + '" alt="">' : st === 'done' ? '✓' : a) + (w ? '<span class="w">' + w + '</span>' : '') + '</span>' + esc(nm) + '</button>';
+        (th ? '<img src="' + th + '" alt="">' : st === 'done' ? '' + ic('check') + '' : a) + (w ? '<span class="w">' + w + '</span>' : '') + '</span>' + esc(nm) + '</button>';
     }).join('') + '</div>' +
     '<div class="vf-row"><span></span><button class="shutter" data-action="snap" aria-label="Take photo"><i></i></button>' +
-      (n >= MIN_ANGLES ? '<button class="vf-done" data-action="camFinish">Done ✓</button>' : '<span></span>') + '</div>';
+      (n >= MIN_ANGLES ? '<button class="vf-done" data-action="camFinish">Done ' + ic('check') + '</button>' : '<span></span>') + '</div>';
 }
 /** Grab the photo straight from the live preview: instant, like the phone's camera. Heavy work runs right after. */
 function snap() {
@@ -1870,9 +1965,8 @@ function snap() {
     S.thumbs[key] = t.toDataURL('image/jpeg', 0.7); renderCam();
     setTimeout(() => {                       // quality check + save, after the thumbnail shows
       const iss = photoIssues(c);
-      if (iss.length) { S.issues[key] = iss.join(' and '); toast('⚠ Photo ' + a + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); renderCam(); }
+      if (iss.length) { S.issues[key] = iss.join(' and '); toast('Photo ' + a + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); renderCam(); }
       c.toBlob(b => {
-        if (phoneCopyOn()) saveToPhone(b, fname(x.id, a));
         const r = new FileReader();
         r.onload = () => { delete S.preparing[key]; acceptShot({ id: x.id, angle: a, b64: String(r.result).split(',')[1], at: Date.now() }, S.thumbs[key]); };
         r.onerror = () => { delete S.preparing[key]; delete S.thumbs[key]; toast('Photo ' + a + ' could not be saved. Take it again.', 4000, true); renderCam(); };
@@ -1885,22 +1979,22 @@ function camShootHtml(x) {          // used only when the in-app camera isn't av
   const names = angleNames(), n = takenSet(x).size, target = S.cam.target || nextAngle(x);
   const tiles = names.map((nm, i) => {
     const a = i + 1, st = angleState(x, a), thumb = S.thumbs[x.id + '_' + a], k = x.id + '_' + a;
-    const badge = S.issues[k] ? '⚠️' : st === 'prep' || st === 'up' ? SPIN : st === 'q' ? '📴' : st === 'done' ? '✓' : '';
+    const badge = S.issues[k] ? '' + ic('warning') + '' : st === 'prep' || st === 'up' ? SPIN : st === 'q' ? '' + ic('cloud_off') + '' : st === 'done' ? '' + ic('check') + '' : '';
     return '<button class="tile' + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '">' +
-      (thumb ? '<img src="' + thumb + '" alt="">' : st === 'done' ? '✓' : a) + (badge ? '<span class="badge">' + badge + '</span>' : '') + '</button>';
+      (thumb ? '<img src="' + thumb + '" alt="">' : st === 'done' ? '' + ic('check') + '' : a) + (badge ? '<span class="badge">' + badge + '</span>' : '') + '</button>';
   }).join('');
   return '<div class="cam-head"><div style="min-width:0"><div class="eyebrow">' + (target ? 'Photo ' + target + ' of ' + MAX_ANGLES : 'All ' + MAX_ANGLES + ' photos taken') + '</div><div class="cam-id">' + esc(x.id) + '</div></div>' +
-      '<span class="sp"></span><button class="iconbtn" data-action="camClose" aria-label="Close" title="Close">✕</button></div>' +
+      '<span class="sp"></span><button class="iconbtn" data-action="camClose" aria-label="Close" title="Close">' + ic('close') + '</button></div>' +
     (target ? '<div class="step"><div class="step-n">' + target + '</div><div style="min-width:0"><b>' + esc(names[target - 1]) + '</b><div class="small muted">' + esc(ANGLE_HINTS[target - 1] || '') + '</div></div></div>' +
-      '<button class="btn bigcam" data-action="camShot" data-v="' + target + '">📷 Take photo ' + target + ' of ' + MAX_ANGLES + '</button>' : '') +
-    (n >= MIN_ANGLES ? '<button class="btn bigcam' + (target ? ' ghost' : '') + '" data-action="camFinish">✓ Done</button>' : '') +
+      '<button class="btn bigcam" data-action="camShot" data-v="' + target + '">' + ic('photo_camera') + ' Take photo ' + target + ' of ' + MAX_ANGLES + '</button>' : '') +
+    (n >= MIN_ANGLES ? '<button class="btn bigcam' + (target ? ' ghost' : '') + '" data-action="camFinish">' + ic('check') + ' Done</button>' : '') +
     '<div class="strip">' + tiles + '</div><div class="strip-cap">' + names.map(nm => '<span>' + esc(nm) + '</span>').join('') + '</div>' +
     '<p class="small muted" style="margin:10px 0 0">Tap a photo to retake it. ' + photoStatusLine(x) + '</p>';
 }
 function camFinishHtml(x) {          // instructions only: nothing to tick or type
   const me = S.user;
-  return '<div class="cam-head"><div><div class="eyebrow">✓ ' + MAX_ANGLES + ' photos saved</div><h2 style="margin:4px 0 0">✂️ Cut, bag and label it</h2></div>' +
-      '<span class="sp"></span><button class="iconbtn" data-action="camDone" aria-label="Close" title="Close">✕</button></div>' +
+  return '<div class="cam-head"><div><div class="eyebrow">' + ic('check') + ' ' + MAX_ANGLES + ' photos saved</div><h2 style="margin:4px 0 0">' + ic('content_cut') + ' Cut, bag and label it</h2></div>' +
+      '<span class="sp"></span><button class="iconbtn" data-action="camDone" aria-label="Close" title="Close">' + ic('close') + '</button></div>' +
     '<p class="small" style="margin:12px 0 0">Write this on masking tape:</p>' +
     '<div style="text-align:center"><span class="tape">' + esc(x.id) + '</span></div>' +
     '<ol class="fsteps">' +
@@ -1910,7 +2004,7 @@ function camFinishHtml(x) {          // instructions only: nothing to tick or ty
       '<li><span class="n">4</span><span>Stick the <b>' + esc(x.id) + '</b> tape on the bag.</span></li>' +
       '<li><span class="n">5</span><span>Bring it to DA RCPC by <b>' + esc(x.date ? fmt(addDays(x.date, 1)) : 'tomorrow') + '</b> (the next day).</span></li>' +
     '</ol>' +
-    '<button class="btn bigcam" data-action="camNextSample">＋ Next leaf (' + esc(nextLabel(me)) + ')</button>' +
+    '<button class="btn bigcam" data-action="camNextSample">' + ic('add') + ' Next leaf (' + esc(nextLabel(me)) + ')</button>' +
     '<button class="btn bigcam ghost" data-action="camDone">Done for now</button>';
 }
 /** leaving the label screen = the leaf was wrapped and bagged; fill that in for them */
@@ -2011,11 +2105,11 @@ async function sendPhoto(job) {
     const sm = S.data && sampleById(job.id);
     if (sm && patch) { Object.assign(sm, patch); persist(); }
     await PhotoQ.del(key);
-    toast('Saved ' + fname(job.id, job.angle) + ' ✓', 1500);
+    toast('Saved ' + fname(job.id, job.angle) + '', 1500);
   } catch (e) {
     if (e.auth) { delete S.uploading[key]; lock(e.message); return; }
     S.queued[key] = job;
-    toast('📴 ' + fname(job.id, job.angle) + ' saved on this phone. It uploads by itself when there\'s signal.', 3000);
+    toast('' + fname(job.id, job.angle) + ' saved on this phone. It uploads by itself when there\'s signal.', 3000);
   }
   delete S.uploading[key];
   renderCam(); updateSyncChip();
@@ -2027,10 +2121,10 @@ async function sendReceipt(job, key) {
     const x = S.data && S.data.supplies.find(s => s.row === job.row);
     if (x && patch) { Object.assign(x, patch); persist(); }
     await PhotoQ.del(key);
-    toast('Receipt saved ✓', 1500);
+    toast('Receipt saved', 1500);
   } catch (e) {
     if (e.auth) { delete S.uploading[key]; lock(e.message); return; }
-    if (e.network) { S.queued[key] = job; toast('📴 Receipt saved on this phone. It uploads when there\'s signal.', 3000); }
+    if (e.network) { S.queued[key] = job; toast('Receipt saved on this phone. It uploads when there\'s signal.', 3000); }
     else { await PhotoQ.del(key); toast('Receipt not saved: ' + e.message, 4000, true); }
   }
   delete S.uploading[key];
@@ -2049,7 +2143,7 @@ async function acceptShot(job, thumb) {
     await PhotoQ.put(job.id + '_' + job.angle, job);  // kept on the phone until Drive confirms
   } catch (e) {
     if (!navigator.onLine) {                          // can't keep it and can't send it: say so loudly
-      toast('⚠ Phone storage is full. ' + fname(job.id, job.angle) + ' was NOT saved. Free up space, then retake it.', 7000, true);
+      toast('Phone storage is full. ' + fname(job.id, job.angle) + ' was NOT saved. Free up space, then retake it.', 7000, true);
       delete S.thumbs[job.id + '_' + job.angle]; renderCam(); return;
     }
     toast('Phone storage is full. Uploading ' + fname(job.id, job.angle) + ' now, so keep the app open.', 4000, true);
@@ -2070,8 +2164,7 @@ document.getElementById('camInput').addEventListener('change', async e => {
     const p = await shrinkPhoto(file);
     delete S.preparing[key];
     const job = { id, angle, b64: p.full.split(',')[1], at: Date.now() };
-    if (phoneCopyOn()) fetch(p.full).then(r => r.blob()).then(b => saveToPhone(b, fname(id, angle))).catch(() => {});
-    if (p.issues.length) { S.issues[key] = p.issues.join(' and '); toast('⚠ Photo ' + angle + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); } else delete S.issues[key];
+    if (p.issues.length) { S.issues[key] = p.issues.join(' and '); toast('Photo ' + angle + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); } else delete S.issues[key];
     await acceptShot(job, p.thumb);
     if (S.cam && S.cam.id === id && takenSet(sampleById(id)).size >= MAX_ANGLES && !S.cam.target) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }
   } catch (err) { delete S.preparing[key]; renderCam(); toast(err.message || String(err), 4000, true); }
@@ -2096,21 +2189,21 @@ function vSupplies() {
     const dis = s.tempId ? ' disabled' : '';
     const at = 'data-change="supply" data-row="' + s.row + '"' + dis;
     const rk = receiptKey(s.row), rq = S.queued[rk], rup = S.uploading[rk] || S.waiting[rk] || S.preparing[rk];
-    const receiptBtn = s.tempId || (!s.bought && !s.receipt && !rq && !rup) ? '' : rup ? '<span class="qchip">' + SPIN + 'Uploading receipt</span>' : rq ? '<span class="qchip">📴 receipt saved on phone</span>' :
-      s.receipt ? '<a class="rcpt" href="' + esc(s.receipt) + '" target="_blank" rel="noopener">🧾 Receipt</a><button class="iconbtn" data-action="receipt" data-row="' + s.row + '" title="Replace receipt" aria-label="Replace receipt">' + (IS_PHONE ? '📷' : '⬆') + '</button>' :
-      '<button class="cam-btn none" data-action="receipt" data-row="' + s.row + '">' + (IS_PHONE ? '📷 Receipt' : '⬆ Upload receipt') + '</button>';
+    const receiptBtn = s.tempId || (!s.bought && !s.receipt && !rq && !rup) ? '' : rup ? '<span class="qchip">' + SPIN + 'Uploading receipt</span>' : rq ? '<span class="qchip">' + ic('cloud_off') + ' receipt saved on phone</span>' :
+      s.receipt ? '<a class="rcpt" href="' + esc(s.receipt) + '" target="_blank" rel="noopener">' + ic('receipt_long') + ' Receipt</a><button class="iconbtn" data-action="receipt" data-row="' + s.row + '" title="Replace receipt" aria-label="Replace receipt">' + (IS_PHONE ? '' + ic('photo_camera') + '' : '' + ic('upload') + '') + '</button>' :
+      '<button class="cam-btn none" data-action="receipt" data-row="' + s.row + '">' + (IS_PHONE ? '' + ic('photo_camera') + ' Receipt' : '' + ic('upload') + ' Upload receipt') + '</button>';
     const key = 'exp_' + s.row, open = !!S.open[key] || !s.item;
-    const toggle = s.tempId ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
+    const toggle = s.tempId ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ' + ic('keyboard_arrow_up') + '' : 'Edit ' + ic('keyboard_arrow_down') + '') + '</button>';
     const sumMeta = [s.category, (s.qty || 1) + ' × ' + (s.cost !== '' && s.cost != null ? peso(+s.cost) : 'no price'), s.assigned ? 'by ' + s.assigned : 'Nobody yet', s.date ? fmt(s.date).replace(/^\w+, /, '') : ''].filter(Boolean).map(esc).join(' · ');
     if (!open) return '<div class="sc supc' + (s.bought ? ' sub' : '') + '" style="--c:var(--leaf)">' +
       '<div class="sc-top"><label class="ck big"><input type="checkbox" ' + (s.bought ? 'checked' : '') + ' ' + at + ' data-field="bought" aria-label="Paid">' + (s.bought ? 'Paid' : 'To buy') + '</label>' +
-        '<span class="sp"></span>' + (s.tempId ? '<span class="qchip">⏳ waiting to sync</span>' : '<b>' + (s.cost !== '' && s.cost != null ? peso(expenseTotal(s)) : '—') + '</b>') + '</div>' +
+        '<span class="sp"></span>' + (s.tempId ? '<span class="qchip">' + ic('hourglass_empty') + ' waiting to sync</span>' : '<b>' + (s.cost !== '' && s.cost != null ? peso(expenseTotal(s)) : '—') + '</b>') + '</div>' +
       '<div class="sc-sum" data-action="toggleCard" data-v="' + esc(key) + '"><div class="ttl">' + esc(s.item) + '</div><div class="meta">' + sumMeta + '</div></div>' +
       '<div class="sc-foot">' + receiptBtn + toggle + '</div></div>';
     return '<div class="sc supc' + (s.bought ? ' sub' : '') + '" style="--c:var(--leaf)">' +
       '<div class="sc-top"><label class="ck big"><input type="checkbox" ' + (s.bought ? 'checked' : '') + ' ' + at + ' data-field="bought" aria-label="Paid">' + (s.bought ? 'Paid' : 'To buy') + '</label>' +
-        '<span class="sp"></span>' + (s.tempId ? '<span class="qchip">⏳ waiting to sync</span>' : '<b>' + (s.cost !== '' && s.cost != null ? peso(expenseTotal(s)) : '—') + '</b>') +
-        '<button class="iconbtn" data-action="delSupply" data-row="' + s.row + '"' + dis + ' aria-label="Delete ' + esc(s.item) + '" title="Delete">🗑</button></div>' +
+        '<span class="sp"></span>' + (s.tempId ? '<span class="qchip">' + ic('hourglass_empty') + ' waiting to sync</span>' : '<b>' + (s.cost !== '' && s.cost != null ? peso(expenseTotal(s)) : '—') + '</b>') +
+        '<button class="iconbtn" data-action="delSupply" data-row="' + s.row + '"' + dis + ' aria-label="Delete ' + esc(s.item) + '" title="Delete">' + ic('delete') + '</button></div>' +
       '<div class="sc-grid">' +
         '<label class="wide">Item<input type="text" value="' + esc(s.item) + '" ' + at + ' data-field="item"></label>' +
         '<label>Category' + sel(cats, s.category, at + ' data-field="category"', 'Choose…') + '</label>' +
@@ -2130,7 +2223,7 @@ function vSupplies() {
       '<div class="stat"><div class="k">To buy</div><div class="v">' + peso(sum(toBuy)) + '</div><div class="small muted">' + toBuy.length + ' item' + (toBuy.length === 1 ? '' : 's') + '</div></div>' +
       '<div class="stat" style="grid-column:span 2"><div class="k">Paid by</div><div class="chips" style="margin-top:8px">' + perPerson + '</div></div>' +
     '</div>' +
-    '<div class="addwrap' + (S.addExpOpen ? ' open' : '') + '"><button class="btn ' + (S.addExpOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddExp">' + (S.addExpOpen ? '✕ Cancel' : '＋ Add expense') + '</button>' +
+    '<div class="addwrap' + (S.addExpOpen ? ' open' : '') + '"><button class="btn ' + (S.addExpOpen ? 'ghost ' : '') + 'addtoggle" data-action="toggleAddExp">' + (S.addExpOpen ? '' + ic('close') + ' Cancel' : '' + ic('add') + ' Add expense') + '</button>' +
     '<form id="addSupply" class="card addsup">' +
       '<label class="fl wide">Item<input type="text" name="item" placeholder="e.g. Printing, 3 copies" required></label>' +
       '<label class="fl">Category' + sel(cats, 'Printing', 'name="category"') + '</label>' +
@@ -2139,7 +2232,7 @@ function vSupplies() {
       '<label class="fl">₱ each<input type="number" name="cost" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></label>' +
       '<label class="fl">Paid by' + sel(ppl, S.user, 'name="assigned"') + '</label>' +
       '<label class="ck" style="align-self:center"><input type="checkbox" name="bought" checked>Already paid</label>' +
-      '<button class="btn wide" type="submit">＋ Add expense</button></form></div>' +
+      '<button class="btn wide" type="submit">' + ic('add') + ' Add expense</button></form></div>' +
     '<div class="row filters"><div class="chips">' + chips + '</div></div>' +
     '<div class="scards">' + (items.map(card).join('') || '<div class="empty" style="grid-column:1/-1">Nothing here yet. Add your first expense above.</div>') + '</div>';
 }
@@ -2166,19 +2259,14 @@ document.getElementById('rcptInput').addEventListener('change', async e => {
 });
 
 /* ---------- Links ---------- */
-const ICON = {
-  doc: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>',
-  folder: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
-  sheet: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
-  mail: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
-};
+const ICON = { doc: ic('description'), folder: ic('folder'), sheet: ic('table_chart'), mail: ic('mail') };
 /* ---------- More: training runs, consultations, final defense, links ---------- */
 function vMore() {
-  const tabs = [['training', 'Training runs'], ['consults', 'Consultations'], ['defense', 'Final defense'], ['links', 'Links']];
+  const tabs = [['training', 'Training runs'], ['sources', 'Dataset sources'], ['consults', 'Consultations'], ['defense', 'Final defense'], ['links', 'Links']];
   const openC = recs('consults').filter(c => c.status !== 'Done').length;
   const chips = tabs.map(([k, l]) => '<button class="chip ' + (S.more === k ? 'on' : '') + '" data-action="more" data-v="' + k + '">' + l +
     (k === 'consults' && openC ? ' · ' + openC : '') + '</button>').join('');
-  const body = { training: vTraining, consults: vConsults, defense: vDefense, links: vLinks }[S.more] || vTraining;
+  const body = { training: vTraining, sources: vSources, consults: vConsults, defense: vDefense, links: vLinks }[S.more] || vTraining;
   return '<div class="row filters"><div class="chips">' + chips + '</div></div>' + body();
 }
 const recField = (kind, r, f, label, type, extra) => {
@@ -2188,11 +2276,11 @@ const recField = (kind, r, f, label, type, extra) => {
     : '<input type="' + (type || 'text') + '"' + (type === 'number' ? ' step="any" inputmode="decimal"' : '') + ' value="' + esc(v) + '" ' + at + (extra || '') + '>';
   return '<label' + (type === 'area' ? ' class="wide"' : '') + '>' + label + input + '</label>';
 };
-const recTools = (kind, r) => r.tempId ? '<span class="qchip">⏳ waiting to sync</span>' :
-  '<button class="morebtn" data-action="toggleCard" data-v="' + kind + '_' + r.row + '">' + (S.open[kind + '_' + r.row] ? 'Less ▴' : 'Edit ▾') + '</button>';
+const recTools = (kind, r) => r.tempId ? '<span class="qchip">' + ic('hourglass_empty') + ' waiting to sync</span>' :
+  '<button class="morebtn" data-action="toggleCard" data-v="' + kind + '_' + r.row + '">' + (S.open[kind + '_' + r.row] ? 'Less ' + ic('keyboard_arrow_up') + '' : 'Edit ' + ic('keyboard_arrow_down') + '') + '</button>';
 const recAdd = (kind, label, fields) => '<div class="addwrap open">' +
-  '<button class="btn ' + (S.addRec === kind ? 'ghost ' : '') + '" style="width:100%;margin-bottom:12px" data-action="addRec" data-v="' + kind + '">' + (S.addRec === kind ? '✕ Cancel' : '＋ ' + label) + '</button>' +
-  (S.addRec === kind ? '<form class="card recform" data-kind="' + kind + '">' + fields + '<button class="btn wide" type="submit">＋ ' + label + '</button></form>' : '') + '</div>';
+  '<button class="btn ' + (S.addRec === kind ? 'ghost ' : '') + '" style="width:100%;margin-bottom:12px" data-action="addRec" data-v="' + kind + '">' + (S.addRec === kind ? '' + ic('close') + ' Cancel' : '' + ic('add') + ' ' + label) + '</button>' +
+  (S.addRec === kind ? '<form class="card recform" data-kind="' + kind + '">' + fields + '<button class="btn wide" type="submit">' + ic('add') + ' ' + label + '</button></form>' : '') + '</div>';
 
 const MODELS = ['Baseline EfficientNetB0', 'Enhanced EfficientNetB0'];
 const METRICS = [['accuracy', 'Accuracy', '%'], ['precision', 'Precision', '%'], ['recall', 'Recall', '%'], ['f1', 'F1', '%'], ['size', 'Size', ' MB'], ['speed', 'Speed', ' ms']];
@@ -2215,7 +2303,7 @@ function vTraining() {
   const cmp = best.length ? '<div class="card" style="margin-bottom:14px;padding:14px 16px"><h3 style="margin:0">Best run per model</h3>' +
     '<div class="tscroll"><table class="mtable"><thead><tr><th>Model</th><th>Run</th>' + METRICS.map(m => '<th>' + m[1] + (m[2].trim() === '%' ? ' %' : m[2]) + '</th>').join('') + '</tr></thead><tbody>' +
     best.map(r => '<tr><td><b>' + esc(r.model || '—') + '</b></td><td>' + esc(r.run || '') + '</td>' + METRICS.map(m => '<td>' + esc(fmtM(r[m[0]])) + '</td>').join('') + '</tr>').join('') +
-    '</tbody></table></div><div class="row" style="margin-top:10px"><button class="btn" data-action="copyCompare">📋 Copy table for Chapter 4</button><span class="small muted">Paste into Google Docs. It becomes a table.</span></div></div>' : '';
+    '</tbody></table></div><div class="row" style="margin-top:10px"><button class="btn" data-action="copyCompare">' + ic('content_copy') + ' Copy table for Chapter 4</button><span class="small muted">Paste into Google Docs. It becomes a table.</span></div></div>' : '';
   const today = localDay();
   const form = recAdd('training', 'Add training run',
     '<label class="fl">Date<input type="date" name="date" value="' + today + '"></label>' +
@@ -2236,10 +2324,50 @@ function vTraining() {
         recField('training', r, 'date', 'Date', 'date') + recField('training', r, 'dataset', 'Dataset / split') + recField('training', r, 'epochs', 'Epochs', 'number') +
         METRICS.map(m => recField('training', r, m[0], m[1] + ' (' + m[2].trim() + ')', 'number')).join('') + recField('training', r, 'notes', 'Notes', 'area') + '</div>' : '') +
       '<div class="sc-foot"><span class="small muted">' + (r.by ? 'Added by ' + esc(r.by) : '') + '</span><span class="sp"></span>' +
-        (open ? '<button class="iconbtn" data-action="recDel" data-kind="training" data-row="' + r.row + '" aria-label="Delete run" title="Delete">🗑</button>' : '') + recTools('training', r) + '</div></div>';
+        (open ? '<button class="iconbtn" data-action="recDel" data-kind="training" data-row="' + r.row + '" aria-label="Delete run" title="Delete">' + ic('delete') + '</button>' : '') + recTools('training', r) + '</div></div>';
   }).join('');
   return '<h2 style="margin:0 0 12px">Training runs</h2>' + cmp + form +
     '<div class="scards">' + (cards || '<div class="empty" style="grid-column:1/-1">No runs yet. Add each training run here, baseline and enhanced, so Chapter 4 can compare them.</div>') + '</div>';
+}
+const SRC_CLS = [['cordana', 'Cordana'], ['sigatoka', 'Black Sigatoka'], ['healthy', 'Healthy'], ['other', 'Other']];
+const srcTotal = x => SRC_CLS.reduce((a, [k]) => a + (+x[k] || 0), 0);
+function sourcesTSV() {
+  const list = recs('sources'), sum = k => list.reduce((a, x) => a + (+x[k] || 0), 0);
+  const head = ['Source', 'Type'].concat(SRC_CLS.map(c => c[1]), ['Total', 'Link']);
+  const rows = list.map(x => [x.name, x.type].concat(SRC_CLS.map(([k]) => +x[k] || 0), [srcTotal(x), x.link]));
+  return [head].concat(rows, [['Total', ''].concat(SRC_CLS.map(([k]) => sum(k)), [list.reduce((a, x) => a + srcTotal(x), 0), ''])]).map(r => r.join('\t')).join('\n');
+}
+function vSources() {
+  const list = recs('sources'), sum = k => list.reduce((a, x) => a + (+x[k] || 0), 0), grand = list.reduce((a, x) => a + srcTotal(x), 0);
+  const types = ['Kaggle', 'Mendeley Data', 'GitHub', 'Paper', 'Website', 'Drive', 'Other'];
+  const table = list.length ? '<div class="card" style="margin-bottom:14px;padding:14px 16px"><h3 style="margin:0">Images per source</h3>' +
+    '<div class="tscroll"><table class="mtable srctable"><thead><tr><th>Source</th><th>Type</th>' + SRC_CLS.map(c => '<th>' + c[1] + '</th>').join('') + '<th>Total</th></tr></thead><tbody>' +
+    list.map(x => '<tr><td>' + (x.link ? '<a href="' + esc(x.link) + '" target="_blank" rel="noopener">' + esc(x.name || 'Source') + ' ' + ic('open_in_new') + '</a>' : esc(x.name || 'Source')) + '</td><td>' + esc(x.type || '') + '</td>' +
+      SRC_CLS.map(([k]) => '<td>' + (+x[k] || 0) + '</td>').join('') + '<td><b>' + srcTotal(x) + '</b></td></tr>').join('') +
+    '</tbody><tfoot><tr><td>Total</td><td></td>' + SRC_CLS.map(([k]) => '<td>' + sum(k) + '</td>').join('') + '<td>' + grand + '</td></tr></tfoot></table></div>' +
+    '<div class="row" style="margin-top:10px"><button class="btn" data-action="copySources">' + ic('content_copy') + ' Copy table for the paper</button><span class="small muted">Paste into Google Docs. It becomes a table.</span></div></div>' : '';
+  const form = recAdd('sources', 'Add dataset source',
+    '<label class="fl wide">Source / dataset name<input type="text" name="name" required placeholder="e.g. Banana Leaf Disease Images"></label>' +
+    '<label class="fl wide">Link or Drive folder<input type="url" name="link" placeholder="https://"></label>' +
+    '<label class="fl">Type<select name="type">' + types.map(t => '<option>' + t + '</option>').join('') + '</select></label>' +
+    '<label class="fl">Date downloaded<input type="date" name="date" value="' + localDay() + '"></label>' +
+    SRC_CLS.map(([k, l]) => '<label class="fl">' + l + ' images<input type="number" min="0" name="' + k + '" inputmode="numeric" placeholder="0"></label>').join('') +
+    '<label class="fl wide">License / how to cite<input type="text" name="license" placeholder="e.g. CC BY 4.0 · cite the authors"></label>' +
+    '<label class="fl wide">Notes<input type="text" name="notes" placeholder="e.g. which classes were removed and why"></label>');
+  const cards = list.map(x => {
+    const open = S.open['sources_' + x.row];
+    return '<div class="sc" style="--c:var(--leaf)"><div><b>' + esc(x.name || 'Source') + '</b><div class="small muted">' + esc([x.type, x.date ? fmt(x.date) : '', x.license].filter(Boolean).join(' · ')) + '</div></div>' +
+      '<div class="metrics">' + SRC_CLS.filter(([k]) => +x[k]).map(([k, l]) => '<span class="tagp">' + l + ' ' + (+x[k]) + '</span>').join('') + '<span class="tagp ok">Total ' + srcTotal(x) + '</span></div>' +
+      (x.link ? '<a class="small" href="' + esc(x.link) + '" target="_blank" rel="noopener">' + ic('link') + ' Open source</a>' : '<span class="small" style="color:var(--red)">' + ic('warning') + ' Add the link or Drive folder</span>') +
+      (open ? '<div class="sc-grid">' + recField('sources', x, 'name', 'Name') + recField('sources', x, 'link', 'Link or Drive folder', 'url') +
+        SRC_CLS.map(([k, l]) => recField('sources', x, k, l, 'number')).join('') + recField('sources', x, 'license', 'License / how to cite') + recField('sources', x, 'date', 'Date downloaded', 'date') +
+        recField('sources', x, 'notes', 'Notes', 'area') + '</div>' : '') +
+      '<div class="sc-foot"><span class="small muted">' + (x.by ? 'Added by ' + esc(x.by) : '') + '</span><span class="sp"></span>' +
+        (open ? '<button class="iconbtn" data-action="recDel" data-kind="sources" data-row="' + x.row + '" aria-label="Delete source" title="Delete">' + ic('delete') + '</button>' : '') + recTools('sources', x) + '</div></div>';
+  }).join('');
+  return '<div class="row" style="margin-bottom:12px"><h2 style="margin:0">Dataset sources</h2><div class="sp"></div><b>' + grand + ' images · ' + list.length + ' source' + (list.length === 1 ? '' : 's') + '</b></div>' +
+    '<p class="small muted" style="margin:-4px 0 12px">Every online dataset used, with its link and how many images per class came from it.</p>' + table + form +
+    '<div class="scards">' + (cards || '<div class="empty" style="grid-column:1/-1">No sources yet. Rho: add each online dataset with its link or Drive folder and image counts.</div>') + '</div>';
 }
 function vConsults() {
   const list = recs('consults').slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.row - a.row);
@@ -2254,13 +2382,13 @@ function vConsults() {
   const cards = list.map(c => {
     const open = S.open['consults_' + c.row], done = c.status === 'Done';
     return '<div class="sc' + (done ? ' sub' : '') + '" style="--c:var(--leaf)"><div class="sc-top"><b>' + esc(c.with || '—') + '</b><span class="small muted">' + esc(c.date ? fmt(c.date) : '') + '</span><span class="sp"></span>' +
-        '<button class="tagp ' + (done ? 'ok' : 'warn') + '" style="border:0;cursor:pointer" data-action="recSet" data-kind="consults" data-row="' + c.row + '" data-field="status" data-v="' + (done ? 'Open' : 'Done') + '"' + (c.tempId ? ' disabled' : '') + '>' + (done ? '✓ Done' : 'Open') + '</button></div>' +
+        '<button class="tagp ' + (done ? 'ok' : 'warn') + '" style="border:0;cursor:pointer" data-action="recSet" data-kind="consults" data-row="' + c.row + '" data-field="status" data-v="' + (done ? 'Open' : 'Done') + '"' + (c.tempId ? ' disabled' : '') + '>' + (done ? '' + ic('check') + ' Done' : 'Open') + '</button></div>' +
       '<div class="sc-sum" style="cursor:default"><div class="ttl">' + esc(c.topic || 'Consultation') + '</div>' +
         (c.feedback && !open ? '<div class="small">' + esc(c.feedback) + '</div>' : '') + (c.action && !open ? '<div class="small muted">What we did: ' + esc(c.action) + '</div>' : '') + '</div>' +
       (open ? '<div class="sc-grid">' + recField('consults', c, 'with', 'With', 'text', ' list="peopleList"') + recField('consults', c, 'date', 'Date', 'date') +
         recField('consults', c, 'topic', 'Topic') + '<span></span>' + recField('consults', c, 'feedback', 'Feedback', 'area') + recField('consults', c, 'action', 'What we did', 'area') + '</div>' : '') +
       '<div class="sc-foot"><label class="ck"><input type="checkbox" data-change="rec" data-kind="consults" data-row="' + c.row + '" data-field="signed"' + (c.signed ? ' checked' : '') + (c.tempId ? ' disabled' : '') + '>Signed</label>' +
-        '<span class="sp"></span>' + (open ? '<button class="iconbtn" data-action="recDel" data-kind="consults" data-row="' + c.row + '" aria-label="Delete" title="Delete">🗑</button>' : '') + recTools('consults', c) + '</div></div>';
+        '<span class="sp"></span>' + (open ? '<button class="iconbtn" data-action="recDel" data-kind="consults" data-row="' + c.row + '" aria-label="Delete" title="Delete">' + ic('delete') + '</button>' : '') + recTools('consults', c) + '</div></div>';
   }).join('');
   const nOpen = list.filter(c => c.status !== 'Done').length;
   return '<div class="row" style="margin-bottom:12px"><h2 style="margin:0">Consultations</h2><div class="sp"></div><b>' + list.length + ' logged · ' + nOpen + ' open</b></div>' + form +
@@ -2272,16 +2400,16 @@ function vDefense() {
   const rows = items.map(x => {
     const open = S.open['defense_' + x.row];
     return '<div class="drow' + (x.done ? ' done' : '') + '"><input type="checkbox" data-change="rec" data-kind="defense" data-row="' + x.row + '" data-field="done"' + (x.done ? ' checked' : '') + (x.tempId ? ' disabled' : '') + ' aria-label="Done">' +
-      '<div style="flex:1;min-width:0"><div class="ditem">' + esc(x.item) + '</div><div class="small muted">' + esc(x.owner || '') + (x.done && x.doneBy ? ' · <span class="doneby">✓ ' + esc(x.doneBy) + '</span>' : '') + (x.notes ? ' · ' + esc(x.notes) : '') + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="ditem">' + esc(x.item) + '</div><div class="small muted">' + esc(x.owner || '') + (x.done && x.doneBy ? ' · <span class="doneby">' + ic('check') + ' ' + esc(x.doneBy) + '</span>' : '') + (x.notes ? ' · ' + esc(x.notes) : '') + '</div>' +
       (open ? '<div class="sc-grid" style="margin-top:8px">' + recField('defense', x, 'item', 'Item') + '<label>Owner<select data-change="rec" data-kind="defense" data-row="' + x.row + '" data-field="owner">' +
         owners.map(o => '<option' + (o === x.owner ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>' + recField('defense', x, 'notes', 'Notes', 'area') +
-        '</div><div class="row" style="margin-top:8px"><button class="btn ghost" style="color:var(--red)" data-action="recDel" data-kind="defense" data-row="' + x.row + '">🗑 Delete</button></div>' : '') + '</div>' +
+        '</div><div class="row" style="margin-top:8px"><button class="btn ghost" style="color:var(--red)" data-action="recDel" data-kind="defense" data-row="' + x.row + '">' + ic('delete') + ' Delete</button></div>' : '') + '</div>' +
       recTools('defense', x) + '</div>';
   }).join('');
   const form = recAdd('defense', 'Add item', '<label class="fl wide">Item<input type="text" name="item" required placeholder="e.g. Print 4 copies of the manuscript"></label>' +
     '<label class="fl">Owner<select name="owner">' + owners.map(o => '<option' + (o === S.user ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>');
   return '<div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:14px">' +
-      '<div class="stat hot"><div class="k">Final defense</div><div class="v" style="font-size:22px">' + (dd ? (n > 0 ? n + ' days left' : n === 0 ? 'Today' : 'Done 🎓') : 'Set the date') + '</div>' +
+      '<div class="stat hot"><div class="k">Final defense</div><div class="v" style="font-size:22px">' + (dd ? (n > 0 ? n + ' days left' : n === 0 ? 'Today' : 'Done ' + ic('school') + '') : 'Set the date') + '</div>' +
         '<input type="date" data-change="setting" data-field="defenseDate" value="' + esc(dd || '') + '" aria-label="Final defense date"></div>' +
       '<div class="stat"><div class="k">Checklist</div><div class="v">' + done + '<span class="muted" style="font-size:16px"> / ' + items.length + '</span></div>' +
         '<div class="bar" style="margin:8px 0 0"><i style="width:' + pct(done, items.length) + '%"></i></div></div></div>' +
@@ -2342,6 +2470,9 @@ document.addEventListener('click', e => {
   else if (a === 'member') { S.member = v; render(); }
   else if (a === 'status') { S.status = v; render(); }
   else if (a === 'revOwner') { S.revOwner = v; render(); }
+  else if (a === 'panelTab') { S.panelTab = v; render(); window.scrollTo(0, 0); }
+  else if (a === 'revSelecting') { S.revSelecting = !S.revSelecting; S.revSel = {}; render(); }
+  else if (a === 'ngFilter') { S.ngFilter = v; render(); }
   else if (a === 'revStatus') { S.revStatus = v; render(); }
   else if (a === 'toggleAddTask') { S.addTaskOpen = !S.addTaskOpen; render(); if (S.addTaskOpen) { const i = document.querySelector('#addForm [name=task]'); if (i) i.focus(); } }
   else if (a === 'toggleAddExp') { S.addExpOpen = !S.addExpOpen; render(); if (S.addExpOpen) { const i = document.querySelector('#addSupply [name=item]'); if (i) i.focus(); } }
@@ -2360,25 +2491,24 @@ document.addEventListener('click', e => {
       .then(() => toast('Deleted ' + id + ' · label free to reuse', 2200));
     updateSyncChip();
   }
-  else if (a === 'phoneCopy') {
-    const on = !phoneCopyOn(); store.set(PHONE_COPY, on ? '1' : '0'); render();
-    toast(on ? 'Each photo is also saved on this phone (Gallery → Download), named like FA-001_01.jpg' : 'Photos are saved to Drive only', 3500);
-  }
   else if (a === 'toggleCard') { S.open[v] = !S.open[v]; render(); }
   else if (a === 'more') { S.more = v; S.addRec = null; render(); window.scrollTo(0, 0); }
   else if (a === 'addRec') { S.addRec = S.addRec === v ? null : v; render(); if (S.addRec) { const i = document.querySelector('form.recform input:not([type=date]),form.recform textarea'); if (i) i.focus(); } }
   else if (a === 'recDel') {
     const kind = el.dataset.kind, row = +el.dataset.row, r = recs(kind).find(x => x.row === row);
-    if (!r || !confirm('Delete "' + (r.item || r.topic || [r.model, r.run].filter(Boolean).join(' · ') || 'this') + '"?')) return;
+    if (!r || !confirm('Delete "' + (r.item || r.topic || r.name || [r.model, r.run].filter(Boolean).join(' · ') || 'this') + '"?')) return;
     save('deleteRecord', [kind, row], () => { S.data.records[kind] = recs(kind).filter(x => x !== r); });
   }
   else if (a === 'recSet') {
     const kind = el.dataset.kind, row = +el.dataset.row, field = el.dataset.field;
     save('updateRecord', [kind, row, field, v], () => { const r = recs(kind).find(x => x.row === row); if (r) r[field] = v; });
   }
+  else if (a === 'copySources') {
+    (navigator.clipboard ? navigator.clipboard.writeText(sourcesTSV()) : Promise.reject()).then(() => toast('Copied. Paste it into the doc', 2000), () => toast('Couldn\'t copy here', 2500, true));
+  }
   else if (a === 'copyCompare') {
     const t = compareTSV();
-    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied ✓ Paste it into the doc', 2000), () => toast('Couldn\'t copy here', 2500, true));
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied Paste it into the doc', 2000), () => toast('Couldn\'t copy here', 2500, true));
   }
   else if (a === 'prefarm') {
     const { st } = prefarmState(), kind = (PREFARM.find(x => x[0] === v) || [])[2];
@@ -2394,7 +2524,7 @@ document.addEventListener('click', e => {
     const ids = Object.keys(S.ov.sel), date = S.ov.date || localDay();
     const late = ids.filter(id => { const x = sampleById(id); return x && x.date && date > addDays(x.date, 1); });
     if (!ids.length || !confirm('Mark ' + ids.length + ' sample(s) as submitted to DA RCPC on ' + fmt(date) + '?' +
-      (late.length ? '\n\n⚠ ' + late.join(', ') + ' would be LATE (more than a day after collection) and invalid.' : ''))) return;
+      (late.length ? '\n\nWarning: ' + late.join(', ') + ' would be LATE (more than a day after collection) and invalid.' : ''))) return;
     save('submitSamples', [ids, date], () => { ids.forEach(id => { const x = sampleById(id); if (x) x.submitted = date; }); });
     closeOv();
   }
@@ -2405,7 +2535,7 @@ document.addEventListener('click', e => {
   else if (a === 'camClose') {
     const x = sampleById(S.cam.id), n = takenSet(x).size;
     if (n >= MIN_ANGLES) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }   // never skip the labeling reminder
-    else if (confirm('Only ' + n + ' of ' + MIN_ANGLES + ' required photos for ' + x.id + '. Close anyway?\nYou can finish later: tap 📷 on ' + x.id + '.')) closeCam();
+    else if (confirm('Only ' + n + ' of ' + MIN_ANGLES + ' required photos for ' + x.id + '. Close anyway?\nYou can finish later: tap the camera button on ' + x.id + '.')) closeCam();
   }
   else if (a === 'camShot') {
     const ang = +v;
@@ -2416,7 +2546,7 @@ document.addEventListener('click', e => {
   else if (a === 'snap') { snap(); }
   else if (a === 'copyPaper') {
     const t = document.getElementById('paperText').textContent;
-    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied ✓', 1500), () => toast('Select the text and copy it', 2500));
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied', 1500), () => toast('Select the text and copy it', 2500));
   }
   else if (a === 'exportSet') {
     if (S.exporting) return;
@@ -2424,7 +2554,7 @@ document.addEventListener('click', e => {
     toast('Exporting… this can take a minute');
     call('exportValidatedDataset').then(r => {
       if (r && r.folder) S.data.exportFolderUrl = r.folder;
-      toast('Exported ✓ ' + (r ? r.copied : 0) + ' new photos', 3000);
+      toast('Exported ' + (r ? r.copied : 0) + ' new photos', 3000);
     }).catch(e => toast(e.network ? 'Needs signal: try again when online.' : 'Export failed: ' + e.message, 4000, true))
       .finally(() => { S.exporting = false; render(); });
   }
@@ -2437,7 +2567,7 @@ document.addEventListener('click', e => {
     const rows = Object.keys(S.revSel).map(Number), st = v, me = S.user;
     if (!rows.length) return;
     if (st === 'C' && !confirm('Mark ' + rows.length + ' item(s) as complied, done by ' + me + '?')) return;
-    S.revSel = {};
+    S.revSel = {}; S.revSelecting = false;
     save('updateRevisions', [rows, st, st === 'C' ? me : ''], () => {
       rows.forEach(r => { const x = S.data.revisions.find(y => y.row === r); if (x) { x.status = st; x.doneBy = st === 'C' ? me : ''; } });
     });
@@ -2539,7 +2669,7 @@ document.addEventListener('keydown', e => {
 ['keydown', 'keyup'].forEach(t => document.addEventListener(t, e => {
   if (!e.target.matches || !e.target.matches('#authForm [name=pw]') || !e.getModifierState) return;
   const h = document.getElementById('pwHint'); if (!h) return;
-  if (e.getModifierState('CapsLock')) { h.textContent = '⇪ Caps Lock is on'; h.className = 'fhint warn'; }
+  if (e.getModifierState('CapsLock')) { h.innerHTML = ic('keyboard_capslock') + ' Caps Lock is on'; h.className = 'fhint warn'; }
   else if (h.textContent.indexOf('Caps') > -1) { const nw = e.target.dataset.newpw; h.textContent = nw ? pwLenHint(e.target.value) : ''; h.className = 'fhint' + (nw && e.target.value.length >= 8 ? ' ok' : ''); }
 }));
 document.addEventListener('input', e => {
@@ -2589,7 +2719,7 @@ document.addEventListener('submit', e => {
     }).then(res => {
       if (!res) { S.addRec = null; render(); return; }
       S.data.records[kind].push(res); S.addRec = null; persist(); render();
-      toast('Added ✓', 1200);
+      toast('Added', 1200);
     });
   } else if (f.id === 'addSupply') {
     const x = { item: f.item.value.trim(), purpose: '', qty: f.qty.value === '' ? '' : +f.qty.value,
@@ -2635,17 +2765,16 @@ window.addEventListener('offline', () => { if (S.data) setOffline(true, (cached(
 let installEvt = null;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.getElementById('installBtn').hidden = false; });
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (S.data && S.view === 'overview') render(); });
 window.addEventListener('appinstalled', () => {
-  document.getElementById('installBtn').hidden = true;
+  installEvt = null; store.set(INSTALL_SKIP, '1'); if (S.data) render();
   if (!document.getElementById('install').hidden) { document.getElementById('install').hidden = true; startApp(); }
-  toast('Installed ✓', 2500);
+  toast('Installed', 2500);
 });
-if (isIOS && !isStandalone) document.getElementById('installBtn').hidden = false;
 function doInstall() {
   if (installEvt) { installEvt.prompt(); installEvt.userChoice.then(c => { if (c && c.outcome === 'accepted') { store.set(INSTALL_SKIP, '1'); if (!document.getElementById('install').hidden) { S.cameFromInstall = true; document.getElementById('install').hidden = true; startApp(); } } }).finally(() => { installEvt = null; }); }
   else if (isIOS) document.getElementById('iosHint').hidden = false;
-  else toast('Use your browser menu → Install app', 4000);
+  else toast('Use your browser menu ' + ic('arrow_forward') + ' Install app', 4000);
 }
 if ('serviceWorker' in navigator && window.isSecureContext) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

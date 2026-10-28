@@ -9,7 +9,7 @@
  *  2. Extensions → Apps Script. Delete the sample code, paste this file, Save.
  *  3. Choose the function "setupTracker" in the toolbar and click Run.
  *     Approve the permissions prompt (it's your own script).
- *  4. Go back to the sheet — a "🍌 Thesis Tracker" menu appears.
+ *  4. Go back to the sheet — a "Thesis Tracker" menu appears.
  *
  *  WHAT IT BUILDS
  *  Dashboard · Fe Anne · Rho · Cha · All Open Tasks · Panel Revisions
@@ -21,7 +21,7 @@
  */
 
 const CFG = {
-  title: '🍌 Banana Thesis Tracker',
+  title: 'Banana Thesis Tracker',
   thesisTitle: 'An Enhanced EfficientNetB0 Architecture for Mobile Banana Leaf Disease Classification',
   timezone: 'Asia/Manila',
   maxRows: 200,
@@ -73,8 +73,8 @@ const TASKS = {
     ['F-09', 'Buy supplies: cotton, plastic bags, markers, masking tape', 'DA RCPC', 'High', 'Not Started', '', '', 'See Expenses tab.'],
     ['F-10', 'Lead field collection of fresh banana leaf samples (whole team)', 'DA RCPC', 'High', 'Not Started', '', '', 'Collect close to submission day so leaves stay fresh.'],
     ['F-11', 'Submit fresh, labeled samples to DA RCPC Davao', 'DA RCPC', 'High', 'Not Started', '', '', 'Bring the printed Sample Log.'],
-    ['F-13', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels FA-001, FA-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
-    ['F-14', 'Run 🍌 Thesis Tracker → 📷 Connect photo folder (once) so app photos save into the Curated dataset folder', 'DA RCPC', 'High', 'Not Started', '', '', 'Do this before the field collection day.'],
+    ['F-13', 'Collect + photograph your samples: tap New sample in the app for each leaf (labels FA-001, FA-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
+    ['F-14', 'Run Thesis Tracker → Connect photo folder (once) so app photos save into the Curated dataset folder', 'DA RCPC', 'High', 'Not Started', '', '', 'Do this before the field collection day.'],
     ['F-12', 'Lead panel revisions: Problem, Purpose, Objectives, Scope & Limitations', 'Panel Revision', 'High', 'Done', '', '', 'Done in the Oct 28 paper (see Panel Revisions).'],
   ],
   'Rho': [
@@ -82,7 +82,7 @@ const TASKS = {
     ['R-02', 'Re-curate the dataset', 'Dataset', 'High', 'Not Started', OCT2, 'curatedFolder', ''],
     ['R-03', 'Record the image count for each class', 'Dataset', 'Medium', 'Not Started', OCT2, '', ''],
     ['R-04', 'Get the public dataset links from Public Dataset Sources and send them to Cha for citation', 'Dataset', 'Medium', 'Not Started', OCT2, 'publicSources', 'Send to c.priego.545409@umindanao.edu.ph'],
-    ['R-05', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels RJ-001, RJ-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
+    ['R-05', 'Collect + photograph your samples: tap New sample in the app for each leaf (labels RJ-001, RJ-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
     ['R-08', 'Check all sample photos in the Drive photo folder (3+ angles each, correct names) before adding them to the dataset', 'Dataset', 'Medium', 'Not Started', '', '', 'Curated Banana Leaf Disease Dataset → DA RCPC Sample Photos.'],
     ['R-06', 'Add RCPC-validated images to the dataset and update the per-class counts', 'Dataset', 'Medium', 'Not Started', '', '', 'After RCPC returns results.'],
     ['R-07', 'Methodology revisions: preprocessing, training split, model construction, hyperparameter tuning', 'Panel Revision', 'High', 'Done', '', '', 'Done by Fe Anne in the Oct 28 paper.'],
@@ -93,7 +93,7 @@ const TASKS = {
     ['C-03', 'Fill in the new docs file, including the public dataset link from Rho', 'Paper', 'Medium', 'Done', '', 'thesisDoc', ''],
     ['C-04', 'Sort the Curated Banana Leaf Disease Dataset folder (with Fe Anne)', 'Dataset', 'High', 'Not Started', OCT2, 'curatedFolder', 'Shared with Fe Anne (F-07).'],
     ['C-05', 'Cite the public dataset sources in the paper (IEEE)', 'Paper', 'Medium', 'Waiting', '', 'publicSources', 'Waiting for links from Rho (R-04).'],
-    ['C-06', 'Collect + photograph your samples: tap ＋ New sample in the app for each leaf (labels CP-001, CP-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
+    ['C-06', 'Collect + photograph your samples: tap New sample in the app for each leaf (labels CP-001, CP-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
     ['C-10', 'Before submission: check the Sample Log is complete for all three batches (FA, RJ, CP)', 'DA RCPC', 'High', 'Not Started', '', '', 'Every submitted bag needs disease, date, site and 3+ photos.'],
     ['C-07', 'Write up the DA RCPC validation process in Methodology – Data Collection', 'Paper', 'Medium', 'Not Started', '', '', ''],
     ['C-09', 'Paper 2.1.2 Local Test Set: replace [name] / [position] with the DA RCPC validator, fill in [phone model], and fix the "August 90" collection dates', 'Paper', 'High', 'Not Started', '', 'thesisDoc', 'Do this once RCPC returns the validation.'],
@@ -115,7 +115,7 @@ const REVISIONS = [
   ['6', 'Background – Problem', 'Indicate the main problem of the baseline (re-read the baseline paper)', 'Fe Anne + Rho', 'C', '2', 'States the baseline misclassified 160 of 600 Cordana images (26.67%) as Black Sigatoka.'],
   ['6', 'Background – Problem', 'Add real banana symptom data aside from the 900 original images (DA RCPC samples)', 'Fe Anne', 'C', '4–5', 'Combined dataset of 4,740 images from six public datasets + a local test set from Tugbok.'],
   ['6', 'Background – Problem', 'Review similar banana leaf studies for additional diseases; rectify datasets to find the main source of confusion', 'Rho', 'C', '2, 13', 'Table 1 related studies; new section 2.5.6 Analysis of the Source of Confusion.'],
-  ['6', 'Background – Problem', '⚠ If the baseline study changes, the architecture changes too → re-defense required', 'Team', 'NA', '', 'Baseline kept (Jiménez et al. [15]), so no re-defense is triggered.'],
+  ['6', 'Background – Problem', 'Important: If the baseline study changes, the architecture changes too → re-defense required', 'Team', 'NA', '', 'Baseline kept (Jiménez et al. [15]), so no re-defense is triggered.'],
   ['6', 'Related Literature', 'State the main problems of the baseline and which ones the proposed model addresses', 'Fe Anne + Rho', 'C', '2', 'Table 1 Matrix of Related EfficientNetB0 Studies with a Gaps / Limitations column.'],
   ['6', 'Approach', 'State the solutions of the proposed model based on the identified problems', 'Rho', 'C', '3', 'Paragraph mapping each change (Coordinate Attention, dual pooling, LayerNorm) to a baseline problem.'],
   ['7', 'Purpose & Description', 'Revise the purpose to address the problem indicated in the baseline study', 'Fe Anne', 'C', '3', '1.2 rewritten around the baseline misclassification.'],
@@ -129,8 +129,8 @@ const REVISIONS = [
   ['10', 'Methodology – Data Collection', 'Aside from the 900 original images, test and add more relevant datasets', 'Rho', 'C', '4–5', '2.1 / Table 2: 4,740 images (1,580 per class).'],
   ['10', 'Methodology – Preprocessing', 'Follow the preprocessing of the baseline', 'Rho', 'C', '6', '2.2 Data Preparation'],
   ['10', 'Methodology – Training Split', 'Use the same training split as the baseline', 'Rho', 'C', '6', '2.2.2: same 80/20 split, done before augmentation.'],
-  ['10', 'Methodology – Model Construction', '⚠ Add a sample computation of the detection', 'Rho', 'C', '9', 'New 2.3.3 Sample Computation (Tables 6–7).'],
-  ['10', 'Methodology – Model Construction', '⚠ Show the changes from the baseline to the proposed model', 'Rho', 'C', '7–8', 'Table 5 Comparison of the Baseline and Enhanced Architectures + Figure 6.'],
+  ['10', 'Methodology – Model Construction', 'Important: Add a sample computation of the detection', 'Rho', 'C', '9', 'New 2.3.3 Sample Computation (Tables 6–7).'],
+  ['10', 'Methodology – Model Construction', 'Important: Show the changes from the baseline to the proposed model', 'Rho', 'C', '7–8', 'Table 5 Comparison of the Baseline and Enhanced Architectures + Figure 6.'],
   ['10', 'Methodology – Training Config', 'Add hyperparameter tuning to determine which setting gives the better result', 'Rho', 'C', '10', 'New 2.4.2 Hyperparameter Tuning (grid search) + 2.4.3 Ablation Experiments.'],
   ['11', 'Results & Discussion', 'NA for Capstone 1', '—', 'NA', '', ''],
   ['12', 'Conclusion & Recommendation', 'NA for Capstone 1', '—', 'NA', '', ''],
@@ -189,24 +189,59 @@ const RECORDS = {
     ],
   },
 };
+// NG & Grade Processing internal checklist (Thesis and Capstone Project 1). Per-person papers get one row per member.
+const NG_PER_MEMBER = ['7. Copy of updated exam permit (current exam period)',
+  '9. Research Undergraduate Agreement, signed by the student, parent/guardian and RA',
+  '10. Parental Consent, signed by parent/guardian and subject teacher, notarized, with a copy of the parent/guardian valid ID (3 specimen signatures). AT THE BOTTOM of the folder'];
+const NG_ITEMS = [
+  ['A1', 'Photocopy: Title/Outline Defense Evaluation forms of the 3 panel members (with score and signature)', 'Team'],
+  ['A1', 'Photocopy: Prototype or Design Checklist, checked and signed by the RA', 'Team'],
+  ['A1', 'Staple the photocopies together', 'Team'],
+  ['A2', 'Get a Red/Blue Starfile folder (A4, with fastener) or Seagull (Excella)', 'Team'],
+  ['A2', '1. Minutes of the outline defense (complied, with RA signature). TOP MOST', 'Team'],
+  ['A2', '2. Outline defense evaluation forms from the 3 panelists, with grades', 'Team'],
+  ['A2', '3. Prototype or Design Checklist signed by the RA', 'Team'],
+  ['A2', '4. Printed outline research document (Thesis/Capstone 1)', 'Team'],
+  ['A2', '5. Assignment of Research Personnel', 'Team'],
+  ['A2', '6. Endorsement letter for the outline defense, signed by the RA, ST, RC and Dean', 'Team'],
+].concat(CFG.members.map(m => ['A2', NG_PER_MEMBER[0], m.tab]))
+ .concat([['A2', '8. Research Title Form, reviewed and signed by the RA, RC and Dean', 'Team']])
+ .concat(CFG.members.map(m => ['A2', NG_PER_MEMBER[1], m.tab]))
+ .concat(CFG.members.map(m => ['A2', NG_PER_MEMBER[2], m.tab]))
+ .concat([['A3', 'Submit the folder to the RC for pre-checking (RC signature and date)', 'Team'],
+          ['B', 'NG grade submitted / processed via CRMS (Subject Teacher signature and date)', 'Team']]);
+RECORDS.ng = {
+  tab: 'NG Checklist', color: '#1f4b3a',
+  title: '  NG & Grade Processing · internal checklist (Thesis and Capstone Project 1)',
+  fields: [['section', 'Step', 'text', 60], ['item', 'Activity', 'text', 460], ['who', 'Who', 'text', 90], ['done', 'Done?', 'bool', 70], ['doneBy', 'Done by', 'text', 90], ['notes', 'Notes', 'text', 220]],
+  seed: NG_ITEMS,
+};
+RECORDS.sources = {
+  tab: 'Dataset Sources', color: '#588d10',
+  title: '  Dataset Sources · every online dataset we used, with its link and image counts per class (for transparency)',
+  fields: [['name', 'Source / dataset', 'text', 220], ['link', 'Link or Drive folder', 'text', 260], ['type', 'Type', 'list:Kaggle|Mendeley Data|GitHub|Paper|Website|Drive|Other', 110],
+           ['cordana', 'Cordana Leaf Spot', 'num', 110], ['sigatoka', 'Black Sigatoka', 'num', 110], ['healthy', 'Healthy', 'num', 90], ['other', 'Other classes', 'num', 100],
+           ['license', 'License / how to cite', 'text', 220], ['date', 'Date downloaded', 'date', 110], ['notes', 'Notes', 'text', 200], ['by', 'Added by', 'text', 90]],
+};
+
 const SETTINGS = { leafGoal: 'number', classGoal: 'number', defenseDate: 'date' };   // app goals + final defense date (Script Properties)
 
 /* ============================================================
  *  MENU & TRIGGERS
  * ============================================================ */
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu('🍌 Thesis Tracker')
-    .addItem('📷 Connect photo folder', 'setupPhotoFolder')
-    .addItem('📦 Export RCPC-validated photos to class folders', 'exportValidatedDatasetMenu')
-    .addItem('💾 Back up this sheet now', 'backupNow')
-    .addItem('🔑 Reset someone\'s app password', 'resetMemberPassword')
-    .addItem('📧 Email each member their open tasks', 'emailOpenTasks')
-    .addItem('⏰ Turn ON daily 8 AM email reminders', 'enableDailyReminder')
-    .addItem('🔕 Turn OFF daily reminders', 'disableDailyReminder')
-    .addItem('📬 Send the weekly progress email now', 'weeklyDigestNow')
-    .addItem('🔕 Turn OFF the Sunday progress email', 'disableWeeklyDigest')
+  SpreadsheetApp.getUi().createMenu('Thesis Tracker')
+    .addItem('Connect photo folder', 'setupPhotoFolder')
+    .addItem('Export RCPC-validated photos to class folders', 'exportValidatedDatasetMenu')
+    .addItem('Back up this sheet now', 'backupNow')
+    .addItem('Reset someone\'s app password', 'resetMemberPassword')
+    .addItem('Email each member their open tasks', 'emailOpenTasks')
+    .addItem('Turn ON daily 8 AM email reminders', 'enableDailyReminder')
+    .addItem('Turn OFF daily reminders', 'disableDailyReminder')
+    .addItem('Send the weekly progress email now', 'weeklyDigestNow')
+    .addItem('Turn OFF the Sunday progress email', 'disableWeeklyDigest')
     .addSeparator()
-    .addItem('🛠 Repair / update tracker (keeps all data)', 'setupTracker')
+    .addItem('Repair / update tracker (keeps all data)', 'setupTracker')
     .addToUi();
 }
 
@@ -279,6 +314,7 @@ function setupTracker() {
   upgradeLists_(ss);
   upgradeDoneByColumns_(ss);
   applyPaperReviewOct28_(ss);
+  addTasksOct28b_(ss);
   ensureWeeklyBackup_();
   ensureWeeklyDigest_();
   try { migrateLegacyPhotos_(); } catch (e) { /* photo folder not reachable yet: "Connect photo folder" shows why */ }
@@ -290,16 +326,43 @@ function setupTracker() {
   // tidy: an untouched blank "Sheet1" can go
   ['Sheet1', 'Sheet 1'].forEach(n => { const s = ss.getSheetByName(n); if (s && s.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(s); });
 
-  const order = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'DA RCPC Samples', 'Expenses',
+  const order = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'NG Checklist', 'DA RCPC Samples', 'Expenses',
                  ...Object.keys(RECORDS).map(k => RECORDS[k].tab), 'Links'];
   order.forEach((name, i) => { const s = ss.getSheetByName(name); if (s) { ss.setActiveSheet(s); ss.moveActiveSheet(i + 1); } });
   ss.setActiveSheet(ss.getSheetByName('Dashboard'));
   ss.getSheetByName('Lists').hideSheet();
   onOpen();
-  ui.alert('Tracker ready ✅',
+  ui.alert('Tracker ready',
     (built.length ? 'Built: ' + built.join(', ') + '\n' : '') +
     (kept.length ? 'Kept with all their data: ' + kept.join(', ') + '\n' : '') +
     '\nNothing with data was erased. You can run this again any time.', ui.ButtonSet.OK);
+}
+
+/** Tasks added after the tracker was first built (Oct 28). Added once; deleting them later is respected. */
+const NEW_TASKS_OCT28B = {
+  'Fe Anne': [['F-15', 'Consult Ma\'am Charisse Barbosa: signing of the minutes papers (outline defense)', 'Admin', 'High', 'Not Started', '', '', 'Log it in More > Consultations (topic: minutes) and tick Signed: the NG checklist updates itself.'],
+              ['F-16', 'Complete the NG & Grade Processing checklist (Panel > NG checklist)', 'Admin', 'High', 'Not Started', '', '', 'Finishes itself when every checklist item is ticked.']],
+  'Rho': [['R-09', 'Log every online dataset source: link or Drive folder + images per class (More > Dataset sources)', 'Dataset', 'High', 'Not Started', '', '', 'For transparency in the paper.']],
+  'Cha': [['C-11', 'Compile the NG folder: minutes on top, parental consents at the bottom (Panel > NG checklist)', 'Admin', 'High', 'Not Started', '', '', '']],
+};
+function addTasksOct28b_(ss) {
+  const props = PropertiesService.getScriptProperties();
+  if (props.getProperty('TASKS_OCT28B')) return;
+  CFG.members.forEach(m => {
+    const sh = ss.getSheetByName(m.tab), add = NEW_TASKS_OCT28B[m.tab] || [];
+    if (!sh || !add.length) return;
+    const vals = sh.getRange(4, 1, CFG.maxRows, 2).getValues();
+    const have = vals.map(r => String(r[0]));
+    add.forEach(t => {
+      if (have.indexOf(t[0]) > -1) return;
+      const i = vals.findIndex(r => !r[1]);
+      if (i < 0) return;
+      sh.getRange(i + 4, 1, 1, 6).setValues([t.slice(0, 6)]);
+      sh.getRange(i + 4, 8).setValue(t[7]);
+      vals[i] = [t[0], t[1]];
+    });
+  });
+  props.setProperty('TASKS_OCT28B', '1');
 }
 
 /** true if any of the given columns has a value from firstRow down */
@@ -369,7 +432,7 @@ function applyPaperReviewOct28_(ss) {
   if (rev && rev.getLastRow() >= 4) {
     const rows = rev.getRange(4, 1, rev.getLastRow() - 3, 9).getValues();
     rows.forEach((r, i) => {
-      const hit = REVISIONS.find(x => x[2] === r[2] || x[2].replace(/^⚠ /, '') === String(r[2]).replace(/^⚠ /, '') || (x[0] === String(r[0]) && String(r[2]).indexOf(x[2].slice(0, 25)) === 0));
+      const hit = REVISIONS.find(x => x[2] === r[2] || x[2].replace(/^(\u26A0\uFE0F? |Important: )/, '') === String(r[2]).replace(/^(\u26A0\uFE0F? |Important: )/, '') || (x[0] === String(r[0]) && String(r[2]).indexOf(x[2].slice(0, 25)) === 0));
       if (!hit || (r[4] && r[4] !== 'NC') || r[5]) return;
       const row = i + 4;
       rev.getRange(row, 5).setValue(hit[4]);
@@ -418,7 +481,7 @@ function runBackup_() {
 function weeklyBackup() { runBackup_(); }
 function backupNow() {
   const r = runBackup_();
-  SpreadsheetApp.getUi().alert('Backed up 💾', r.name + '\n' + r.url + '\n\nA backup also runs automatically every Sunday; the newest 8 are kept.', SpreadsheetApp.getUi().ButtonSet.OK);
+  SpreadsheetApp.getUi().alert('Backed up', r.name + '\n' + r.url + '\n\nA backup also runs automatically every Sunday; the newest 8 are kept.', SpreadsheetApp.getUi().ButtonSet.OK);
 }
 function ensureWeeklyBackup_() {
   if (ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'weeklyBackup')) return;
@@ -558,7 +621,7 @@ function buildOpenTasks_(ss) {
     const t = "'" + m.tab + "'";
     return '{ARRAYFORMULA(IF(' + t + '!B4:B' + end + '<>"","' + m.tab + '","")),' + t + '!A4:H' + end + '}';
   }).join(';');
-  sh.getRange('A3').setFormula('=IFERROR(QUERY({' + parts + '},"select * where Col3 is not null and Col6 <> \'Done\' order by Col7 asc",0),"🎉 No open tasks")');
+  sh.getRange('A3').setFormula('=IFERROR(QUERY({' + parts + '},"select * where Col3 is not null and Col6 <> \'Done\' order by Col7 asc",0),"No open tasks")');
   sh.getRange('G3:G').setNumberFormat('ddd, mmm d');
   [80, 60, 380, 120, 80, 110, 110, 170, 260].forEach((w, i) => sh.setColumnWidth(i + 1, w));
   sh.getRange('C3:C').setWrap(true);
@@ -601,7 +664,7 @@ function buildRevisions_(ss) {
   sh.setConditionalFormatRules([
     rule_('=$E4="NA"', all, '#f5f5f5', '#9e9e9e'),
     rule_('=$E4="C"', all, '#e8f5e9', null),
-    rule_('=LEFT($C4,1)="⚠"', sh.getRange(4, 3, n, 1), null, '#b71c1c'),
+    rule_('=OR(LEFT($C4,1)=CHAR(9888),LEFT($C4,10)="Important:")', sh.getRange(4, 3, n, 1), null, '#b71c1c'),
     textRule_('C', st, '#a5d6a7', '#1b5e20'),
     textRule_('NC', st, '#ffcdd2', '#b71c1c'),
     ...CFG.members.map(m => SpreadsheetApp.newConditionalFormatRule()
@@ -619,7 +682,7 @@ function buildSamples_(ss) {
   const n = CFG.sampleRows;
   banner_(sh, 1, '  DA RCPC Davao — Fresh Leaf Sample Log', H.length, '#2e7d32', 15);
   sh.getRange(2, 1, 1, H.length).merge()
-    .setValue('  Rows are added by the app: tap ＋ New sample and it hands out the next label (' + CFG.members.map(m => m.prefix + '-### = ' + m.tab).join(' · ') +
+    .setValue('  Rows are added by the app: tap New sample and it hands out the next label (' + CFG.members.map(m => m.prefix + '-### = ' + m.tab).join(' · ') +
       '). Copy that label onto masking tape. Photos are named from it (FA-003 → FA-003_01.jpg …). Submit samples FRESH.')
     .setBackground('#e8f5e9').setFontWeight('bold').setFontColor('#1b5e20').setWrap(true);
   sh.setRowHeight(2, 40);
@@ -700,7 +763,7 @@ function buildRecordTab_(ss, kind) {
   });
   sh.getRange(3, 1, n, F.length).setVerticalAlignment('top').setWrap(true);
   sh.setFrozenRows(2);
-  if (R.seed) sh.getRange(3, 1, R.seed.length, 2).setValues(R.seed);
+  if (R.seed) sh.getRange(3, 1, R.seed.length, R.seed[0].length).setValues(R.seed);
   const doneCol = F.findIndex(f => f[0] === 'done' || f[0] === 'status');
   if (doneCol > -1) {
     const L = String.fromCharCode(65 + doneCol);
@@ -738,19 +801,19 @@ function weeklyDigest() {
   const dash = ss.getSheetByName('Dashboard'), rcpc = dash ? dash.getRange('E4').getValue() : '';
   const defense = PropertiesService.getScriptProperties().getProperty('SET_defenseDate');
   const html = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#1f3b33">' +
-    '<h2 style="color:#1f4b3a;margin:0 0 4px">🍌 Weekly thesis progress</h2><p style="color:#5f6f66;margin:0 0 14px">' + fmt(weekAgo) + ' – ' + fmt(now) + '</p>' +
+    '<h2 style="color:#1f4b3a;margin:0 0 4px">Weekly thesis progress</h2><p style="color:#5f6f66;margin:0 0 14px">' + fmt(weekAgo) + ' – ' + fmt(now) + '</p>' +
     '<p><b>' + doneWeek + '</b> task(s) finished this week · <b>' + openAll + '</b> open · <b style="color:' + (overdueAll ? '#b83226' : '#1f3b33') + '">' + overdueAll + '</b> overdue</p>' +
     '<table style="border-collapse:collapse;background:#f7f6ef;border-radius:8px"><tr style="background:#1f4b3a;color:#fff"><th style="padding:6px 10px">Member</th><th style="padding:6px 10px">Done this week</th><th style="padding:6px 10px">Open</th><th style="padding:6px 10px">Overdue</th></tr>' + rows.join('') + '</table>' +
     '<h3 style="margin:18px 0 6px">DA RCPC samples</h3><p>' + sv.length + ' leaves (' + newWeek + ' new this week) · ' + withPhotos + ' with photos' + (goal ? ' · goal ' + goal : '') +
     ' · ' + sent + ' sent to RCPC · ' + validated + ' with RCPC results</p>' +
-    (invalid ? '<p style="color:#b83226"><b>⚠ ' + invalid + ' leaf/leaves invalid</b>: not submitted to DA RCPC the day after collection.</p>' : '') +
+    (invalid ? '<p style="color:#b83226"><b>Warning: ' + invalid + ' leaf/leaves invalid</b>: not submitted to DA RCPC the day after collection.</p>' : '') +
     '<h3 style="margin:18px 0 6px">Panel revisions</h3><p>' + complied + ' of ' + rv.length + ' complied</p>' +
-    (rcpc instanceof Date ? '<p>📅 DA RCPC submission: <b>' + fmt(rcpc) + '</b></p>' : '') +
-    (defense ? '<p>🎓 Final defense: <b>' + fmt(new Date(defense + 'T00:00:00')) + '</b></p>' : '') +
+    (rcpc instanceof Date ? '<p>DA RCPC submission: <b>' + fmt(rcpc) + '</b></p>' : '') +
+    (defense ? '<p>Final defense: <b>' + fmt(new Date(defense + 'T00:00:00')) + '</b></p>' : '') +
     '<p><a href="' + APP_URL + '" style="background:#1f4b3a;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:bold">Open the tracker app</a></p></div>';
-  MailApp.sendEmail({ to: CFG.members.map(m => m.email).join(','), subject: '🍌 Thesis progress · ' + doneWeek + ' done this week, ' + overdueAll + ' overdue', htmlBody: html });
+  MailApp.sendEmail({ to: CFG.members.map(m => m.email).join(','), subject: 'Thesis progress · ' + doneWeek + ' done this week, ' + overdueAll + ' overdue', htmlBody: html });
 }
-function weeklyDigestNow() { weeklyDigest(); SpreadsheetApp.getUi().alert('Weekly progress email sent to the team 📬'); }
+function weeklyDigestNow() { weeklyDigest(); SpreadsheetApp.getUi().alert('Weekly progress email sent to the team'); }
 function ensureWeeklyDigest_() {
   if (PropertiesService.getScriptProperties().getProperty('DIGEST_OFF')) return;
   if (ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'weeklyDigest')) return;
@@ -769,7 +832,7 @@ function buildLinks_(ss) {
   headers_(sh, 2, ['Resource', 'Open'], '#37474f');
   const keys = Object.keys(LINKS);
   sh.getRange(3, 1, keys.length, 1).setValues(keys.map(k => [LINKS[k].label]));
-  sh.getRange(3, 2, keys.length, 1).setFormulas(keys.map(k => ['=HYPERLINK("' + LINKS[k].url + '","Open ↗")']));
+  sh.getRange(3, 2, keys.length, 1).setFormulas(keys.map(k => ['=HYPERLINK("' + LINKS[k].url + '","Open")']));
   sh.setColumnWidth(1, 260); sh.setColumnWidth(2, 120);
 }
 
@@ -787,7 +850,7 @@ function buildDashboard_(ss) {
   sh.getRange('E4').setBackground('#fff59d').setNumberFormat('ddd, mmm d, yyyy')
     .setDataValidation(SpreadsheetApp.newDataValidation().requireDate().build())
     .setNote('Type the date agreed with DA RCPC Davao.');
-  sh.getRange('F4').setFormula('=IF(E4="","⬅ set the date",IF(E4-TODAY()<0,"passed",E4-TODAY()&" day(s) left"))').setFontWeight('bold').setFontColor('#e65100');
+  sh.getRange('F4').setFormula('=IF(E4="","set the date",IF(E4-TODAY()<0,"passed",E4-TODAY()&" day(s) left"))').setFontWeight('bold').setFontColor('#e65100');
 
   const H = ['Member', 'Role', 'Tasks', 'Done', 'In Progress', 'Waiting', 'Overdue', 'Progress', '%', 'Open Panel Items', 'Next Due'];
   headers_(sh, 6, H, '#263238');
@@ -878,20 +941,20 @@ function emailOpenTasks() {
       const due = r[5] instanceof Date ? Utilities.formatDate(r[5], tz, 'EEE, MMM d') : '—';
       const late = r[5] instanceof Date && r[5] < today;
       return '<tr' + (late ? ' style="background:#ffebee"' : '') + '><td ' + td + '>' + r[0] + '</td><td ' + td + '>' + r[1] +
-        '</td><td ' + td + '>' + r[4] + '</td><td ' + td + '>' + due + (late ? ' ⚠️' : '') + '</td></tr>';
+        '</td><td ' + td + '>' + r[4] + '</td><td ' + td + '>' + due + (late ? ' (overdue)' : '') + '</td></tr>';
     }).join('');
     const revList = myRev.map(r => '<li>[' + r[0] + '] ' + r[1] + ': ' + r[2] + '</li>').join('');
 
     const html =
       '<div style="font-family:Arial,sans-serif;font-size:14px">' +
-      '<h2 style="color:' + m.color + '">Hi ' + m.name.split(' ')[0] + ' 👋</h2>' +
+      '<h2 style="color:' + m.color + '">Hi ' + m.name.split(' ')[0] + '</h2>' +
       '<p>Your open thesis tasks (' + m.role + '):</p>' +
       (rows.length ? '<table style="border-collapse:collapse"><tr style="background:#37474f;color:#fff"><th ' + td + '>ID</th><th ' + td +
-        '>Task</th><th ' + td + '>Status</th><th ' + td + '>Due</th></tr>' + taskRows + '</table>' : '<p>No open tasks 🎉</p>') +
+        '>Task</th><th ' + td + '>Status</th><th ' + td + '>Due</th></tr>' + taskRows + '</table>' : '<p>No open tasks</p>') +
       (myRev.length ? '<h3>Panel revisions not yet complied (' + myRev.length + ')</h3><ul>' + revList + '</ul>' : '') +
-      '<p><a href="' + APP_URL + '">Open the tracker app ↗</a></p></div>';
+      '<p><a href="' + APP_URL + '">Open the tracker app</a></p></div>';
 
-    MailApp.sendEmail({ to: m.email, subject: '🍌 Thesis tasks — ' + rows.length + ' open', htmlBody: html });
+    MailApp.sendEmail({ to: m.email, subject: 'Thesis tasks — ' + rows.length + ' open', htmlBody: html });
     sent++;
   });
 
