@@ -52,11 +52,29 @@ Only the team's six emails (two per member, listed in `accounts` in `ThesisTrack
 - Passwords are stored only as salted hashes in the script's properties, never in the sheet. 5 wrong tries locks that email for 10 minutes.
 
 ## Samples, labels and photos
-- Tap **＋ New sample** on the DA RCPC Samples page. The app gives the next label automatically: **FA-###** (Fe Anne), **RJ-###** (Rho), **CP-###** (Cha). It works offline too, and two people can never get the same label.
-- The camera opens right away and guides you one photo at a time: **3 required** (top, underside, lesion close-up), then **✓ Finish** or **＋ add up to 2 optional** angles. Photos are named `<ID>_01.jpg … <ID>_05.jpg`. Tap any thumbnail to retake it.
-- The last screen reminds you to **cut the leaf, wrap it in damp cotton, bag it, and write the label (e.g. FA-004) on masking tape** — the same label as the spreadsheet row and the photo names.
-- Photos are saved automatically to the team's **Curated Banana Leaf Disease Dataset** folder, inside **DA RCPC Sample Photos**. Retaking an angle replaces that file.
-- Photos are resized to 1600 px (about 0.3–0.7 MB each) and upload one at a time, so the app stays fast.
+- Tap **＋ New sample** on the Samples page (phone only). The app gives the next label automatically: **FA-###** (Fe Anne), **RJ-###** (Rho), **CP-###** (Cha). It works offline too.
+- The camera opens inside the app, like the phone's own camera: **tap the shutter 3 times**, once each for the top surface, the underside and a close-up of the spots. There's no waiting between taps. After the 3rd photo it moves on by itself.
+- The last screen is just instructions: cut the leaf, wrap the end in damp cotton, bag it, and stick the label (e.g. RJ-004) on masking tape. Nothing to tick or type. The site is copied from your previous leaf and the GPS location is saved automatically.
+- **You don't decide the disease. DA RCPC does.** Leaves show *Not sent yet*, then *Waiting for RCPC*, then the RCPC result. You can still add a guess when editing a leaf, but it's optional and never counted.
+- To retake a photo, tap 📷 on the leaf's card, then tap the photo.
+- Photos are saved to the **DA RCPC Sample Photos** folder inside the Curated Banana Leaf Disease Dataset folder, named `<label>_01.jpg … _03.jpg`.
+- If the in-app camera isn't allowed, the app falls back to the phone's camera app.
+
+## Field day
+- **Before the farm** checklist (Samples page): supplies bought, phone charged, app ready offline, tape, cotton, bags, shears. It resets every day.
+- **Leaves goal** and **per disease goal**: set them on the Samples page. The progress bar shows the team total.
+- **📝 Submission list**: tick the leaves you're handing over and print or save it as a PDF for DA RCPC. It lists label, date, site and notes, with signature lines and no disease column. On a phone, **Mark as submitted** stamps them all at once.
+- **🧪 Enter RCPC results**: when results come back, step through each leaf and tap the class.
+- **📄 Paper numbers** count **only RCPC-confirmed leaves**.
+
+## Training, consultations, final defense (More tab)
+- **Training runs**: log each baseline / enhanced run (accuracy, precision, recall, F1, size, phone speed). **📋 Copy table for Chapter 4** copies the best run per model; paste it into Google Docs and it becomes a table.
+- **Consultations**: date, who, topic, feedback, what you changed, open/done, signed.
+- **Final defense**: set the date for a countdown and tick off the checklist (who finished each item is recorded).
+- These are also tabs in the Google Sheet: **Training Runs**, **Consultations**, **Final Defense**.
+
+## Laptops and desktops
+Sample collection is view-only on a computer: no camera, no New sample. You can switch the Samples page to **🖼 Photos** to see every leaf's photos (you need to be signed in to Google with access to the folder) and print the submission list.
 
 ## Working on the farm (no signal)
 - **Before leaving:** open the app once with signal and make sure you're logged in. That saves the app and the latest data on the phone.
@@ -75,10 +93,13 @@ Only the team's six emails (two per member, listed in `accounts` in `ThesisTrack
 - **Tasks:** if anything is overdue, a red bar lets you move all of them to a new date in one tap.
 
 ## For the paper and for training
-- **📄 Numbers for the paper** (DA RCPC Samples page): per-class sample and image counts, collection dates and site, and a ready-to-paste paragraph for *2.1.2 Local Test Set*, based on RCPC results once they're in.
+- **📄 Paper numbers** (Samples page): per-class counts from RCPC results only, with a ready-to-paste paragraph for *2.1.2 Local Test Set*.
 - **📦 Export validated photos**: copies every RCPC-validated sample's photos into class folders in **RCPC Validated Local Set** (outside the curated dataset folder, so it never adds a fake class). Safe to run again. Also in the sheet menu.
-- **Photo quality check:** the camera warns when a photo looks blurry, too dark, or washed out, so you can retake it while the leaf is still there.
+- **Photo quality check:** if a photo looks blurry, too dark or washed out, a ⚠️ appears on it (it never stops you); tap it to retake while the leaf is still there.
 - **Location:** each new sample saves its GPS position (works without signal) with a 📍 map link.
+
+## Weekly progress email
+Every Sunday at 7 PM the team gets one email: tasks done that week, open and overdue tasks, samples collected, RCPC results, panel items complied, and the upcoming dates. **🍌 Thesis Tracker → 📬 Send the weekly progress email now** sends it any time; another menu item turns it off.
 
 ## Backups
 A dated copy of the tracker sheet is saved to **Banana Thesis – Backups** every Sunday night (newest 8 kept). **🍌 Thesis Tracker → 💾 Back up this sheet now** makes one any time.

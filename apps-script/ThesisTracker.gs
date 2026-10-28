@@ -26,7 +26,7 @@ const CFG = {
   timezone: 'Asia/Manila',
   maxRows: 200,
   sampleRows: 300,        // room for this many samples; labels are handed out by the app (FA-001, RJ-001, CP-001 …)
-  photoAngles: ['Top surface', 'Underside', 'Lesion close-up', 'Side / angled', 'Extra'],  // 3 required, 5 max
+  photoAngles: ['Top surface', 'Underside', 'Lesion close-up'],  // exactly 3 photos per leaf
   // Who can sign in to the app (email → member). Two emails each; add or remove here, then deploy a New version.
   accounts: {
     'f.malasarte.543849@umindanao.edu.ph': 'Fe Anne', 'feannemlsrte@gmail.com': 'Fe Anne',
@@ -159,6 +159,38 @@ const SUPPLIES = [
   ['Pruning shears / scissors', 'Clean cuts when collecting', 1, '', '', 'Suggested'],
 ];
 
+// Record tabs the app reads and writes (row 1 banner, row 2 headers, data from row 3).
+// field: [key, header, type, width]   types: text, date, num, bool, list:<a|b|c>
+const RECORDS = {
+  training: {
+    tab: 'Training Runs', color: '#1f4b3a',
+    title: '  Training Runs · one row per model run (baseline and enhanced) · used for the Chapter 4 comparison table',
+    fields: [['date', 'Date', 'date', 105], ['model', 'Model', 'text', 210], ['run', 'Run name', 'text', 170], ['dataset', 'Dataset / split', 'text', 190],
+             ['epochs', 'Epochs', 'num', 70], ['accuracy', 'Accuracy (%)', 'num', 95], ['precision', 'Precision (%)', 'num', 100], ['recall', 'Recall (%)', 'num', 90],
+             ['f1', 'F1 (%)', 'num', 75], ['size', 'Model size (MB)', 'num', 110], ['speed', 'Phone speed (ms / image)', 'num', 130],
+             ['notes', 'Notes', 'text', 260], ['by', 'Added by', 'text', 90]],
+  },
+  consults: {
+    tab: 'Consultations', color: '#588d10',
+    title: '  Adviser & Panel Consultations · date, feedback, what we changed, signed or not',
+    fields: [['date', 'Date', 'date', 105], ['with', 'With', 'text', 150], ['topic', 'Topic', 'text', 200], ['feedback', 'Feedback / comments', 'text', 320],
+             ['action', 'What we did', 'text', 280], ['status', 'Status', 'list:Open|Done', 80], ['signed', 'Signed?', 'bool', 75], ['by', 'Added by', 'text', 90]],
+  },
+  defense: {
+    tab: 'Final Defense', color: '#1f4b3a',
+    title: '  Final Defense Checklist · tick items as they are finished',
+    fields: [['item', 'Item', 'text', 340], ['owner', 'Owner', 'text', 110], ['done', 'Done?', 'bool', 70], ['doneBy', 'Done by', 'text', 100], ['notes', 'Notes', 'text', 260]],
+    seed: [
+      ['All panel revisions complied, with page numbers', 'Team'], ['Adviser signs the revision matrix', 'Fe Anne'],
+      ['Final dataset counts per class (incl. RCPC-validated)', 'Rho'], ['Baseline vs enhanced model comparison table (Chapter 4)', 'Rho'],
+      ['Phone app demo works offline', 'Rho'], ['Chapters 4–5 written and proofread', 'Cha'], ['References in IEEE, citation order fixed', 'Cha'],
+      ['Manuscript formatted (ACM) and printed copies for the panel', 'Cha'], ['Defense slides', 'Fe Anne'], ['Two full rehearsals with timing', 'Team'],
+      ['Endorsement / approval forms signed', 'Fe Anne'],
+    ],
+  },
+};
+const SETTINGS = { leafGoal: 'number', classGoal: 'number', defenseDate: 'date' };   // app goals + final defense date (Script Properties)
+
 /* ============================================================
  *  MENU & TRIGGERS
  * ============================================================ */
@@ -171,6 +203,8 @@ function onOpen() {
     .addItem('📧 Email each member their open tasks', 'emailOpenTasks')
     .addItem('⏰ Turn ON daily 8 AM email reminders', 'enableDailyReminder')
     .addItem('🔕 Turn OFF daily reminders', 'disableDailyReminder')
+    .addItem('📬 Send the weekly progress email now', 'weeklyDigestNow')
+    .addItem('🔕 Turn OFF the Sunday progress email', 'disableWeeklyDigest')
     .addSeparator()
     .addItem('🛠 Repair / update tracker (keeps all data)', 'setupTracker')
     .addToUi();
@@ -231,6 +265,7 @@ function setupTracker() {
     ['Panel Revisions', buildRevisions_, sh => hasData_(sh, 4, [3])],
     ['DA RCPC Samples', buildSamples_, sh => hasData_(sh, 4, [2, 3, 4, 6, 10, 11, 13])],
     ['Expenses', buildExpenses_, sh => hasData_(sh, 3, [1])],
+    ...Object.keys(RECORDS).map(k => [RECORDS[k].tab, s => buildRecordTab_(s, k), sh => hasData_(sh, 3, RECORDS[k].fields.map((f, i) => i + 1))]),
   ];
   dataTabs.forEach(([name, build, hasData]) => {
     const sh = ss.getSheetByName(name);
@@ -244,6 +279,7 @@ function setupTracker() {
   upgradeDoneByColumns_(ss);
   applyPaperReviewOct28_(ss);
   ensureWeeklyBackup_();
+  ensureWeeklyDigest_();
 
   // summary tabs: always refreshed (they only hold formulas)
   [['Links', buildLinks_], ['All Open Tasks', buildOpenTasks_], ['Dashboard', buildDashboard_]].forEach(([name, build]) => replaceTab_(ss, name, build));
@@ -252,7 +288,8 @@ function setupTracker() {
   // tidy: an untouched blank "Sheet1" can go
   ['Sheet1', 'Sheet 1'].forEach(n => { const s = ss.getSheetByName(n); if (s && s.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(s); });
 
-  const order = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'DA RCPC Samples', 'Expenses', 'Links'];
+  const order = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'DA RCPC Samples', 'Expenses',
+                 ...Object.keys(RECORDS).map(k => RECORDS[k].tab), 'Links'];
   order.forEach((name, i) => { const s = ss.getSheetByName(name); if (s) { ss.setActiveSheet(s); ss.moveActiveSheet(i + 1); } });
   ss.setActiveSheet(ss.getSheetByName('Dashboard'));
   ss.getSheetByName('Lists').hideSheet();
@@ -393,6 +430,7 @@ function upgradeSamplesTab_(ss) {
   const head = sh.getRange(3, 14, 1, 2).getValues()[0];
   if (!head[0]) sh.getRange(3, 14).setValue('Photo Folder');
   if (!head[1]) sh.getRange(3, 15).setValue('Angles Taken');
+  if (sh.getRange(3, 2).getValue() === 'Suspected Disease') sh.getRange(3, 2).setValue('Our Guess (optional)');   // DA RCPC decides the disease
   sh.getRange(3, 14, 1, 2).setBackground('#37474f').setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
 }
 
@@ -572,7 +610,7 @@ function buildRevisions_(ss) {
 function buildSamples_(ss) {
   const sh = ss.insertSheet('DA RCPC Samples');
   sh.setTabColor('#2e7d32');
-  const H = ['Sample ID', 'Suspected Disease', 'Date Collected', 'Collection Site (farm / barangay)', 'Collected By', 'No. of Photos',
+  const H = ['Sample ID', 'Our Guess (optional)', 'Date Collected', 'Collection Site (farm / barangay)', 'Collected By', 'No. of Photos',
              'Expected Photo File Names', 'Wrapped in Cotton', 'Bagged & Labeled', 'Submitted to RCPC', 'RCPC Validated Class', 'Match?', 'Notes',
              'Photo Folder', 'Angles Taken', 'GPS (lat, lng)'];
   const n = CFG.sampleRows;
@@ -631,6 +669,84 @@ function buildExpenses_(ss) {
   [190, 260, 60, 110, 110, 120, 70, 180, 140, 110, 130].forEach((w, i) => sh.setColumnWidth(i + 1, w));
   sh.setFrozenRows(2);
   sh.setConditionalFormatRules([rule_('=$G3=TRUE', sh.getRange(3, 1, n, H.length), '#e8f5e9', null)]);
+}
+
+/** Training Runs / Consultations / Final Defense: same layout, built from RECORDS */
+function buildRecordTab_(ss, kind) {
+  const R = RECORDS[kind], F = R.fields, n = 150;
+  const sh = ss.insertSheet(R.tab);
+  sh.setTabColor(R.color);
+  banner_(sh, 1, R.title, F.length, R.color, 13);
+  headers_(sh, 2, F.map(f => f[1]), '#37474f');
+  if (sh.getMaxRows() < n + 2) sh.insertRowsAfter(sh.getMaxRows(), n + 2 - sh.getMaxRows());
+  F.forEach((f, i) => {
+    const rng = sh.getRange(3, i + 1, n, 1);
+    if (f[2] === 'date') rng.setNumberFormat('mmm d, yyyy');
+    if (f[2] === 'num') rng.setNumberFormat('0.##');
+    if (f[2] === 'bool') rng.insertCheckboxes();
+    if (f[2].indexOf('list:') === 0) rng.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(f[2].slice(5).split('|'), true).build());
+    sh.setColumnWidth(i + 1, f[3]);
+  });
+  sh.getRange(3, 1, n, F.length).setVerticalAlignment('top').setWrap(true);
+  sh.setFrozenRows(2);
+  if (R.seed) sh.getRange(3, 1, R.seed.length, 2).setValues(R.seed);
+  const doneCol = F.findIndex(f => f[0] === 'done' || f[0] === 'status');
+  if (doneCol > -1) {
+    const L = String.fromCharCode(65 + doneCol);
+    sh.setConditionalFormatRules([rule_(F[doneCol][0] === 'done' ? '=$' + L + '3=TRUE' : '=$' + L + '3="Done"', sh.getRange(3, 1, n, F.length), '#e8f5e9', null)]);
+  }
+}
+
+/* ---------- weekly progress email (Sundays, to the team) ---------- */
+function weeklyDigest() {
+  const ss = SpreadsheetApp.getActive(), tz = CFG.timezone;
+  const now = new Date(), weekAgo = new Date(now.getTime() - 7 * 864e5);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const fmt = d => Utilities.formatDate(d, tz, 'EEE, MMM d');
+  const rows = [];
+  let doneWeek = 0, openAll = 0, overdueAll = 0;
+  CFG.members.forEach(m => {
+    const sh = ss.getSheetByName(m.tab);
+    if (!sh || sh.getLastRow() < 4) return;
+    const v = sh.getRange(4, 1, sh.getLastRow() - 3, 10).getValues().filter(r => r[1]);
+    const done = v.filter(r => r[4] === 'Done' && r[8] instanceof Date && r[8] >= weekAgo);
+    const open = v.filter(r => r[4] !== 'Done'), late = open.filter(r => r[5] instanceof Date && r[5] < today);
+    doneWeek += done.length; openAll += open.length; overdueAll += late.length;
+    rows.push('<tr><td style="padding:6px 10px;color:' + m.color + ';font-weight:bold">' + m.tab + '</td><td style="padding:6px 10px">' + done.length +
+      '</td><td style="padding:6px 10px">' + open.length + '</td><td style="padding:6px 10px;color:' + (late.length ? '#b83226' : '#1f3b33') + '">' + late.length + '</td></tr>');
+  });
+  const smp = ss.getSheetByName('DA RCPC Samples');
+  const sv = smp && smp.getLastRow() >= 4 ? smp.getRange(4, 1, smp.getLastRow() - 3, 11).getValues().filter(r => r[0]) : [];
+  const withPhotos = sv.filter(r => Number(r[5]) >= 3).length, newWeek = sv.filter(r => r[2] instanceof Date && r[2] >= weekAgo).length;
+  const sent = sv.filter(r => r[9]).length, validated = sv.filter(r => r[10] && r[10] !== 'Unsure').length;
+  const rev = ss.getSheetByName('Panel Revisions');
+  const rv = rev && rev.getLastRow() >= 4 ? rev.getRange(4, 1, rev.getLastRow() - 3, 5).getValues().filter(r => r[2] && r[4] !== 'NA') : [];
+  const complied = rv.filter(r => r[4] === 'C').length;
+  const goal = Number(PropertiesService.getScriptProperties().getProperty('SET_leafGoal') || 0);
+  const dash = ss.getSheetByName('Dashboard'), rcpc = dash ? dash.getRange('E4').getValue() : '';
+  const defense = PropertiesService.getScriptProperties().getProperty('SET_defenseDate');
+  const html = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#1f3b33">' +
+    '<h2 style="color:#1f4b3a;margin:0 0 4px">🍌 Weekly thesis progress</h2><p style="color:#5f6f66;margin:0 0 14px">' + fmt(weekAgo) + ' – ' + fmt(now) + '</p>' +
+    '<p><b>' + doneWeek + '</b> task(s) finished this week · <b>' + openAll + '</b> open · <b style="color:' + (overdueAll ? '#b83226' : '#1f3b33') + '">' + overdueAll + '</b> overdue</p>' +
+    '<table style="border-collapse:collapse;background:#f7f6ef;border-radius:8px"><tr style="background:#1f4b3a;color:#fff"><th style="padding:6px 10px">Member</th><th style="padding:6px 10px">Done this week</th><th style="padding:6px 10px">Open</th><th style="padding:6px 10px">Overdue</th></tr>' + rows.join('') + '</table>' +
+    '<h3 style="margin:18px 0 6px">DA RCPC samples</h3><p>' + sv.length + ' leaves (' + newWeek + ' new this week) · ' + withPhotos + ' with photos' + (goal ? ' · goal ' + goal : '') +
+    ' · ' + sent + ' sent to RCPC · ' + validated + ' with RCPC results</p>' +
+    '<h3 style="margin:18px 0 6px">Panel revisions</h3><p>' + complied + ' of ' + rv.length + ' complied</p>' +
+    (rcpc instanceof Date ? '<p>📅 DA RCPC submission: <b>' + fmt(rcpc) + '</b></p>' : '') +
+    (defense ? '<p>🎓 Final defense: <b>' + fmt(new Date(defense + 'T00:00:00')) + '</b></p>' : '') +
+    '<p><a href="' + APP_URL + '" style="background:#1f4b3a;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:bold">Open the tracker app</a></p></div>';
+  MailApp.sendEmail({ to: CFG.members.map(m => m.email).join(','), subject: '🍌 Thesis progress · ' + doneWeek + ' done this week, ' + overdueAll + ' overdue', htmlBody: html });
+}
+function weeklyDigestNow() { weeklyDigest(); SpreadsheetApp.getUi().alert('Weekly progress email sent to the team 📬'); }
+function ensureWeeklyDigest_() {
+  if (PropertiesService.getScriptProperties().getProperty('DIGEST_OFF')) return;
+  if (ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'weeklyDigest')) return;
+  ScriptApp.newTrigger('weeklyDigest').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(19).inTimezone(CFG.timezone).create();
+}
+function disableWeeklyDigest() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'weeklyDigest').forEach(t => ScriptApp.deleteTrigger(t));
+  PropertiesService.getScriptProperties().setProperty('DIGEST_OFF', '1');
+  SpreadsheetApp.getUi().alert('Sunday progress email OFF. Run "Repair / update tracker" after deleting DIGEST_OFF in Script Properties to turn it back on.');
 }
 
 function buildLinks_(ss) {

@@ -256,6 +256,35 @@ tr.filled td.id{color:var(--ok)}
 /* camera sheet */
 .cam{position:fixed;inset:0;z-index:15;background:rgba(15,25,20,.55);display:flex;align-items:flex-end;justify-content:center}
 .cam[hidden]{display:none}
+.cam-sheet.wide{max-width:780px}
+.cam.live{background:#000}
+.cam.live .cam-sheet{max-width:none;width:100%;height:100%;max-height:none;border-radius:0;padding:0;background:#000;overflow:hidden}
+.cam.live #camBody{height:100%}
+.vf{position:relative;width:100%;height:100%;background:#000;color:#fff;user-select:none;-webkit-user-select:none}
+.vf video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vf-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .3s}
+.vf-flash.on{opacity:.75;transition:none}
+.vf-top{position:absolute;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top)) 14px 30px;background:linear-gradient(rgba(0,0,0,.65),transparent);display:flex;gap:12px;align-items:flex-start}
+.vf-top .tag{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;font-size:20px;background:#f4f2e8;color:#1f3b33;border-radius:6px;padding:2px 10px;flex:none}
+.vf-top b{display:block;font-size:16px}.vf-top .small{opacity:.85}
+.vf-x{margin-left:auto;flex:none;background:rgba(0,0,0,.45);color:#fff;border:0;border-radius:50%;width:42px;height:42px;font-size:18px;cursor:pointer}
+.vf-bot{position:absolute;left:0;right:0;bottom:0;padding:24px 16px calc(22px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.7));display:flex;flex-direction:column;align-items:center;gap:14px}
+.vf-tiles{display:flex;gap:10px}
+.vf-tile{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:#fff;font-size:11px;font-weight:700;padding:0;cursor:pointer}
+.vf-tile .im{width:56px;height:56px;border-radius:12px;border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:18px;font-weight:800;overflow:hidden;position:relative}
+.vf-tile img{width:100%;height:100%;object-fit:cover}
+.vf-tile.cur .im{border-color:#c9e79a;box-shadow:0 0 0 2px #c9e79a}
+.vf-tile .w{position:absolute;right:3px;top:2px;font-size:13px;text-shadow:0 1px 2px #000}
+.vf-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:100%;max-width:420px}
+.shutter{width:80px;height:80px;border-radius:50%;border:5px solid #fff;background:transparent;padding:0;cursor:pointer;display:grid;place-items:center;touch-action:manipulation}
+.shutter i{display:block;width:62px;height:62px;border-radius:50%;background:#fff;transition:transform .08s}
+.shutter:active i{transform:scale(.86)}
+.vf-done{justify-self:end;background:#c9e79a;color:#1f3b33;border:0;border-radius:999px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer}
+.vf-wait{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+.strip3{display:flex;gap:8px;margin-top:10px}
+.strip3 button{width:64px;height:64px;border-radius:12px;border:1px solid var(--line);background:var(--soft);padding:0;overflow:hidden;position:relative;cursor:pointer;font-weight:800;color:var(--muted)}
+.strip3 img{width:100%;height:100%;object-fit:cover}
+.strip3 .w{position:absolute;right:3px;top:2px;font-size:13px}
 .cam-sheet{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
 @media (min-width:700px){.cam{align-items:center}.cam-sheet{border-radius:20px}}
 .cam-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:30px;font-weight:800;background:var(--bg);color:var(--brand);border:2px dashed var(--leaf);border-radius:8px;padding:2px 12px;display:inline-block}
@@ -440,6 +469,64 @@ header{padding-top:env(safe-area-inset-top)}
 .login-err{color:var(--red);font-weight:600;font-size:13.5px;min-height:1em;margin:0}
 .linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12.5px;padding:0}
 footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 40px}
+/* --- field day, records, gallery --- */
+.stats.s6{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stat.hot2{background:var(--leaf-soft);border-color:color-mix(in srgb,var(--leaf) 40%,transparent)}
+.stat input[type=date].lt{background:var(--card)}
+.hand{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 12px}
+.hand div{background:var(--soft);border-radius:12px;padding:10px 12px}.hand b{display:block;font-size:22px;font-family:var(--hfont)}.hand span{font-size:12px;color:var(--muted)}
+.goalrow{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:12px}
+.goalrow .fl{width:140px}
+.batch .gbar{height:8px;border-radius:99px;background:rgba(255,255,255,.22);overflow:hidden;margin:8px 0 4px;width:min(260px,60vw)}
+.batch .gbar i{display:block;height:100%;background:#c9e79a;border-radius:99px}
+.checklist{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.checklist li{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;cursor:pointer}
+.checklist li.ok{background:var(--ok-soft);border-color:transparent}
+.checklist .bx{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;flex:none;font-weight:800;color:#fff}
+.checklist li.ok .bx{background:var(--ok);border-color:var(--ok)}
+.checklist .auto{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:700}
+details.card>summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:'▾';margin-left:auto;color:var(--muted)}
+details.card[open]>summary::after{content:'▴'}
+.sheet-table{width:100%;min-width:0;border-collapse:collapse;font-size:13.5px}
+.sheet-table th{position:static}
+.sheet-table td,.sheet-table th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+.sheet-table input{width:20px;height:20px}
+.sheet-table td:nth-child(2){white-space:nowrap}
+@media screen and (max-width:600px){.sheet-table .hs{display:none}}
+.sign{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;font-size:13px}
+.sign div{border-top:1px solid var(--ink);padding-top:6px}
+.res-lbl{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:40px;font-weight:800;color:var(--brand);text-align:center;margin:8px 0 2px}
+.res-btns{display:grid;gap:10px;margin-top:16px}
+.res-btns .btn{min-height:56px;font-size:16px}
+.mtable{width:100%;min-width:560px;border-collapse:collapse;font-size:13px}
+.mtable th{position:static}
+.mtable td,.mtable th{padding:8px;border-bottom:1px solid var(--line);text-align:right}
+.mtable td:first-child,.mtable th:first-child,.mtable td:nth-child(2),.mtable th:nth-child(2){text-align:left}
+.tscroll{overflow-x:auto;margin:10px -4px 0;padding:0 4px}
+.metrics{display:flex;flex-wrap:wrap;gap:6px}
+.drow{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px}
+.drow.done{background:var(--ok-soft);border-color:transparent}
+.drow.done .ditem{text-decoration:line-through;color:var(--muted)}
+.drow input[type=checkbox]{width:22px;height:22px;flex:none;margin-top:1px}
+.drow .ditem{font-weight:600}
+.recform{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end;padding:14px;margin-bottom:14px}
+.recform .wide{grid-column:1/-1}
+.recform textarea,.sc-grid textarea{width:100%;min-height:70px;resize:vertical;font-size:14px;color:var(--ink);text-transform:none;letter-spacing:0;font-weight:500}
+@media (max-width:720px){.recform{grid-template-columns:1fr 1fr}.stats.s6{grid-template-columns:1fr 1fr}.hand b{font-size:19px}}
+.gallery{display:flex;flex-direction:column;gap:14px}
+.gal-row{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.gal-row .thumbs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
+.gal-row .thumbs a{display:block;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--soft);position:relative}
+.gal-row .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.gal-row .thumbs span{position:absolute;left:6px;bottom:6px;background:rgba(15,25,20,.7);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px}
+@media print{
+  body>*:not(#ov){display:none!important}
+  #ov{position:static!important;background:none!important;display:block!important}
+  #ov .cam-sheet{max-height:none;overflow:visible;border-radius:0;padding:0;max-width:none;background:#fff;color:#000}
+  .noprint{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -497,6 +584,9 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:20px 16px 4
 <div id="toast"></div>
 <div id="cam" class="cam" hidden>
   <div class="cam-sheet" role="dialog" aria-modal="true" aria-label="Sample photos"><div id="camBody"></div></div>
+</div>
+<div id="ov" class="cam" hidden>
+  <div class="cam-sheet wide" role="dialog" aria-modal="true"><div id="ovBody"></div></div>
 </div>
 <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
 <input type="file" id="rcptInput" accept="image/*" capture="environment" hidden>
@@ -652,8 +742,28 @@ const Demo = (() => {
       classes: ['Cordana Leaf Spot','Black Sigatoka','Healthy','Unsure'], revStatuses: ['C','NC','NA'],
       expenseCategories: ['Sample collection','Printing','Transport','Food','Materials','Fees','Other'] },
     panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde','Mr. Hernando','Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
+    settings: { leafGoal: 30, classGoal: 10, defenseDate: iso(45) },
+    records: {
+      training: [
+        { row: 3, date: iso(-9), model: 'Baseline EfficientNetB0', run: 'scratch-1', dataset: 'Curated 900 · 70/15/15', epochs: 30, accuracy: 91.4, precision: 91.0, recall: 90.6, f1: 90.8, size: 16.3, speed: 142, notes: 'Retrained from scratch', by: 'Rho' },
+        { row: 4, date: iso(-2), model: 'Enhanced EfficientNetB0', run: 'cbam-1', dataset: 'Curated 900 · 70/15/15', epochs: 30, accuracy: 94.2, precision: 94.0, recall: 93.8, f1: 93.9, size: 17.1, speed: 151, notes: '', by: 'Rho' },
+      ],
+      consults: [
+        { row: 3, date: iso(-6), with: 'Ms. Barbosa', topic: 'Objectives & scope', feedback: 'Make objectives measurable; CS approach.', action: 'Rewrote objectives 1–3.', status: 'Done', signed: true, by: 'Fe Anne' },
+        { row: 4, date: iso(-1), with: 'Ms. Barbosa', topic: 'DA RCPC validation', feedback: 'Bring the validation letter on submission day.', action: '', status: 'Open', signed: false, by: 'Fe Anne' },
+      ],
+      defense: ['All panel revisions complied, with page numbers|Team', 'Adviser signs the revision matrix|Fe Anne', 'Final dataset counts per class (incl. RCPC-validated)|Rho',
+        'Baseline vs enhanced model comparison table (Chapter 4)|Rho', 'Phone app demo works offline|Rho', 'Chapters 4–5 written and proofread|Cha',
+        'References in IEEE, citation order fixed|Cha', 'Manuscript formatted (ACM) and printed copies for the panel|Cha', 'Defense slides|Fe Anne',
+        'Two full rehearsals with timing|Team', 'Endorsement / approval forms signed|Fe Anne'].map((x, i) => { const [item, owner] = x.split('|'); return { row: i + 3, item, owner, done: i === 6, doneBy: i === 6 ? 'Cha' : '', notes: '' }; }),
+    },
   };
+  let recRow = 100;
   return {
+    addRecord: (kind, o) => Object.assign({ row: recRow++, by: S.user }, o, kind === 'defense' ? { done: !!o.done, doneBy: o.done ? S.user : '' } : {}, kind === 'consults' ? { status: o.status || 'Open', signed: !!o.signed } : {}),
+    updateRecord: (kind, row, field, value) => field === 'done' ? { done: value, doneBy: value ? S.user : '' } : { [field]: value },
+    deleteRecord: () => true, setSetting: (k, v) => Object.assign({}, S.data.settings, { [k]: v }),
+    submitSamples: () => true, listPhotos: () => ({}),
     getData: () => JSON.parse(JSON.stringify(data)),
     authStart: email => { const t = DEMO_ACCOUNTS[email]; if (!t) throw new Error('This email doesn\'t have access.'); return { hasPassword: true }; },
     authForgot: () => ({ codeSent: true }),
@@ -683,8 +793,10 @@ const Demo = (() => {
 /* =========================================================
    State + helpers
    ========================================================= */
-const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {}, open: {} };
-const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Expenses'],['links','Links']];
+const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, preparing: {}, thumbs: {}, issues: {}, open: {}, more: 'training', ov: null, gallery: false, photoIndex: null };
+const VIEWS = [['overview','Overview'],['tasks','Tasks'],['revisions','Panel Revisions'],['samples','DA RCPC Samples'],['supplies','Expenses'],['more','More']];
+const recs = kind => ((S.data && S.data.records) || {})[kind] || [];
+const settings = () => (S.data && S.data.settings) || {};
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 const toDate = s => s ? new Date(s + 'T00:00:00') : null;
@@ -897,6 +1009,10 @@ function flushOutbox() {
           const i = S.data.supplies.findIndex(x => x.tempId === job.tempId);
           if (i > -1) S.data.supplies[i] = res;
         }
+        if (job.fn === 'addRecord' && res && job.tempId) {
+          const list = recs(job.kind), i = list.findIndex(x => x.tempId === job.tempId);
+          if (i > -1) list[i] = res;
+        }
         if (job.fn === 'addTask' && res && job.tempId) {
           const m = member(job.tab), i = m ? m.tasks.findIndex(t => t.tempId === job.tempId) : -1;
           if (i > -1) m.tasks[i] = res;
@@ -953,14 +1069,15 @@ function render() {
     revisions: '<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 12h6M9 16h4"/>',
     samples: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/><path d="M2 21c0-3 1.9-5.4 5.1-6C9.5 14.5 12 13 13 12"/>',
     supplies: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
-    links: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    more: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',
   };
-  const SHORT = { overview: 'Home', tasks: 'Tasks', revisions: 'Panel', samples: 'Samples', supplies: 'Expenses', links: 'Links' };
+  const SHORT = { overview: 'Home', tasks: 'Tasks', revisions: 'Panel', samples: 'Samples', supplies: 'Expenses', more: 'More' };
   document.getElementById('bnav').innerHTML = VIEWS.map(([k]) =>
     '<button data-view="' + k + '" class="' + (S.view === k ? 'on' : '') + '"' + (S.view === k ? ' aria-current="page"' : '') + '><svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[k] + '</svg>' + SHORT[k] +
     (k === 'tasks' && openTasks ? '<span class="count">' + openTasks + '</span>' : '') +
     (k === 'revisions' && openRev ? '<span class="count">' + openRev + '</span>' : '') + '</button>').join('');
-  const fn = { overview: vOverview, tasks: vTasks, revisions: vRevisions, samples: vSamples, supplies: vSupplies, links: vLinks }[S.view];
+  if (S.view === 'links') { S.view = 'more'; S.more = 'links'; }
+  const fn = { overview: vOverview, tasks: vTasks, revisions: vRevisions, samples: vSamples, supplies: vSupplies, more: vMore }[S.view] || vOverview;
   document.getElementById('app').innerHTML = fn();
   if (S.view === 'tasks') renderTaskList();
 }
@@ -1002,12 +1119,17 @@ function vOverview() {
   ].map(x => '<div class="ms"><div><b style="text-align:left;display:block">' + x[0] + '</b><span class="small muted">' + (x[4] || x[1] + ' of ' + x[2]) + '</span></div>' +
     '<div class="bar" style="--c:' + x[3] + '"><i style="width:' + pct(x[1], x[2]) + '%"></i></div><b>' + pct(x[1], x[2]) + '%</b></div>').join('');
 
-  return '<div class="stats">' +
+  const lg = leafProgress(), dd = settings().defenseDate, dn = daysUntil(dd);
+  return '<div class="stats s6">' +
     '<div class="stat tap" data-action="gotoView" data-v="tasks" role="button" tabindex="0"><div class="k">Progress</div><div class="v">' + pct(done, tasks.length) + '%</div><div class="small muted">' + done + ' / ' + tasks.length + ' tasks</div></div>' +
     '<div class="stat tap" data-action="gotoView" data-v="tasks" role="button" tabindex="0"><div class="k">Overdue</div><div class="v" style="color:' + (overdue ? 'var(--red)' : 'inherit') + '">' + overdue + '</div><div class="small muted">tasks</div></div>' +
     '<div class="stat tap" data-action="gotoView" data-v="revisions" role="button" tabindex="0"><div class="k">Panel</div><div class="v">' + revDone + '<span class="muted" style="font-size:16px"> / ' + revApplic.length + '</span></div><div class="small muted">complied</div></div>' +
     '<div class="stat hot"><div class="k">RCPC submission</div><div class="v" style="font-size:20px">' + (d.rcpcDate ? (n > 0 ? n + ' days left' : n === 0 ? 'Today' : 'Passed') : 'Not set') + '</div>' +
     '<input type="date" data-change="rcpc" value="' + esc(d.rcpcDate) + '" aria-label="DA RCPC submission date"></div>' +
+    '<div class="stat tap" data-action="gotoView" data-v="samples" role="button" tabindex="0"><div class="k">Leaves</div><div class="v">' + lg.done +
+      (lg.goal ? '<span class="muted" style="font-size:16px"> / ' + lg.goal + '</span>' : '') + '</div><div class="small muted">' + (lg.goal ? 'with photos · goal' : 'with photos') + '</div></div>' +
+    '<div class="stat hot2"><div class="k">Final defense</div><div class="v" style="font-size:20px">' + (dd ? (dn > 0 ? dn + ' days left' : dn === 0 ? 'Today' : 'Done') : 'Not set') + '</div>' +
+      '<input type="date" class="lt" data-change="setting" data-field="defenseDate" value="' + esc(dd || '') + '" aria-label="Final defense date"></div>' +
     '</div>' +
     '<div class="section"><h2>Team</h2><div class="grid g3">' + cards + '</div></div>' +
     '<div class="section grid g2">' +
@@ -1138,7 +1260,7 @@ function vRevisions() {
 }
 
 /* ---------- Samples ---------- */
-const MIN_ANGLES = 3;
+const MIN_ANGLES = 3, MAX_ANGLES = 3;      // exactly 3 angles per leaf
 const ANGLE_HINTS = [
   'Whole leaf, upper side, flat and in focus',
   'Flip the leaf and show the lower side',
@@ -1146,7 +1268,7 @@ const ANGLE_HINTS = [
   'Tilt about 45° so the texture shows (optional)',
   'Any other view that helps RCPC (optional)',
 ];
-function angleNames() { return (S.data && S.data.photoAngles) || ['Top surface', 'Underside', 'Lesion close-up', 'Side / angled', 'Extra']; }
+function angleNames() { return ((S.data && S.data.photoAngles) || ['Top surface', 'Underside', 'Lesion close-up']).slice(0, MAX_ANGLES); }
 function ownerOf(id) { const p = String(id).split('-')[0]; const m = TEAM.find(t => t.prefix === p); return m ? m.tab : ''; }
 function samplesOf(tab) { return S.data.samples.filter(s => ownerOf(s.id) === tab); }
 function labelNum(id) { return +(String(id).split('-')[1] || 0); }
@@ -1173,9 +1295,9 @@ function gpsLink(g) { const m = String(g || '').match(/(-?\d+\.\d+),\s*(-?\d+\.\
 function paperNumbers() {
   const d = S.data, cls = d.lists.classes.filter(c => !/unsure|unknown/i.test(c));
   const validated = d.samples.filter(x => cls.indexOf(x.validated) > -1);
-  const useVal = validated.length > 0;
-  const set = useVal ? validated : d.samples.filter(x => x.date && (x.angles || []).length >= MIN_ANGLES);
-  const key = x => useVal ? x.validated : x.disease;
+  const useVal = validated.length > 0;      // DA RCPC decides each leaf's disease; nothing is counted before that
+  const set = validated;
+  const key = x => x.validated;
   const per = cls.map(c => { const xs = set.filter(x => key(x) === c); return { c, n: xs.length, img: xs.reduce((a, x) => a + (x.angles || []).length, 0) }; });
   const imgs = per.reduce((a, p) => a + p.img, 0);
   const dates = Array.from(new Set(set.map(x => x.date).filter(Boolean))).sort();
@@ -1191,22 +1313,70 @@ function paperNumbers() {
   }
   const lc = c => /healthy/i.test(c) ? 'healthy' : c.replace(/Leaf Spot/, 'leaf spot');
   const list = per.map(p => p.n + ' ' + lc(p.c));
-  const text = 'The local test set consists of ' + set.length + ' banana leaf samples (' + imgs.toLocaleString('en-US') + ' images) collected from ' +
+  const text = !set.length ? 'Numbers appear here once DA RCPC sends results. Enter them with "Enter RCPC results" on the Samples page.' : 'The local test set consists of ' + set.length + ' banana leaf samples (' + imgs.toLocaleString('en-US') + ' images) collected from ' +
     (sites.length ? sites.join(', ') : '[farm / barangay]') + ' on ' + when + ': ' + list.slice(0, -1).join(', ') + ', and ' + list[list.length - 1] + ' samples. ' +
     'Each sample was photographed from three to five angles and submitted fresh to the DA Regional Crop Protection Center (RCPC) Davao' +
-    (useVal ? ', which confirmed its class' + (graded.length ? ' (agreeing with the researchers\' initial label for ' + agree + ' of ' + graded.length + ' samples)' : '') + '.' : ' for validation [RCPC results pending].');
+    ', which identified the disease class of each sample.';
   return { useVal, per, imgs, n: set.length, text, dates, sites };
 }
 
 function newSample() {
   if (!IS_PHONE || S.cam) return;          // no double labels from a double tap
   const id = nextLabel(S.user);
-  S.data.samples.push({ row: 0, id, disease: '', date: localDay(), site: '', by: S.user, photos: '',
+  const lastSite = (samplesOf(S.user).filter(s => s.site).sort((a, b) => labelNum(b.id) - labelNum(a.id))[0] || {}).site || '';
+  S.data.samples.push({ row: 0, id, disease: '', date: localDay(), site: lastSite, by: S.user, photos: '',
     cotton: false, bagged: false, submitted: '', validated: '', notes: '', folder: '', angles: [] });
   S.sampleFilter = S.user;
   captureGps(id);
   save('createSample', [id]).then(r => { if (r && sampleById(id)) sampleById(id).row = r.row; });
+  if (lastSite) save('updateSample', [id, 'site', lastSite]);
   openCam(id);
+}
+
+/** leaves with at least 3 photos (the whole team) vs the goal */
+function leafProgress() {
+  const d = S.data, goal = +settings().leafGoal || 0;
+  const done = d.samples.filter(x => (x.angles || []).length >= MIN_ANGLES).length;
+  return { done, goal, p: goal ? Math.min(100, pct(done, goal)) : 0 };
+}
+const PREFARM = [
+  ['offline', 'App works without signal', 'auto'], ['supplies', 'Sample supplies bought', 'auto'],
+  ['charged', 'Phone charged (and a power bank)'], ['tape', 'Masking tape + marker'], ['cotton', 'Damp cotton + resealable bags'],
+  ['shears', 'Clean shears or scissors'], ['cooler', 'Cooler or shaded box for the leaves'],
+];
+function prefarmState() {
+  let st = {}; try { st = JSON.parse(store.get('bt:prefarm') || '{}'); } catch (e) {}
+  if (st.day !== localDay()) st = { day: localDay(), done: {} };       // fresh list each day
+  const sup = S.data.supplies.filter(x => x.category === 'Sample collection');
+  const auto = {
+    offline: !!(navigator.serviceWorker && navigator.serviceWorker.controller),
+    supplies: sup.length > 0 && sup.every(x => x.bought),
+  };
+  return { st, auto, supNote: sup.filter(x => x.bought).length + ' of ' + sup.length + ' bought' };
+}
+function prefarmCard() {
+  const { st, auto, supNote } = prefarmState();
+  const items = PREFARM.map(([k, label, kind]) => {
+    const ok = kind ? auto[k] : !!st.done[k];
+    return '<li class="' + (ok ? 'ok' : '') + '" data-action="prefarm" data-v="' + k + '" role="button" tabindex="0"><span class="bx">' + (ok ? '✓' : '') + '</span>' + esc(label) +
+      (kind ? '<span class="auto">' + (k === 'supplies' ? supNote : ok ? 'ready' : 'open once with signal') + '</span>' : '') + '</li>';
+  });
+  const n = PREFARM.filter(([k, , kind]) => kind ? auto[k] : st.done[k]).length;
+  return '<details class="card" style="margin-bottom:14px;padding:14px 16px"' + (S.prefarmOpen ? ' open' : '') + ' data-action="prefarmToggle"><summary>🎒 Before the farm · ' + n + ' of ' + PREFARM.length + ' ready</summary>' +
+    '<ul class="checklist">' + items.join('') + '</ul></details>';
+}
+function handoverCard() {
+  const d = S.data, st = settings();
+  const ready = d.samples.filter(x => !x.submitted && (x.angles || []).length >= MIN_ANGLES).length;
+  const waiting = d.samples.filter(x => x.submitted && !x.validated).length;
+  const back = d.samples.filter(x => x.validated).length;
+  return '<div class="card" style="margin-bottom:14px;padding:14px 16px"><h3 style="margin:0">DA RCPC hand-over</h3>' +
+    '<div class="hand"><div><b>' + ready + '</b><span>ready to send</span></div><div><b>' + waiting + '</b><span>waiting for results</span></div><div><b>' + back + '</b><span>results in</span></div></div>' +
+    '<div class="row" style="gap:8px">' +
+      '<button class="btn" data-action="openSheet">📝 Submission list</button>' +
+      (IS_PHONE && waiting ? '<button class="btn ghost" data-action="openResults">🧪 Enter RCPC results (' + waiting + ')</button>' : '') + '</div>' +
+    '<div class="goalrow"><label class="fl">Leaves goal<input type="number" min="0" inputmode="numeric" placeholder="e.g. 30" value="' + esc(st.leafGoal || '') + '" data-change="setting" data-field="leafGoal"></label>' +
+      '<label class="fl">Per disease goal<input type="number" min="0" inputmode="numeric" placeholder="e.g. 10" value="' + esc(st.classGoal || '') + '" data-change="setting" data-field="classGoal"></label></div></div>';
 }
 
 function vSamples() {
@@ -1227,34 +1397,40 @@ function vSamples() {
   const qn = Object.keys(S.queued).length;
   const unfinished = mine.filter(x => takenSet(x).size < MIN_ANGLES).sort((a, b) => labelNum(a.id) - labelNum(b.id));
   const offlineReady = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
+  const lp = leafProgress();
   const top = IS_PHONE
     ? '<div class="batch">' +
         '<div><div class="k">Next label</div><div class="big">' + esc(next) + '</div>' +
         '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' · ' + withPhotos + ' with photos</div>' +
+        (lp.goal ? '<div class="gbar"><i style="width:' + lp.p + '%"></i></div><div class="small" style="opacity:.9">Team: ' + lp.done + ' of ' + lp.goal + ' leaves with photos</div>' : '') +
         '<div class="ready-off">' + (offlineReady ? '✓ Works without signal' : '⚠ Open once with signal before the farm') + '</div></div>' +
         '<div class="sp"></div>' +
         '<button class="btn newsample" data-action="newSample">＋ New sample 📷</button></div>' +
       (unfinished.length ? '<div class="resume">' + unfinished.slice(0, 3).map(x =>
-        '<button data-action="cam" data-id="' + esc(x.id) + '"><span class="lbl">' + esc(x.id) + '</span><span>' + takenSet(x).size + ' of ' + MIN_ANGLES + ' photos</span><span class="go">Finish →</span></button>').join('') + '</div>' : '')
-    : '<div class="viewbar"><div><b>👀 Viewing only</b><div class="small">Add samples and take photos with the app on your phone.</div></div><div class="sp"></div>' +
-        (d.photoFolderUrl ? '<a class="btn ghost" href="' + esc(d.photoFolderUrl) + '" target="_blank" rel="noopener">📁 All photos ↗</a>' : '') + '</div>';
+        '<button data-action="cam" data-id="' + esc(x.id) + '"><span class="lbl">' + esc(x.id) + '</span><span>' + takenSet(x).size + ' of ' + MIN_ANGLES + ' photos</span><span class="go">Finish →</span></button>').join('') + '</div>' : '') +
+      prefarmCard() + handoverCard()
+    : '<div class="viewbar"><div><b>👀 Viewing only</b><div class="small">Add samples and take photos with the app on your phone.' +
+        (lp.goal ? ' Team: <b>' + lp.done + ' of ' + lp.goal + '</b> leaves with photos.' : '') + '</div></div><div class="sp"></div>' +
+        '<div class="chips"><button class="chip ' + (!S.gallery ? 'on' : '') + '" data-action="gallery" data-v="0">Cards</button><button class="chip ' + (S.gallery ? 'on' : '') + '" data-action="gallery" data-v="1">🖼 Photos</button></div>' +
+        (d.photoFolderUrl ? '<a class="btn ghost" href="' + esc(d.photoFolderUrl) + '" target="_blank" rel="noopener">📁 Drive ↗</a>' : '') + '</div>' + handoverCard();
 
   return top +
     '<div class="row filters"><div class="chips">' + chips + '</div><div class="sp"></div>' +
       (qn ? '<span class="qchip">⏳ ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') + '</div>' +
     paperCard() +
-    '<div class="scards">' + (rows.map(sampleCard).join('') ||
-      '<div class="empty" style="grid-column:1/-1">' + (IS_PHONE ? 'No samples yet. At the farm, tap <b>＋ New sample</b> for each leaf.' : 'No samples yet. They appear here as the team adds them on their phones.') + '</div>') + '</div>';
+    (!IS_PHONE && S.gallery ? galleryHtml(rows) : '<div class="scards">' + (rows.map(sampleCard).join('') ||
+      '<div class="empty" style="grid-column:1/-1">' + (IS_PHONE ? 'No samples yet. At the farm, tap <b>＋ New sample</b> for each leaf.' : 'No samples yet. They appear here as the team adds them on their phones.') + '</div>') + '</div>');
 }
 
 function paperCard() {
   const p = paperNumbers(), d = S.data;
-  const rows = p.per.map(r => '<tr><td>' + esc(r.c) + '</td><td style="text-align:right">' + r.n + '</td><td style="text-align:right">' + r.img + '</td></tr>').join('');
-  return '<details class="card" style="margin-bottom:14px"' + (S.paperOpen ? ' open' : '') + ' data-action="paperToggle"><summary>📄 Paper numbers · ' + p.n + ' samples, ' + p.imgs + ' images ' +
-      (p.useVal ? '<span class="doneby">· RCPC-validated</span>' : '<span class="small muted">· not validated yet</span>') + '</summary>' +
-    '<table style="width:100%;min-width:0;margin:10px 0"><thead><tr><th>Class</th><th style="text-align:right">Samples</th><th style="text-align:right">Images</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+  const cg = settings().classGoal;
+  const rows = p.per.map(r => '<tr><td>' + esc(r.c) + '</td><td style="text-align:right">' + r.n + (cg ? '<span class="muted"> / ' + cg + '</span>' : '') + '</td><td style="text-align:right">' + r.img + '</td></tr>').join('');
+  return '<details class="card" style="margin-bottom:14px"' + (S.paperOpen ? ' open' : '') + ' data-action="paperToggle"><summary>📄 Paper numbers · ' +
+      (p.n ? p.n + ' RCPC-confirmed leaves, ' + p.imgs + ' images' : '<span class="muted" style="font-weight:600">waiting for RCPC results</span>') + '</summary>' +
+    '<table style="width:100%;min-width:0;margin:10px 0"><thead><tr><th>Class (RCPC)</th><th style="text-align:right">Leaves' + (cg ? ' / goal' : '') + '</th><th style="text-align:right">Images</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<div class="paper" id="paperText">' + esc(p.text) + '</div>' +
-    '<div class="row" style="margin-top:10px"><button class="btn" data-action="copyPaper">📋 Copy</button>' +
+    '<div class="row" style="margin-top:10px">' + (p.n ? '<button class="btn" data-action="copyPaper">📋 Copy</button>' : '') +
     (p.useVal ? '<button class="btn ghost" data-action="exportSet"' + busyBtn(S.exporting, '📦 Export for training', 'Exporting…') + '</button>' : '') +
     (d.exportFolderUrl ? '<a href="' + esc(d.exportFolderUrl) + '" target="_blank" rel="noopener">Open exported set ↗</a>' : '') + '</div>' +
     '<p class="small muted" style="margin:8px 0 0">Fill in yourself: phone model, validator\'s name.</p></details>';
@@ -1267,16 +1443,16 @@ function sampleCard(x) {
   const at = 'data-id="' + esc(x.id) + '"';
   const sel = (v, field) => '<select data-change="sample" ' + at + ' data-field="' + field + '"><option value=""></option>' +
     cls.map(c => '<option' + (c === v ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select>';
-  const match = x.validated ? (x.validated === x.disease ? '<span class="match y">✓ RCPC agrees</span>' : '<span class="match n">✗ RCPC says ' + esc(x.validated) + '</span>') : '';
+  const match = '';      // RCPC decides; our guess is only a note
   const key = 'smp_' + x.id, open = IS_PHONE && !!S.open[key];
   const pills = [
-    x.disease ? '<span class="tagp">' + esc(x.disease) + '</span>' : '<span class="tagp warn">No disease yet</span>',
+    x.validated ? '<span class="tagp ok">RCPC: ' + esc(x.validated) + '</span>' : x.submitted ? '<span class="tagp warn">Waiting for RCPC</span>' : '<span class="tagp">Not sent yet</span>',
     x.bagged ? '<span class="tagp ok">✓ Bagged</span>' : '',
     x.submitted ? '<span class="tagp ok">Sent ' + esc(fmt(x.submitted).replace(/^\w+, /, '')) + '</span>' : '',
-    match].join('');
+    x.disease && !x.validated ? '<span class="tagp">Our guess: ' + esc(x.disease) + '</span>' : ''].join('');
   const toggle = !IS_PHONE ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
   const photoBtn = IS_PHONE
-    ? '<button class="cam-btn ' + camCls + '" data-action="cam" ' + at + '>📷 ' + (n + q) + '/5' + (n >= MIN_ANGLES ? ' ✓' : '') + '</button>'
+    ? '<button class="cam-btn ' + camCls + '" data-action="cam" ' + at + '>📷 ' + Math.min(n + q, MAX_ANGLES) + '/' + MAX_ANGLES + (n >= MIN_ANGLES ? ' ✓' : '') + '</button>'
     : '<span class="photo-pill ' + (n >= MIN_ANGLES ? 'ok' : n ? 'part' : '') + '">' + n + ' photo' + (n === 1 ? '' : 's') + (n >= MIN_ANGLES ? ' ✓' : '') + '</span>';
   return '<div class="sc' + (x.submitted ? ' sub' : '') + '" style="--c:' + m.color + '">' +
     '<div class="sc-top"><span class="lbl">' + esc(x.id) + '</span><span class="sc-own">' + esc(owner) + '</span><span class="sp"></span>' +
@@ -1287,7 +1463,7 @@ function sampleCard(x) {
       '<div class="sc-foot">' + (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">' + (IS_PHONE ? 'Photos ↗' : '🖼 View photos ↗') + '</a>' : '') +
       (!IS_PHONE && gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">📍 Location</a>' : '') + toggle + '</div></div>') +
     (!open ? '' : '<div class="sc-grid">' +
-      '<label>Suspected disease' + sel(x.disease, 'disease') + '</label>' +
+      '<label>Our guess (optional)' + sel(x.disease, 'disease') + '</label>' +
       '<label>Collected<input type="date" value="' + esc(x.date) + '" data-change="sample" ' + at + ' data-field="date"></label>' +
       '<label class="wide">Site<input type="text" value="' + esc(x.site) + '" placeholder="Farm / barangay" data-change="sample" ' + at + ' data-field="site"></label>' +
       '<label>Submitted to RCPC<input type="date" value="' + esc(x.submitted) + '" data-change="sample" ' + at + ' data-field="submitted"></label>' +
@@ -1303,7 +1479,71 @@ function sampleCard(x) {
     '<div class="sc-foot">' + toggle + '</div></div>');
 }
 
-/* ---------- camera (inside DA RCPC Samples): guided 3 required + 2 optional, then label reminder ---------- */
+/* ---------- overlays: submission list (print) and RCPC results ---------- */
+function openOv(o) { S.ov = o; document.getElementById('ov').hidden = false; renderOv(); }
+function closeOv() { S.ov = null; document.getElementById('ov').hidden = true; render(); }
+function renderOv() {
+  if (!S.ov || !S.data) return;
+  document.getElementById('ovBody').innerHTML = S.ov.type === 'sheet' ? sheetHtml() : resultsHtml();
+}
+function sheetCandidates() { return S.data.samples.filter(x => !x.submitted).sort((a, b) => a.id < b.id ? -1 : 1); }
+function sheetHtml() {
+  const o = S.ov, list = sheetCandidates(), sel = list.filter(x => o.sel[x.id]);
+  const rows = list.map((x, i) => '<tr class="' + (o.sel[x.id] ? '' : 'noprint') + '"><td class="noprint"><input type="checkbox" data-change="sheetSel" data-id="' + esc(x.id) + '"' + (o.sel[x.id] ? ' checked' : '') + ' aria-label="Include ' + esc(x.id) + '"></td>' +
+    '<td><b style="font-family:ui-monospace,monospace">' + esc(x.id) + '</b></td><td>' + esc(x.date ? fmt(x.date).replace(/^\w+, /, '') : '—') + '</td><td>' + esc(x.site || '—') + '</td><td class="hs">' + esc(ownerOf(x.id)) + '</td>' +
+    '<td class="hs">' + (x.angles || []).length + '</td><td>' + esc(x.notes || '') + '</td></tr>').join('');
+  return '<div class="cam-head noprint"><div><div class="eyebrow">DA RCPC hand-over</div><h2 style="margin:4px 0 0">📝 Submission list</h2></div><span class="sp"></span>' +
+      '<button class="iconbtn" data-action="ovClose" aria-label="Close">✕</button></div>' +
+    '<div class="printable">' +
+      '<h2 style="margin:14px 0 2px">Banana leaf samples for DA RCPC Davao</h2>' +
+      '<div class="small">' + esc(S.data.thesisTitle) + '<br>Fe Anne Malasarte · Rho Alphone Jornadal · Charisse Priego · BSCS, University of Mindanao</div>' +
+      '<div class="row" style="margin:12px 0;gap:10px"><label class="fl" style="width:170px">Hand-over date<input type="date" value="' + esc(o.date) + '" data-change="sheetDate"></label>' +
+        '<b style="align-self:end;padding-bottom:8px">' + sel.length + ' sample' + (sel.length === 1 ? '' : 's') + '</b></div>' +
+      (list.length ? '<div class="tscroll"><table class="sheet-table"><thead><tr><th class="noprint"></th><th>Label</th><th>Collected</th><th>Site</th><th class="hs">By</th><th class="hs">Photos</th><th>Notes</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+        : '<div class="empty">No samples waiting to be sent.</div>') +
+      '<p class="small" style="margin-top:12px">Disease class: to be identified by DA RCPC. Each leaf is wrapped in damp cotton and bagged with its label on masking tape.</p>' +
+      '<div class="sign"><div>Submitted by (name &amp; signature)</div><div>Received by DA RCPC (name, signature, date)</div></div>' +
+    '</div>' +
+    '<div class="row noprint" style="margin-top:16px;gap:8px">' +
+      '<button class="btn ghost" data-action="sheetPrint"' + (sel.length ? '' : ' disabled') + '>🖨 Print / save PDF</button>' +
+      (IS_PHONE ? '<button class="btn" data-action="sheetSubmit"' + (sel.length ? '' : ' disabled') + '>✓ Mark ' + sel.length + ' as submitted</button>' : '') + '</div>';
+}
+function resultsQueue() { return S.data.samples.filter(x => x.submitted && !x.validated).sort((a, b) => a.id < b.id ? -1 : 1); }
+function resultsHtml() {
+  const o = S.ov, q = o.ids.map(sampleById).filter(Boolean), x = q[o.i];
+  const head = '<div class="cam-head"><div><div class="eyebrow">RCPC results · ' + Math.min(o.i + 1, q.length) + ' of ' + q.length + '</div><h2 style="margin:4px 0 0">🧪 What did DA RCPC say?</h2></div><span class="sp"></span>' +
+    '<button class="iconbtn" data-action="ovClose" aria-label="Close">✕</button></div>';
+  if (!x) return head + '<div class="empty" style="margin-top:16px">✓ All results entered (' + o.saved + ' saved).</div><button class="btn bigcam" data-action="ovClose">Done</button>';
+  const cls = S.data.lists.classes;
+  return head +
+    '<div class="res-lbl">' + esc(x.id) + '</div>' +
+    '<div class="small muted" style="text-align:center">' + esc([x.site, x.date ? fmt(x.date) : '', 'sent ' + fmt(x.submitted)].filter(Boolean).join(' · ')) + '</div>' +
+    '<div class="res-btns">' + cls.map(c => '<button class="btn' + (/unsure/i.test(c) ? ' ghost' : '') + '" data-action="resultPick" data-v="' + esc(c) + '">' + esc(/unsure/i.test(c) ? 'Unclear / other' : c) + '</button>').join('') +
+      '<button class="btn ghost" data-action="resultSkip">Skip for now</button></div>';
+}
+
+/* ---------- desktop photo gallery ---------- */
+function loadPhotoIndex() {
+  if (S.photoIndex && !S.photoIndex.__err) return;
+  S.photoIndex = { __loading: true }; render();
+  call('listPhotos').then(idx => { S.photoIndex = idx || {}; render(); })
+    .catch(e => { S.photoIndex = { __err: e.network ? 'No connection.' : (e.message || String(e)) }; render(); });
+}
+function galleryHtml(rows) {
+  const idx = S.photoIndex || {};
+  if (!S.photoIndex || idx.__loading) return '<div class="loading"><div class="spinner"></div>Loading photos…</div>';
+  if (idx.__err) return '<div class="empty">Couldn\'t load photos: ' + esc(idx.__err) + ' <button class="btn ghost" data-action="gallery" data-v="1">Try again</button></div>';
+  const withPics = rows.filter(x => (idx[x.id] || []).length);
+  if (!withPics.length) return '<div class="empty">No photos found yet.</div>';
+  return '<p class="small muted" style="margin:0 0 10px">Photos load when you\'re signed in to Google with access to the folder. Click one to open it full size.</p><div class="gallery">' + withPics.map(x =>
+    '<div class="gal-row"><div class="sc-top"><span class="lbl">' + esc(x.id) + '</span><span class="sc-own">' + esc(ownerOf(x.id)) + '</span><span class="sp"></span>' +
+      (x.validated ? '<span class="tagp ok">RCPC: ' + esc(x.validated) + '</span>' : '<span class="tagp">' + (x.submitted ? 'Waiting for RCPC' : 'Not sent yet') + '</span>') + '</div>' +
+    '<div class="thumbs">' + idx[x.id].map(p => '<a href="https://drive.google.com/file/d/' + encodeURIComponent(p.file) + '/view" target="_blank" rel="noopener">' +
+      '<img loading="lazy" referrerpolicy="no-referrer" alt="' + esc(x.id + ' ' + (S.data.photoAngles[p.angle - 1] || '')) + '" src="https://drive.google.com/thumbnail?id=' + encodeURIComponent(p.file) + '&sz=w400">' +
+      '<span>' + esc(S.data.photoAngles[p.angle - 1] || p.angle) + '</span></a>').join('') + '</div></div>').join('') + '</div>';
+}
+
+/* ---------- camera (inside DA RCPC Samples): live viewfinder, 3 photos per leaf, then label reminder ---------- */
 function openCam(id, stage) {
   if (!IS_PHONE) { toast('Take photos with the app on your phone.', 2500); return; }
   S.cam = { id: id, stage: stage || 'shoot', more: false };
@@ -1312,7 +1552,7 @@ function openCam(id, stage) {
   renderCam();
   keepAwake(true);
 }
-function closeCam() { S.cam = null; store.del(CAM_STORE); keepAwake(false); document.getElementById('cam').hidden = true; render(); }
+function closeCam() { S.cam = null; store.del(CAM_STORE); keepAwake(false); stopStream(); const c = document.getElementById('cam'); c.hidden = true; c.classList.remove('live'); document.getElementById('camBody').innerHTML = ''; render(); }
 // Remember where we are, so if Android closes the app while the camera is open we come straight back to this sample.
 function saveCamState(waitingForShot) {
   if (!S.cam) return;
@@ -1335,7 +1575,10 @@ function keepAwake(on) {          // screen stays on while collecting
     if (!on && wakeLock) { wakeLock.release(); wakeLock = null; }
   } catch (e) {}
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.cam) keepAwake(true); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { stopStream(); return; }                 // camera light off when the app is in the background
+  if (S.cam) { keepAwake(true); if (S.cam.stage !== 'finish') { document.getElementById('camBody').innerHTML = ''; renderCam(); } }
+});
 function busyAngles(id) {
   return Object.keys(S.uploading).concat(Object.keys(S.waiting), Object.keys(S.queued), Object.keys(S.preparing))
     .filter(k => k.lastIndexOf(id + '_', 0) === 0).map(k => +k.slice(id.length + 1));
@@ -1343,7 +1586,7 @@ function busyAngles(id) {
 function takenSet(x) { return new Set((x.angles || []).concat(busyAngles(x.id))); }
 function nextAngle(x) {
   const have = takenSet(x);
-  for (let i = 1; i <= 5; i++) if (!have.has(i)) return i;
+  for (let i = 1; i <= MAX_ANGLES; i++) if (!have.has(i)) return i;
   return 0;
 }
 function angleState(x, a) {
@@ -1355,69 +1598,128 @@ function photoStatusLine(x) {
   const up = states.filter(s => s === 'up' || s === 'prep').length, q = states.filter(s => s === 'q').length;
   return up ? SPIN + 'Uploading ' + up + ' photo' + (up > 1 ? 's' : '') + '…' : esc(q ? '📴 ' + q + ' photo' + (q > 1 ? 's' : '') + ' saved on this phone · uploads when there\'s signal' : states.length ? '✓ All photos saved to Drive' : '');
 }
+let camStream = null;
+const liveCamOK = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext;
+function startStream() {
+  if (camStream && camStream.getVideoTracks().some(t => t.readyState === 'live')) return Promise.resolve(camStream);
+  return navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } } })
+    .then(st => (camStream = st));
+}
+function stopStream() { if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; } }
 function renderCam() {
   if (!S.cam || !S.data) return;
   const x = sampleById(S.cam.id);
   if (!x) return;
-  document.getElementById('camBody').innerHTML = S.cam.stage === 'finish' ? camFinishHtml(x) : camShootHtml(x);
+  const box = document.getElementById('cam'), body = document.getElementById('camBody');
+  const live = S.cam.stage !== 'finish' && S.cam.live !== false && liveCamOK();
+  box.classList.toggle('live', live);
+  box.querySelector('.cam-sheet').scrollTop = 0;
+  if (!live) {
+    if (S.cam.stage !== 'finish') stopStream();      // keep the camera warm on the label screen so "Next sample" opens instantly
+    body.innerHTML = S.cam.stage === 'finish' ? camFinishHtml(x) : camShootHtml(x);
+    return;
+  }
+  if (!document.getElementById('vfVideo')) {          // build the viewfinder once; later updates only touch the overlays
+    body.innerHTML = '<div class="vf"><video id="vfVideo" playsinline muted autoplay></video><div class="vf-wait" id="vfWait">Starting camera…</div>' +
+      '<div class="vf-flash" id="vfFlash"></div><div class="vf-top" id="vfTop"></div><div class="vf-bot" id="vfBot"></div></div>';
+    const v = document.getElementById('vfVideo');
+    v.addEventListener('playing', () => { const w = document.getElementById('vfWait'); if (w) w.remove(); });
+    startStream().then(st => { v.srcObject = st; v.play().catch(() => {}); })
+      .catch(() => { if (!S.cam) return; S.cam.live = false; toast('Camera not allowed here. Using the phone camera app instead.', 3500, true); renderCam(); });
+  }
+  const names = angleNames(), target = S.cam.target || nextAngle(x), n = takenSet(x).size;
+  document.getElementById('vfTop').innerHTML = '<span class="tag">' + esc(x.id) + '</span><div style="min-width:0">' +
+    (target ? '<b>' + target + ' of ' + MAX_ANGLES + ' · ' + esc(names[target - 1]) + '</b><div class="small">' + esc(ANGLE_HINTS[target - 1] || '') + '</div>'
+            : '<b>All ' + MAX_ANGLES + ' photos taken ✓</b><div class="small">Tap a photo to retake it</div>') + '</div>' +
+    '<button class="vf-x" data-action="camClose" aria-label="Close">✕</button>';
+  document.getElementById('vfBot').innerHTML = '<div class="vf-tiles">' + names.map((nm, i) => {
+      const a = i + 1, k = x.id + '_' + a, st = angleState(x, a), th = S.thumbs[k];
+      const w = S.issues[k] ? '⚠️' : st === 'q' ? '📴' : st === 'done' && !th ? '' : '';
+      return '<button class="vf-tile' + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '"><span class="im">' +
+        (th ? '<img src="' + th + '" alt="">' : st === 'done' ? '✓' : a) + (w ? '<span class="w">' + w + '</span>' : '') + '</span>' + esc(nm) + '</button>';
+    }).join('') + '</div>' +
+    '<div class="vf-row"><span></span><button class="shutter" data-action="snap" aria-label="Take photo"><i></i></button>' +
+      (n >= MIN_ANGLES ? '<button class="vf-done" data-action="camFinish">Done ✓</button>' : '<span></span>') + '</div>';
 }
-function camShootHtml(x) {
-  if (S.cam.check) {
-    const k = S.cam.check, nm = angleNames()[k.job.angle - 1];
-    return '<div class="cam-head"><div><div class="eyebrow">Photo ' + k.job.angle + ' · ' + esc(nm) + '</div><div class="cam-id">' + esc(x.id) + '</div></div></div>' +
-      '<div class="checkwarn"><img src="' + k.thumb + '" alt=""><div><b>This photo ' + esc(k.issues.join(' and ')) + '.</b><div class="small">Blurry, dark or washed-out photos get excluded from the dataset. Retake it while the leaf is still here?</div></div></div>' +
-      '<button class="btn bigcam" data-action="camRetake">📷 Retake photo</button>' +
-      '<button class="btn bigcam ghost" data-action="camKeep">Use it anyway</button>';
-  }
-  const names = angleNames(), n = takenSet(x).size, nx = nextAngle(x), need = Math.max(0, MIN_ANGLES - n);
-  const target = nx && (nx <= MIN_ANGLES || S.cam.more) ? nx : 0;
-  const title = need ? 'Photo ' + (n + 1) + ' of ' + MIN_ANGLES : n >= 5 ? 'All 5 angles done' : n + ' photos · that\'s enough';
-  const dots = [1, 2, 3, 4, 5].map(a => { const st = angleState(x, a); return '<i class="' + (a > MIN_ANGLES ? 'opt ' : '') + (st === 'q' ? 'q' : st ? 'on' : '') + '"></i>'; }).join('');
-  let main = '';
-  if (target) {
-    main += '<div class="step"><div class="step-n">' + target + '</div><div style="min-width:0"><b>' + esc(names[target - 1]) + (target > MIN_ANGLES ? ' <span class="small muted">(optional)</span>' : '') + '</b>' +
-      '<div class="small muted">' + esc(ANGLE_HINTS[target - 1] || '') + '</div><div class="fn small muted">' + esc(fname(x.id, target)) + '</div></div></div>' +
-      '<button class="btn bigcam" data-action="camShot" data-v="' + target + '">📷 Take photo ' + (target <= MIN_ANGLES ? target + ' of ' + MIN_ANGLES : '(optional)') + '</button>';
-  }
-  if (!need) {
-    main += '<button class="btn bigcam' + (target ? ' ghost' : '') + '" data-action="camFinish">✓ Finish sample · ' + n + ' photo' + (n > 1 ? 's' : '') + '</button>';
-    if (nx && !S.cam.more) main += '<button class="btn bigcam ghost" data-action="camMore">＋ Add an optional angle (' + (n + 1) + ' of 5)</button>';
-  }
+/** Grab the photo straight from the live preview: instant, like the phone's camera. Heavy work runs right after. */
+function snap() {
+  const x = S.cam && sampleById(S.cam.id), v = document.getElementById('vfVideo');
+  if (!x || !v || !v.videoWidth) return;
+  const a = S.cam.target || nextAngle(x);
+  if (!a) { S.cam.stage = 'finish'; saveCamState(); renderCam(); return; }
+  const key = x.id + '_' + a;
+  // 1) instant feedback, like the phone's camera
+  const f = document.getElementById('vfFlash'); if (f) { f.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on'))); }
+  if (navigator.vibrate) navigator.vibrate(25);
+  S.preparing[key] = true; delete S.thumbs[key]; delete S.issues[key];
+  S.cam.target = null;
+  // 2) freeze this exact frame without blocking the next tap
+  // the flash and next-angle update paint first; the frame is copied right after (about one frame later)
+  const grab = new Promise(res => requestAnimationFrame(() => setTimeout(() => res(window.createImageBitmap ? createImageBitmap(v) : v), 0)));
+  renderCam();
+  if (takenSet(x).size >= MAX_ANGLES) setTimeout(() => { if (S.cam && S.cam.id === x.id && S.cam.stage !== 'finish' && !S.cam.target) { S.cam.stage = 'finish'; saveCamState(); renderCam(); } }, 650);
+  grab.then(src => {
+    const sw = src.videoWidth || src.width, sh = src.videoHeight || src.height, k = Math.min(1, 1600 / Math.max(sw, sh));
+    const c = document.createElement('canvas'); c.width = Math.round(sw * k); c.height = Math.round(sh * k);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    if (src.close) src.close();
+    const t = document.createElement('canvas'), tk = 160 / Math.max(c.width, c.height);
+    t.width = Math.round(c.width * tk); t.height = Math.round(c.height * tk);
+    t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
+    S.thumbs[key] = t.toDataURL('image/jpeg', 0.7); renderCam();
+    setTimeout(() => {                       // quality check + save, after the thumbnail shows
+      const iss = photoIssues(c);
+      if (iss.length) { S.issues[key] = iss.join(' and '); toast('⚠ Photo ' + a + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); renderCam(); }
+      c.toBlob(b => {
+        const r = new FileReader();
+        r.onload = () => { delete S.preparing[key]; acceptShot({ id: x.id, angle: a, b64: String(r.result).split(',')[1], at: Date.now() }, S.thumbs[key]); };
+        r.onerror = () => { delete S.preparing[key]; delete S.thumbs[key]; toast('Photo ' + a + ' could not be saved. Take it again.', 4000, true); renderCam(); };
+        r.readAsDataURL(b);
+      }, 'image/jpeg', 0.85);
+    }, 30);
+  }).catch(() => { delete S.preparing[key]; toast('Photo ' + a + ' didn\'t take. Tap again.', 2500, true); renderCam(); });
+}
+function camShootHtml(x) {          // used only when the in-app camera isn't available
+  const names = angleNames(), n = takenSet(x).size, target = S.cam.target || nextAngle(x);
   const tiles = names.map((nm, i) => {
-    const a = i + 1, st = angleState(x, a), thumb = S.thumbs[x.id + '_' + a];
-    const badge = st === 'prep' || st === 'up' ? SPIN : st === 'q' ? '📴' : st === 'done' ? '✓' : '';
-    return '<button class="tile' + (a > MIN_ANGLES ? ' opt' : '') + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '">' +
+    const a = i + 1, st = angleState(x, a), thumb = S.thumbs[x.id + '_' + a], k = x.id + '_' + a;
+    const badge = S.issues[k] ? '⚠️' : st === 'prep' || st === 'up' ? SPIN : st === 'q' ? '📴' : st === 'done' ? '✓' : '';
+    return '<button class="tile' + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '">' +
       (thumb ? '<img src="' + thumb + '" alt="">' : st === 'done' ? '✓' : a) + (badge ? '<span class="badge">' + badge + '</span>' : '') + '</button>';
   }).join('');
-  return '<div class="cam-head"><div style="min-width:0"><div class="eyebrow">' + esc(title) + '</div><div class="cam-id">' + esc(x.id) + '</div></div>' +
+  return '<div class="cam-head"><div style="min-width:0"><div class="eyebrow">' + (target ? 'Photo ' + target + ' of ' + MAX_ANGLES : 'All ' + MAX_ANGLES + ' photos taken') + '</div><div class="cam-id">' + esc(x.id) + '</div></div>' +
       '<span class="sp"></span><button class="iconbtn" data-action="camClose" aria-label="Close" title="Close">✕</button></div>' +
-    '<div class="dots">' + dots + '<span>3 required · 2 optional</span></div>' + main +
+    (target ? '<div class="step"><div class="step-n">' + target + '</div><div style="min-width:0"><b>' + esc(names[target - 1]) + '</b><div class="small muted">' + esc(ANGLE_HINTS[target - 1] || '') + '</div></div></div>' +
+      '<button class="btn bigcam" data-action="camShot" data-v="' + target + '">📷 Take photo ' + target + ' of ' + MAX_ANGLES + '</button>' : '') +
+    (n >= MIN_ANGLES ? '<button class="btn bigcam' + (target ? ' ghost' : '') + '" data-action="camFinish">✓ Done</button>' : '') +
     '<div class="strip">' + tiles + '</div><div class="strip-cap">' + names.map(nm => '<span>' + esc(nm) + '</span>').join('') + '</div>' +
-    '<p class="small muted" style="margin:10px 0 0">Tap any photo above to retake it. ' + photoStatusLine(x) + '</p>';
+    '<p class="small muted" style="margin:10px 0 0">Tap a photo to retake it. ' + photoStatusLine(x) + '</p>';
 }
-function camFinishHtml(x) {
-  const n = takenSet(x).size, me = S.user;
-  const lastSite = (samplesOf(me).filter(s => s.id !== x.id && s.site).sort((a, b) => labelNum(b.id) - labelNum(a.id))[0] || {}).site;
-  const at = 'data-change="sample" data-id="' + esc(x.id) + '"';
-  const chips = S.data.lists.classes.map(c => '<button class="chip' + (x.disease === c ? ' on' : '') + '" data-action="camDisease" data-v="' + esc(c) + '">' + esc(c) + '</button>').join('');
-  return '<div class="cam-head"><div><div class="eyebrow">Last step · ' + n + ' photo' + (n > 1 ? 's' : '') + ' taken</div><h2 style="margin:4px 0 0">✂️ Cut, bag and label it</h2></div>' +
+function camFinishHtml(x) {          // instructions only: nothing to tick or type
+  const me = S.user;
+  return '<div class="cam-head"><div><div class="eyebrow">✓ ' + MAX_ANGLES + ' photos saved</div><h2 style="margin:4px 0 0">✂️ Cut, bag and label it</h2></div>' +
       '<span class="sp"></span><button class="iconbtn" data-action="camDone" aria-label="Close" title="Close">✕</button></div>' +
     '<p class="small" style="margin:12px 0 0">Write this on masking tape:</p>' +
     '<div style="text-align:center"><span class="tape">' + esc(x.id) + '</span></div>' +
     '<ol class="fsteps">' +
       '<li><span class="n">1</span><span>Cut the leaf with clean shears.</span></li>' +
-      '<li><input type="checkbox" ' + (x.cotton ? 'checked' : '') + ' ' + at + ' data-field="cotton" aria-label="Wrapped in cotton"><span>Wrap the cut end in <b>damp cotton</b>.</span></li>' +
-      '<li><input type="checkbox" ' + (x.bagged ? 'checked' : '') + ' ' + at + ' data-field="bagged" aria-label="Bagged and labeled"><span>Seal it in a plastic bag and stick the <b>' + esc(x.id) + '</b> label on the bag.</span></li>' +
+      '<li><span class="n">2</span><span>Wrap the cut end in <b>damp cotton</b>.</span></li>' +
+      '<li><span class="n">3</span><span>Put it in a <b>plastic bag</b>.</span></li>' +
+      '<li><span class="n">4</span><span>Stick the <b>' + esc(x.id) + '</b> tape on the bag.</span></li>' +
     '</ol>' +
-    '<div style="margin-top:14px"><div class="eyebrow">Suspected disease (optional)</div><div class="qd">' + chips + '</div></div>' +
-    '<div style="margin-top:12px"><div class="eyebrow">Site (optional)</div><input type="text" style="width:100%;margin-top:6px" value="' + esc(x.site) + '" placeholder="Farm / barangay" ' + at + ' data-field="site">' +
-      (lastSite && !x.site ? '<div class="qd"><button class="chip" data-action="camSite" data-v="' + esc(lastSite) + '">Same as last: ' + esc(lastSite) + '</button></div>' : '') + '</div>' +
-    '<button class="btn bigcam" data-action="camNextSample">＋ Next sample (' + esc(nextLabel(me)) + ')</button>' +
-    '<button class="btn bigcam ghost" data-action="camDone">Done for now</button>' +
-    '<p class="small muted" style="margin:10px 0 0">' + photoStatusLine(x) + '</p>';
+    '<button class="btn bigcam" data-action="camNextSample">＋ Next leaf (' + esc(nextLabel(me)) + ')</button>' +
+    '<button class="btn bigcam ghost" data-action="camDone">Done for now</button>';
+}
+/** leaving the label screen = the leaf was wrapped and bagged; fill that in for them */
+function markPacked(id) {
+  const x = sampleById(id);
+  if (!x) return;
+  if (!x.cotton) save('updateSample', [id, 'cotton', true], () => { x.cotton = true; });
+  if (!x.bagged) save('updateSample', [id, 'bagged', true], () => { x.bagged = true; });
 }
 function takeShot(angle) {
   if (!S.cam || !angle) return;
+  S.cam.target = null;
   S.cam.angle = angle;
   saveCamState(true);
   const inp = document.getElementById('camInput');
@@ -1545,14 +1847,13 @@ async function acceptShot(job, thumb) {
   } catch (e) {
     if (!navigator.onLine) {                          // can't keep it and can't send it: say so loudly
       toast('⚠ Phone storage is full. ' + fname(job.id, job.angle) + ' was NOT saved. Free up space, then retake it.', 7000, true);
-      renderCam(); return;
+      delete S.thumbs[job.id + '_' + job.angle]; renderCam(); return;
     }
     toast('Phone storage is full. Uploading ' + fname(job.id, job.angle) + ' now, so keep the app open.', 4000, true);
   }
   S.thumbs[job.id + '_' + job.angle] = thumb;
   if (navigator.vibrate) navigator.vibrate(40);       // little buzz = photo kept
   queueUpload(job);
-  if (S.cam && job.angle > MIN_ANGLES) S.cam.more = false;
   saveCamState(false);
   renderCam();
 }
@@ -1566,8 +1867,9 @@ document.getElementById('camInput').addEventListener('change', async e => {
     const p = await shrinkPhoto(file);
     delete S.preparing[key];
     const job = { id, angle, b64: p.full.split(',')[1], at: Date.now() };
-    if (p.issues.length) { S.cam.check = { job, thumb: p.thumb, issues: p.issues }; renderCam(); return; }   // ask: retake or keep
+    if (p.issues.length) { S.issues[key] = p.issues.join(' and '); toast('⚠ Photo ' + angle + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); } else delete S.issues[key];
     await acceptShot(job, p.thumb);
+    if (S.cam && S.cam.id === id && takenSet(sampleById(id)).size >= MAX_ANGLES && !S.cam.target) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }
   } catch (err) { delete S.preparing[key]; renderCam(); toast(err.message || String(err), 4000, true); }
 });
 
@@ -1666,10 +1968,126 @@ const ICON = {
   sheet: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
   mail: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
 };
+/* ---------- More: training runs, consultations, final defense, links ---------- */
+function vMore() {
+  const tabs = [['training', 'Training runs'], ['consults', 'Consultations'], ['defense', 'Final defense'], ['links', 'Links']];
+  const openC = recs('consults').filter(c => c.status !== 'Done').length;
+  const chips = tabs.map(([k, l]) => '<button class="chip ' + (S.more === k ? 'on' : '') + '" data-action="more" data-v="' + k + '">' + l +
+    (k === 'consults' && openC ? ' · ' + openC : '') + '</button>').join('');
+  const body = { training: vTraining, consults: vConsults, defense: vDefense, links: vLinks }[S.more] || vTraining;
+  return '<div class="row filters"><div class="chips">' + chips + '</div></div>' + body();
+}
+const recField = (kind, r, f, label, type, extra) => {
+  const at = 'data-change="rec" data-kind="' + kind + '" data-row="' + r.row + '" data-field="' + f + '"' + (r.tempId ? ' disabled' : '');
+  const v = r[f] == null ? '' : r[f];
+  const input = type === 'area' ? '<textarea ' + at + '>' + esc(v) + '</textarea>'
+    : '<input type="' + (type || 'text') + '"' + (type === 'number' ? ' step="any" inputmode="decimal"' : '') + ' value="' + esc(v) + '" ' + at + (extra || '') + '>';
+  return '<label' + (type === 'area' ? ' class="wide"' : '') + '>' + label + input + '</label>';
+};
+const recTools = (kind, r) => r.tempId ? '<span class="qchip">⏳ waiting to sync</span>' :
+  '<button class="morebtn" data-action="toggleCard" data-v="' + kind + '_' + r.row + '">' + (S.open[kind + '_' + r.row] ? 'Less ▴' : 'Edit ▾') + '</button>';
+const recAdd = (kind, label, fields) => '<div class="addwrap open">' +
+  '<button class="btn ' + (S.addRec === kind ? 'ghost ' : '') + '" style="width:100%;margin-bottom:12px" data-action="addRec" data-v="' + kind + '">' + (S.addRec === kind ? '✕ Cancel' : '＋ ' + label) + '</button>' +
+  (S.addRec === kind ? '<form class="card recform" data-kind="' + kind + '">' + fields + '<button class="btn wide" type="submit">＋ ' + label + '</button></form>' : '') + '</div>';
+
+const MODELS = ['Baseline EfficientNetB0', 'Enhanced EfficientNetB0'];
+const METRICS = [['accuracy', 'Accuracy', '%'], ['precision', 'Precision', '%'], ['recall', 'Recall', '%'], ['f1', 'F1', '%'], ['size', 'Size', ' MB'], ['speed', 'Speed', ' ms']];
+function bestRuns() {
+  const by = {};
+  recs('training').forEach(r => {
+    const k = r.model || 'Other', score = (+r.f1 || 0) * 1000 + (+r.accuracy || 0);
+    if (!by[k] || score > by[k].score) by[k] = { r, score };
+  });
+  return Object.keys(by).sort((a, b) => (MODELS.indexOf(a) + 1 || 99) - (MODELS.indexOf(b) + 1 || 99)).map(k => by[k].r);
+}
+function compareTSV() {
+  const head = ['Model', 'Run', 'Accuracy (%)', 'Precision (%)', 'Recall (%)', 'F1 (%)', 'Size (MB)', 'Speed (ms/image)'];
+  return [head].concat(bestRuns().map(r => [r.model, r.run, r.accuracy, r.precision, r.recall, r.f1, r.size, r.speed].map(v => v === '' || v == null ? '—' : v))).map(x => x.join('\t')).join('\n');
+}
+function vTraining() {
+  const runs = recs('training').slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.row - a.row);
+  const best = bestRuns();
+  const fmtM = v => v === '' || v == null ? '—' : v;
+  const cmp = best.length ? '<div class="card" style="margin-bottom:14px;padding:14px 16px"><h3 style="margin:0">Best run per model</h3>' +
+    '<div class="tscroll"><table class="mtable"><thead><tr><th>Model</th><th>Run</th>' + METRICS.map(m => '<th>' + m[1] + (m[2].trim() === '%' ? ' %' : m[2]) + '</th>').join('') + '</tr></thead><tbody>' +
+    best.map(r => '<tr><td><b>' + esc(r.model || '—') + '</b></td><td>' + esc(r.run || '') + '</td>' + METRICS.map(m => '<td>' + esc(fmtM(r[m[0]])) + '</td>').join('') + '</tr>').join('') +
+    '</tbody></table></div><div class="row" style="margin-top:10px"><button class="btn" data-action="copyCompare">📋 Copy table for Chapter 4</button><span class="small muted">Paste into Google Docs. It becomes a table.</span></div></div>' : '';
+  const today = localDay();
+  const form = recAdd('training', 'Add training run',
+    '<label class="fl">Date<input type="date" name="date" value="' + today + '"></label>' +
+    '<label class="fl wide">Model<input type="text" name="model" list="modelList" placeholder="Baseline or Enhanced EfficientNetB0" required></label>' +
+    '<datalist id="modelList">' + MODELS.map(m => '<option value="' + esc(m) + '">').join('') + '</datalist>' +
+    '<label class="fl">Run name<input type="text" name="run" placeholder="e.g. cbam-2"></label>' +
+    '<label class="fl">Dataset / split<input type="text" name="dataset" placeholder="e.g. 70/15/15"></label>' +
+    '<label class="fl">Epochs<input type="number" name="epochs" min="0" inputmode="numeric"></label>' +
+    METRICS.map(m => '<label class="fl">' + m[1] + ' (' + m[2].trim() + ')<input type="number" step="any" min="0" name="' + m[0] + '" inputmode="decimal"></label>').join('') +
+    '<label class="fl wide">Notes<input type="text" name="notes" placeholder="What changed in this run?"></label>');
+  const cards = runs.map(r => {
+    const open = S.open['training_' + r.row];
+    return '<div class="sc" style="--c:var(--brand)"><div><b>' + esc(r.model || 'Model') + '</b><div class="small muted">' + esc([r.run, r.date ? fmt(r.date) : '', r.dataset].filter(Boolean).join(' · ')) + '</div></div>' +
+      '<div class="metrics">' + METRICS.filter(m => r[m[0]] !== '' && r[m[0]] != null).map(m => '<span class="tagp">' + m[1] + ' ' + esc(r[m[0]]) + m[2] + '</span>').join('') +
+        (r.epochs ? '<span class="tagp">' + esc(r.epochs) + ' epochs</span>' : '') + '</div>' +
+      (r.notes && !open ? '<div class="small">' + esc(r.notes) + '</div>' : '') +
+      (open ? '<div class="sc-grid">' + recField('training', r, 'model', 'Model', 'text', ' list="modelList"') + recField('training', r, 'run', 'Run name') +
+        recField('training', r, 'date', 'Date', 'date') + recField('training', r, 'dataset', 'Dataset / split') + recField('training', r, 'epochs', 'Epochs', 'number') +
+        METRICS.map(m => recField('training', r, m[0], m[1] + ' (' + m[2].trim() + ')', 'number')).join('') + recField('training', r, 'notes', 'Notes', 'area') + '</div>' : '') +
+      '<div class="sc-foot"><span class="small muted">' + (r.by ? 'Added by ' + esc(r.by) : '') + '</span><span class="sp"></span>' +
+        (open ? '<button class="iconbtn" data-action="recDel" data-kind="training" data-row="' + r.row + '" aria-label="Delete run" title="Delete">🗑</button>' : '') + recTools('training', r) + '</div></div>';
+  }).join('');
+  return '<h2 style="margin:0 0 12px">Training runs</h2>' + cmp + form +
+    '<div class="scards">' + (cards || '<div class="empty" style="grid-column:1/-1">No runs yet. Add each training run here, baseline and enhanced, so Chapter 4 can compare them.</div>') + '</div>';
+}
+function vConsults() {
+  const list = recs('consults').slice().sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.row - a.row);
+  const people = [S.data.panel.adviser].concat(S.data.panel.members);
+  const form = recAdd('consults', 'Add consultation',
+    '<label class="fl">Date<input type="date" name="date" value="' + localDay() + '"></label>' +
+    '<label class="fl">With<input type="text" name="with" list="peopleList" value="' + esc(S.data.panel.adviser) + '"></label>' +
+    '<datalist id="peopleList">' + people.map(x => '<option value="' + esc(x) + '">').join('') + '</datalist>' +
+    '<label class="fl wide">Topic<input type="text" name="topic" placeholder="e.g. Objectives, Chapter 3" required></label>' +
+    '<label class="fl wide">Feedback<textarea name="feedback" placeholder="What did they say?"></textarea></label>' +
+    '<label class="fl wide">What we did<textarea name="action" placeholder="Fill in later if not done yet"></textarea></label>');
+  const cards = list.map(c => {
+    const open = S.open['consults_' + c.row], done = c.status === 'Done';
+    return '<div class="sc' + (done ? ' sub' : '') + '" style="--c:var(--leaf)"><div class="sc-top"><b>' + esc(c.with || '—') + '</b><span class="small muted">' + esc(c.date ? fmt(c.date) : '') + '</span><span class="sp"></span>' +
+        '<button class="tagp ' + (done ? 'ok' : 'warn') + '" style="border:0;cursor:pointer" data-action="recSet" data-kind="consults" data-row="' + c.row + '" data-field="status" data-v="' + (done ? 'Open' : 'Done') + '"' + (c.tempId ? ' disabled' : '') + '>' + (done ? '✓ Done' : 'Open') + '</button></div>' +
+      '<div class="sc-sum" style="cursor:default"><div class="ttl">' + esc(c.topic || 'Consultation') + '</div>' +
+        (c.feedback && !open ? '<div class="small">' + esc(c.feedback) + '</div>' : '') + (c.action && !open ? '<div class="small muted">What we did: ' + esc(c.action) + '</div>' : '') + '</div>' +
+      (open ? '<div class="sc-grid">' + recField('consults', c, 'with', 'With', 'text', ' list="peopleList"') + recField('consults', c, 'date', 'Date', 'date') +
+        recField('consults', c, 'topic', 'Topic') + '<span></span>' + recField('consults', c, 'feedback', 'Feedback', 'area') + recField('consults', c, 'action', 'What we did', 'area') + '</div>' : '') +
+      '<div class="sc-foot"><label class="ck"><input type="checkbox" data-change="rec" data-kind="consults" data-row="' + c.row + '" data-field="signed"' + (c.signed ? ' checked' : '') + (c.tempId ? ' disabled' : '') + '>Signed</label>' +
+        '<span class="sp"></span>' + (open ? '<button class="iconbtn" data-action="recDel" data-kind="consults" data-row="' + c.row + '" aria-label="Delete" title="Delete">🗑</button>' : '') + recTools('consults', c) + '</div></div>';
+  }).join('');
+  const nOpen = list.filter(c => c.status !== 'Done').length;
+  return '<div class="row" style="margin-bottom:12px"><h2 style="margin:0">Consultations</h2><div class="sp"></div><b>' + list.length + ' logged · ' + nOpen + ' open</b></div>' + form +
+    '<div class="scards">' + (cards || '<div class="empty" style="grid-column:1/-1">No consultations yet. Log each meeting with your adviser or panel here.</div>') + '</div>';
+}
+function vDefense() {
+  const items = recs('defense'), done = items.filter(x => x.done).length, dd = settings().defenseDate, n = daysUntil(dd);
+  const owners = TEAM.map(t => t.tab).concat(['Team']);
+  const rows = items.map(x => {
+    const open = S.open['defense_' + x.row];
+    return '<div class="drow' + (x.done ? ' done' : '') + '"><input type="checkbox" data-change="rec" data-kind="defense" data-row="' + x.row + '" data-field="done"' + (x.done ? ' checked' : '') + (x.tempId ? ' disabled' : '') + ' aria-label="Done">' +
+      '<div style="flex:1;min-width:0"><div class="ditem">' + esc(x.item) + '</div><div class="small muted">' + esc(x.owner || '') + (x.done && x.doneBy ? ' · <span class="doneby">✓ ' + esc(x.doneBy) + '</span>' : '') + (x.notes ? ' · ' + esc(x.notes) : '') + '</div>' +
+      (open ? '<div class="sc-grid" style="margin-top:8px">' + recField('defense', x, 'item', 'Item') + '<label>Owner<select data-change="rec" data-kind="defense" data-row="' + x.row + '" data-field="owner">' +
+        owners.map(o => '<option' + (o === x.owner ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>' + recField('defense', x, 'notes', 'Notes', 'area') +
+        '</div><div class="row" style="margin-top:8px"><button class="btn ghost" style="color:var(--red)" data-action="recDel" data-kind="defense" data-row="' + x.row + '">🗑 Delete</button></div>' : '') + '</div>' +
+      recTools('defense', x) + '</div>';
+  }).join('');
+  const form = recAdd('defense', 'Add item', '<label class="fl wide">Item<input type="text" name="item" required placeholder="e.g. Print 4 copies of the manuscript"></label>' +
+    '<label class="fl">Owner<select name="owner">' + owners.map(o => '<option' + (o === S.user ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>');
+  return '<div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:14px">' +
+      '<div class="stat hot"><div class="k">Final defense</div><div class="v" style="font-size:22px">' + (dd ? (n > 0 ? n + ' days left' : n === 0 ? 'Today' : 'Done 🎓') : 'Set the date') + '</div>' +
+        '<input type="date" data-change="setting" data-field="defenseDate" value="' + esc(dd || '') + '" aria-label="Final defense date"></div>' +
+      '<div class="stat"><div class="k">Checklist</div><div class="v">' + done + '<span class="muted" style="font-size:16px"> / ' + items.length + '</span></div>' +
+        '<div class="bar" style="margin:8px 0 0"><i style="width:' + pct(done, items.length) + '%"></i></div></div></div>' +
+    form + (rows || '<div class="empty">No checklist items yet.</div>');
+}
+
 function vLinks() {
   const d = S.data;
   const card = (url, title, sub, icon) => '<a class="lnk" href="' + esc(url) + '" target="_blank" rel="noopener"><div class="ic">' + ICON[icon] + '</div><div style="min-width:0"><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div></a>';
-  return '<h2>Links</h2><div class="links">' +
+  return '<div class="links">' +
     card(d.sheetUrl, 'Tracker Google Sheet', 'Same data as this website', 'sheet') +
     (d.photoFolderUrl ? card(d.photoFolderUrl, 'DA RCPC Sample Photos', 'Every sample photo, named by label', 'folder') : '') +
     (d.receiptFolderUrl ? card(d.receiptFolderUrl, 'Expense receipts', 'Receipt photos from the Expenses page', 'folder') : '') +
@@ -1714,6 +2132,47 @@ document.addEventListener('click', e => {
   else if (a === 'toggleAddExp') { S.addExpOpen = !S.addExpOpen; render(); if (S.addExpOpen) { const i = document.querySelector('#addSupply [name=item]'); if (i) i.focus(); } }
   else if (a === 'sampleFilter') { S.sampleFilter = v; render(); }
   else if (a === 'toggleCard') { S.open[v] = !S.open[v]; render(); }
+  else if (a === 'more') { S.more = v; S.addRec = null; render(); window.scrollTo(0, 0); }
+  else if (a === 'addRec') { S.addRec = S.addRec === v ? null : v; render(); if (S.addRec) { const i = document.querySelector('form.recform input:not([type=date]),form.recform textarea'); if (i) i.focus(); } }
+  else if (a === 'recDel') {
+    const kind = el.dataset.kind, row = +el.dataset.row, r = recs(kind).find(x => x.row === row);
+    if (!r || !confirm('Delete "' + (r.item || r.topic || [r.model, r.run].filter(Boolean).join(' · ') || 'this') + '"?')) return;
+    save('deleteRecord', [kind, row], () => { S.data.records[kind] = recs(kind).filter(x => x !== r); });
+  }
+  else if (a === 'recSet') {
+    const kind = el.dataset.kind, row = +el.dataset.row, field = el.dataset.field;
+    save('updateRecord', [kind, row, field, v], () => { const r = recs(kind).find(x => x.row === row); if (r) r[field] = v; });
+  }
+  else if (a === 'copyCompare') {
+    const t = compareTSV();
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied ✓ Paste it into the doc', 2000), () => toast('Couldn\'t copy here', 2500, true));
+  }
+  else if (a === 'prefarm') {
+    const { st } = prefarmState(), kind = (PREFARM.find(x => x[0] === v) || [])[2];
+    if (kind === 'auto') { toast(v === 'supplies' ? 'Mark them Paid on the Expenses page' : 'Open the app once with signal', 2200); return; }
+    st.done[v] = !st.done[v]; store.set('bt:prefarm', JSON.stringify(st)); render();
+  }
+  else if (a === 'openSheet') {
+    const sel = {}; sheetCandidates().forEach(x => { if ((x.angles || []).length >= MIN_ANGLES) sel[x.id] = true; });
+    openOv({ type: 'sheet', sel, date: S.data.rcpcDate && daysUntil(S.data.rcpcDate) >= 0 ? S.data.rcpcDate : localDay() });
+  }
+  else if (a === 'sheetPrint') { window.print(); }
+  else if (a === 'sheetSubmit') {
+    const ids = Object.keys(S.ov.sel), date = S.ov.date || localDay();
+    if (!ids.length || !confirm('Mark ' + ids.length + ' sample(s) as submitted to DA RCPC on ' + fmt(date) + '?')) return;
+    save('submitSamples', [ids, date], () => { ids.forEach(id => { const x = sampleById(id); if (x) x.submitted = date; }); });
+    closeOv();
+  }
+  else if (a === 'openResults') { const ids = resultsQueue().map(x => x.id); if (ids.length) openOv({ type: 'results', ids, i: 0, saved: 0 }); }
+  else if (a === 'resultPick') {
+    const id = S.ov.ids[S.ov.i];
+    save('updateSample', [id, 'validated', v], () => { sampleById(id).validated = v; });
+    if (navigator.vibrate) navigator.vibrate(30);
+    S.ov.i++; S.ov.saved++; renderOv();
+  }
+  else if (a === 'resultSkip') { S.ov.i++; renderOv(); }
+  else if (a === 'ovClose') { closeOv(); }
+  else if (a === 'gallery') { S.gallery = v === '1'; if (S.gallery) { if (S.photoIndex && S.photoIndex.__err) S.photoIndex = null; loadPhotoIndex(); } render(); }
   else if (a === 'newSample') { newSample(); }
   else if (a === 'cam') { openCam(el.dataset.id); }
   else if (a === 'camClose') {
@@ -1721,10 +2180,13 @@ document.addEventListener('click', e => {
     if (n >= MIN_ANGLES) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }   // never skip the labeling reminder
     else if (confirm('Only ' + n + ' of ' + MIN_ANGLES + ' required photos for ' + x.id + '. Close anyway?\nYou can finish later: tap 📷 on ' + x.id + '.')) closeCam();
   }
-  else if (a === 'camShot') { takeShot(+v); }
-  else if (a === 'camMore') { S.cam.more = true; renderCam(); }
-  else if (a === 'camRetake') { const ang = S.cam.check.job.angle; S.cam.check = null; renderCam(); takeShot(ang); }
-  else if (a === 'camKeep') { const k = S.cam.check; S.cam.check = null; acceptShot(k.job, k.thumb); }
+  else if (a === 'camShot') {
+    const ang = +v;
+    if (S.cam.stage === 'finish') { S.cam.stage = 'shoot'; S.cam.target = ang; saveCamState(); renderCam(); if (S.cam.live === false || !liveCamOK()) takeShot(ang); }
+    else if (S.cam.live !== false && liveCamOK()) { S.cam.target = ang; renderCam(); }     // next shutter tap retakes this one
+    else { S.cam.target = null; takeShot(ang); }
+  }
+  else if (a === 'snap') { snap(); }
   else if (a === 'copyPaper') {
     const t = document.getElementById('paperText').textContent;
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Copied ✓', 1500), () => toast('Select the text and copy it', 2500));
@@ -1762,8 +2224,8 @@ document.addEventListener('click', e => {
     }).then(() => toast('Moved ' + items.length + ' task(s) to ' + fmt(date), 2200));
   }
   else if (a === 'camFinish') { S.cam.stage = 'finish'; saveCamState(); renderCam(); }
-  else if (a === 'camDone') { closeCam(); }
-  else if (a === 'camNextSample') { closeCam(); newSample(); }
+  else if (a === 'camDone') { if (S.cam && S.cam.stage === 'finish') markPacked(S.cam.id); closeCam(); }
+  else if (a === 'camNextSample') { markPacked(S.cam.id); S.cam = null; store.del(CAM_STORE); newSample(); }   // camera stays on: next leaf opens instantly
   else if (a === 'camDisease' || a === 'camSite') {
     const id = S.cam.id, field = a === 'camDisease' ? 'disease' : 'site';
     save('updateSample', [id, field, v], () => { sampleById(id)[field] = v; });
@@ -1813,10 +2275,30 @@ document.addEventListener('change', e => {
     save('updateSupply', [row, field, val], () => { S.data.supplies.find(s => s.row === row)[field] = val; });
   } else if (k === 'rcpc') {
     save('setRcpcDate', [val], () => { S.data.rcpcDate = val; });
+  } else if (k === 'setting') {
+    if (el.type === 'number' && val !== '') val = Math.max(0, Math.round(val));
+    save('setSetting', [field, val], () => { S.data.settings = Object.assign({}, settings(), { [field]: val }); });
+  } else if (k === 'rec') {
+    const kind = el.dataset.kind;
+    save('updateRecord', [kind, row, field, val], () => {
+      const r = recs(kind).find(x => x.row === row);
+      if (!r) return;
+      r[field] = val;
+      if (field === 'done') r.doneBy = val ? S.user : '';
+    });
+  } else if (k === 'sheetSel') {
+    if (el.checked) S.ov.sel[el.dataset.id] = true; else delete S.ov.sel[el.dataset.id];
+    renderOv();
+  } else if (k === 'sheetDate') {
+    S.ov.date = val; renderOv();
   }
 });
 
-document.addEventListener('toggle', e => { if (e.target.matches && e.target.matches('details[data-action=paperToggle]')) S.paperOpen = e.target.open; }, true);
+document.addEventListener('toggle', e => {
+  if (!e.target.matches) return;
+  if (e.target.matches('details[data-action=paperToggle]')) S.paperOpen = e.target.open;
+  if (e.target.matches('details[data-action=prefarmToggle]')) S.prefarmOpen = e.target.open;
+}, true);
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[role=button][data-action]')) { e.preventDefault(); e.target.click(); }
 });
@@ -1843,6 +2325,21 @@ document.addEventListener('submit', e => {
       if (!task) return;
       member(tab).tasks.push(task); S.addTaskOpen = false; persist(); render();
       toast('Task added to ' + tab, 1600);
+    });
+  } else if (f.classList.contains('recform')) {
+    const kind = f.getAttribute('data-kind'), x = {};      // not f.dataset: a field named "dataset" would shadow it
+    new FormData(f).forEach((val, key) => { x[key] = typeof val === 'string' ? val.trim() : val; });
+    if (kind === 'consults') { x.status = 'Open'; x.signed = false; }
+    if (kind === 'defense') x.done = false;
+    S.data.records = S.data.records || {}; S.data.records[kind] = recs(kind);
+    save('addRecord', [kind, x], null, () => {
+      const tempId = 'tmp' + Date.now();
+      S.data.records[kind].push(Object.assign({ row: 0, tempId, by: S.user }, x));
+      return { tempId, kind };
+    }).then(res => {
+      if (!res) { S.addRec = null; render(); return; }
+      S.data.records[kind].push(res); S.addRec = null; persist(); render();
+      toast('Added ✓', 1200);
     });
   } else if (f.id === 'addSupply') {
     const x = { item: f.item.value.trim(), purpose: '', qty: f.qty.value === '' ? '' : +f.qty.value,

@@ -14,7 +14,7 @@
  *  3. After changing this code: Deploy → Manage deployments → pencil →
  *     Version: New version → Deploy. The URL stays the same.
  *
- *  Members log in by picking their name in the app (no password).
+ *  Members sign in with their team email + password (see CFG.accounts).
  *  Every change is written to the "Activity" tab with who made it.
  * ============================================================
  */
@@ -55,18 +55,20 @@ function doPost(e) {
       uploadPhoto: uploadPhoto, createSample: createSample, exportValidatedDataset: exportValidatedDataset,
       updateRevisions: updateRevisions, rescheduleTasks: rescheduleTasks,
       deleteTask: deleteTask, addSupply: addSupply, deleteSupply: deleteSupply, uploadReceipt: uploadReceipt,
+      addRecord: addRecord, updateRecord: updateRecord, deleteRecord: deleteRecord, setSetting: setSetting,
+      submitSamples: submitSamples, listPhotos: listPhotos,
     };
     const fn = actions[req.fn];
     if (!fn) throw new Error('Unknown action: ' + req.fn);
     const args = Array.isArray(req.args) ? req.args : [];
-    if (req.fn !== 'getData') {
+    if (req.fn !== 'getData' && req.fn !== 'listPhotos') {
       let what = req.fn;
       try { what = describe_(req.fn, args); } catch (err) {}   // described before the change (so deletes keep their names)
       const result = fn.apply(null, args);   // writes return only what changed (fast)
       try { logActivity_(user, what); } catch (err) { /* never block a save on the log */ }
       return json_({ ok: true, data: result });
     }
-    return json_({ ok: true, data: getData() });
+    return json_({ ok: true, data: fn.apply(null, args) });
   } catch (err) {
     return json_({ ok: false, error: String((err && err.message) || err) });
   }
@@ -127,6 +129,14 @@ function describe_(fn, a) {
     return 'took photo ' + id + '_' + ('0' + n).slice(-2) + '.jpg (' + (CFG.photoAngles[n - 1] || 'angle ' + n) + ')';
   }
   if (fn === 'setRcpcDate') return 'set the DA RCPC submission date → ' + show(a[0]);
+  if (fn === 'submitSamples') return 'marked ' + (a[0] || []).length + ' sample(s) submitted to DA RCPC on ' + show(a[1]) + ': ' + short_((a[0] || []).join(', '), 80);
+  if (fn === 'setSetting') return 'set ' + ({ leafGoal: 'the leaf goal', classGoal: 'the per-class goal', defenseDate: 'the final defense date' }[a[0]] || a[0]) + ' → ' + show(a[1]);
+  if (fn === 'addRecord') return 'added to ' + RECORDS[a[0]].tab + ': "' + short_(recordLabel_(a[0], a[1]), 50) + '"';
+  if (fn === 'updateRecord' || fn === 'deleteRecord') {
+    const R = RECORDS[a[0]], vals = ss.getSheetByName(R.tab).getRange(Number(a[1]), 1, 1, R.fields.length).getValues()[0];
+    const obj = {}; R.fields.forEach((f, i) => { obj[f[0]] = vals[i]; });
+    return (fn === 'deleteRecord' ? 'deleted from ' : 'updated in ') + R.tab + ' "' + short_(recordLabel_(a[0], obj), 50) + '"' + (fn === 'updateRecord' ? ': ' + a[2] + ' → ' + show(a[3]) : '');
+  }
   return fn;
 }
 
@@ -273,6 +283,8 @@ function getData() {
     photoAngles: CFG.photoAngles,
     links: Object.keys(LINKS).map(k => LINKS[k]),
     lists: { expenseCategories: CFG.expenseCategories, statuses: CFG.statuses, priorities: CFG.priorities, categories: CFG.categories, classes, revStatuses: CFG.revStatuses },
+    records: readRecords_(tz),
+    settings: readSettings_(),
     panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde', 'Mr. Hernando', 'Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
   };
 }
@@ -740,4 +752,121 @@ function resetMemberPassword() {
   props_().deleteProperty('PW_' + email);
   revokeTokens_(email);
   ui.alert('Done. ' + email + ' is signed out everywhere and will set a new password with an emailed code.');
+}
+
+
+/* ============================================================
+ *  Records (Training Runs, Consultations, Final Defense), goals, RCPC hand-over, photo gallery
+ * ============================================================ */
+function recordSheet_(kind) {
+  const R = RECORDS[kind];
+  if (!R) throw new Error('Unknown list: ' + kind);
+  return { R: R, sh: sheet_(R.tab) };
+}
+function recordLabel_(kind, o) {
+  o = o || {};
+  if (kind === 'training') return [o.model, o.run].filter(String).join(' · ') || 'run';
+  if (kind === 'consults') return [o.with, o.topic].filter(String).join(' · ') || 'consultation';
+  return o.item || 'item';
+}
+function recordUsed_(R, r) { return R.fields.some((f, i) => f[0] !== 'by' && f[0] !== 'doneBy' && r[i] !== '' && r[i] !== false && r[i] !== null); }
+function recordValue_(f, v) {
+  if (f[2] === 'date') return parseDate_(v);
+  if (f[2] === 'num') return v === '' || v == null ? '' : Number(v);
+  if (f[2] === 'bool') return v === true || v === 'true';
+  if (f[2].indexOf('list:') === 0) { const ok = f[2].slice(5).split('|'); return ok.indexOf(v) > -1 ? v : ok[0]; }
+  return String(v == null ? '' : v).slice(0, 2000);
+}
+function readRecords_(tz) {
+  const out = {};
+  Object.keys(RECORDS).forEach(kind => {
+    const R = RECORDS[kind], sh = SpreadsheetApp.getActive().getSheetByName(R.tab), list = [];
+    if (sh && sh.getLastRow() >= 3) {
+      sh.getRange(3, 1, sh.getLastRow() - 2, R.fields.length).getValues().forEach((r, i) => {
+        if (!recordUsed_(R, r)) return;
+        const o = { row: i + 3 };
+        R.fields.forEach((f, j) => { const v = r[j]; o[f[0]] = f[2] === 'date' ? fmtDate_(v, tz) : f[2] === 'bool' ? v === true : f[2] === 'num' ? (v === '' ? '' : Number(v)) : String(v == null ? '' : v); });
+        list.push(o);
+      });
+    }
+    out[kind] = list;
+  });
+  return out;
+}
+function addRecord(kind, obj) {
+  return withLock_(() => {
+    const { R, sh } = recordSheet_(kind);
+    obj = obj || {};
+    const n = R.fields.length, last = Math.max(3, sh.getLastRow());
+    const vals = sh.getRange(3, 1, last - 2, n).getValues();
+    let row = -1;
+    for (let i = 0; i < vals.length; i++) if (!recordUsed_(R, vals[i])) { row = i + 3; break; }
+    if (row < 0) { row = last + 1; if (row > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), 50); }
+    const line = R.fields.map(f => f[0] === 'by' ? (CURRENT_USER || '') : f[0] === 'doneBy' ? (obj.done ? CURRENT_USER || '' : '') : recordValue_(f, obj[f[0]]));
+    sh.getRange(row, 1, 1, n).setValues([line]);
+    const o = { row: row };
+    R.fields.forEach((f, j) => { o[f[0]] = f[2] === 'date' ? (obj[f[0]] || '') : line[j]; });
+    return o;
+  });
+}
+function updateRecord(kind, row, field, value) {
+  return withLock_(() => {
+    const { R, sh } = recordSheet_(kind);
+    row = Number(row);
+    const col = R.fields.findIndex(f => f[0] === field);
+    if (row < 3 || col < 0 || field === 'by') throw new Error('Field not editable: ' + field);
+    const v = recordValue_(R.fields[col], value);
+    sh.getRange(row, col + 1).setValue(v);
+    const patch = {}; patch[field] = R.fields[col][2] === 'date' ? value : v;
+    if (field === 'done') {
+      const dc = R.fields.findIndex(f => f[0] === 'doneBy');
+      if (dc > -1) { const by = v ? (CURRENT_USER || '') : ''; sh.getRange(row, dc + 1).setValue(by); patch.doneBy = by; }
+    }
+    return patch;
+  });
+}
+function deleteRecord(kind, row) {
+  return withLock_(() => {
+    const { R, sh } = recordSheet_(kind);
+    row = Number(row);
+    if (row < 3) throw new Error('Bad row');
+    sh.getRange(row, 1, 1, R.fields.length).clearContent();   // checkboxes stay as checkboxes
+    return true;
+  });
+}
+function readSettings_() {
+  const p = PropertiesService.getScriptProperties(), o = {};
+  Object.keys(SETTINGS).forEach(k => { const v = p.getProperty('SET_' + k); o[k] = v == null ? '' : SETTINGS[k] === 'number' ? Number(v) : v; });
+  return o;
+}
+function setSetting(key, value) {
+  if (!SETTINGS[key]) throw new Error('Unknown setting: ' + key);
+  const p = PropertiesService.getScriptProperties();
+  if (value === '' || value == null) p.deleteProperty('SET_' + key);
+  else if (SETTINGS[key] === 'number') { const n = Math.max(0, Math.round(Number(value))); if (!isFinite(n)) throw new Error('Not a number'); p.setProperty('SET_' + key, String(n)); }
+  else { if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) throw new Error('Bad date'); p.setProperty('SET_' + key, String(value)); }
+  return readSettings_();
+}
+/** Hand-over day: stamp many samples "Submitted to RCPC" at once. */
+function submitSamples(ids, iso) {
+  const d = parseDate_(iso);
+  if (!d) throw new Error('Pick a date');
+  (ids || []).forEach(id => createSample(id));
+  return withLock_(() => {
+    const sh = sheet_('DA RCPC Samples');
+    (ids || []).forEach(id => { const r = sampleRow_(sh, String(id).toUpperCase()); if (r > 0) sh.getRange(r, 10).setValue(d); });
+    return true;
+  });
+}
+/** For the desktop gallery: every sample photo in the Drive folder, grouped by label. */
+function listPhotos() {
+  const out = {};
+  const it = photoFolder_().getFiles();
+  while (it.hasNext()) {
+    const f = it.next(), m = f.getName().match(/^([A-Z]{2}-\d{3,})_(\d{2})\.jpe?g$/i);
+    if (!m) continue;
+    (out[m[1].toUpperCase()] = out[m[1].toUpperCase()] || []).push({ angle: Number(m[2]), file: f.getId() });
+  }
+  Object.keys(out).forEach(k => out[k].sort((a, b) => a.angle - b.angle));
+  return out;
 }
