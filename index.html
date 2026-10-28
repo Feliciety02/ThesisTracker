@@ -698,6 +698,13 @@ img,svg,video,table{max-width:100%}
 .ract{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .ract .state{display:inline-flex;gap:6px;align-items:center;font-weight:700;color:var(--ok)}
 .ract .state.na{color:var(--muted)}
+.rseg{display:grid;grid-template-columns:1.3fr 1fr .8fr;margin-top:10px;max-width:420px}
+.rseg button{padding:10px 8px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.revfilters{flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px}
+.revfilters .chips{flex:1 1 auto;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.ownsel{flex:0 0 auto;width:auto!important;min-height:34px!important;padding:4px 28px 4px 10px;font-size:13px;border-radius:8px}
+.revfilters .btn.text{flex:0 0 auto;padding:6px 8px}
+@media (max-width:720px){.revfilters{flex-wrap:wrap!important}.revfilters .chips{flex:1 1 100%;overflow:visible}.revfilters .btn.text{margin-left:auto}}
 .rmore2{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .rmore2 .pgl input{width:90px}
 .ngsec{margin:18px 0 8px}
@@ -1470,11 +1477,10 @@ function vRevList() {
   const openBy = d.members.map(m => m.tab + ' ' + applic.filter(r => r.status !== 'C' && r.owner.indexOf(m.tab) > -1).length).join(' · ');
   const byOwner = r => S.revOwner === 'All' || r.owner.indexOf(S.revOwner) > -1;
   const n = st => d.revisions.filter(r => byOwner(r) && (st === 'All' || r.status === st)).length;
-  const stChips = [['NC', 'To do'], ['C', 'Complied'], ['NA', 'N/A'], ['All', 'All']].map(([k, l]) =>
-    '<button class="chip ' + (S.revStatus === k ? 'on' : '') + '" data-action="revStatus" data-v="' + k + '">' + l + ' · ' + n(k) + '</button>').join('') +
-    '<button class="chip ' + (S.revSelecting ? 'on' : '') + '" data-action="revSelecting">' + ic('select_check_box') + 'Select</button>';
+  const stChips = [['NC', 'Not yet'], ['C', 'Complied'], ['All', 'All']].map(([k, l]) =>
+    '<button class="chip ' + (S.revStatus === k ? 'on' : '') + '" data-action="revStatus" data-v="' + k + '">' + l + ' ' + n(k) + '</button>').join('');
   const owners = ['All', me].concat(d.members.map(m => m.tab).filter(t => t !== me), ['Team']);
-  const ownerChips = owners.map(o => '<button class="chip ' + (S.revOwner === o ? 'on' : '') + '" data-action="revOwner" data-v="' + esc(o) + '">' + esc(o === 'All' ? 'Everyone' : o === me ? 'Mine' : o) + '</button>').join('');
+  const ownerSel = '<select class="ownsel" data-change="revOwnerSel" aria-label="Whose items">' + owners.map(o => '<option value="' + esc(o) + '"' + (S.revOwner === o ? ' selected' : '') + '>' + esc(o === 'All' ? 'Everyone' : o === me ? 'Mine' : o) + '</option>').join('') + '</select>';
   const list = d.revisions.filter(r => byOwner(r) && (S.revStatus === 'All' || r.status === S.revStatus));
   const sel = S.revSelecting;
   const groups = [];
@@ -1482,18 +1488,13 @@ function vRevList() {
   const body = groups.length ? groups.map(g => '<div class="rgroup"><div class="rhead"><span class="rnum">' + esc(g.item) + '</span><h3 style="margin:0">' + esc(g.rows[0].section.split(' – ')[0]) + '</h3></div>' +
     g.rows.map(r => {
       const warn = /^(\u26A0|Important:)/i.test(r.comment), comment = r.comment.replace(/^(\u26A0\uFE0F?|Important:)\s*/i, '');
-      const act = r.status === 'NC'
-        ? '<div class="ract"><button class="btn tonal" data-action="rev" data-row="' + r.row + '" data-v="C">' + ic('check') + ' Mark complied</button>' +
-          '<button class="btn text" data-action="rev" data-row="' + r.row + '" data-v="NA">Not applicable</button></div>'
-        : r.status === 'C'
-        ? '<div class="ract"><span class="state">' + ic('check_circle') + ' Complied' + (r.doneBy ? ' by ' + esc(r.doneBy) : '') + '</span><span class="sp"></span>' +
-          '<button class="btn text" data-action="rev" data-row="' + r.row + '" data-v="NC">Undo</button></div>' +
-          '<div class="rmore2"><label class="pgl">Page no.<input type="text" inputmode="numeric" placeholder="e.g. 12" value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page"></label>' +
-          '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Signed by adviser</label></div>'
-        : '<div class="ract"><span class="state na">Not applicable</span><span class="sp"></span><button class="btn text" data-action="rev" data-row="' + r.row + '" data-v="NC">Undo</button></div>';
+      const SEG = { C: ic('check') + ' Complied', NC: 'Not yet', NA: 'N/A' };
+      const act = '<div class="seg rseg" role="group" aria-label="Status">' + ['C', 'NC', 'NA'].map(st => '<button class="' + st + (r.status === st ? ' on' : '') + '" data-action="rev" data-row="' + r.row + '" data-v="' + st + '" aria-pressed="' + (r.status === st) + '">' + SEG[st] + '</button>').join('') + '</div>' +
+        (r.status === 'C' ? '<div class="rmore2"><label class="pgl">Page no.<input type="text" inputmode="numeric" placeholder="e.g. 12" value="' + esc(r.page) + '" data-change="rev" data-row="' + r.row + '" data-field="page"></label>' +
+          '<label class="ck"><input type="checkbox" ' + (r.signed ? 'checked' : '') + ' data-change="rev" data-row="' + r.row + '" data-field="signed">Signed by adviser</label></div>' : '');
       return '<div class="ritem ' + esc(r.status) + (sel ? ' sel' : '') + '">' + (sel ? '<input type="checkbox" class="pick" data-change="revsel" data-row="' + r.row + '"' + (S.revSel[r.row] ? ' checked' : '') + ' aria-label="Select item">' : '') +
         '<div class="rbody"><div class="' + (warn ? 'warn' : '') + '">' + (warn ? ic('warning') + ' ' : '') + esc(comment) + '</div>' +
-        '<div class="small muted">' + esc(r.section) + ' · <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span></div>' +
+        '<div class="small muted">' + esc(r.section) + ' · <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span>' + (r.status === 'C' && r.doneBy ? ' · <span class="doneby">' + ic('check') + ' ' + esc(r.doneBy) + '</span>' : '') + '</div>' +
         (r.notes ? '<div class="small" style="margin-top:4px;color:var(--ink)">' + esc(r.notes) + '</div>' : '') + act + '</div></div>';
     }).join('') + '</div>').join('') : '<div class="empty">' + (S.revStatus === 'NC' ? 'Nothing left to do here.' : 'No items match these filters.') + '</div>';
   const nSel = Object.keys(S.revSel).length;
@@ -1504,7 +1505,8 @@ function vRevList() {
       (ready ? '<span class="tagp ok">' + ic('check_circle') + ' Ready for endorsement</span>' : '') + '</div>' +
       '<div class="bar" style="margin:10px 0 8px"><i style="width:' + pct(c, applic.length) + '%"></i></div>' +
       '<div class="small muted">' + withPage + ' with page no. · ' + signed + ' signed by adviser · To do: ' + esc(openBy) + '</div></div>' +
-    '<div class="row filters"><div class="chips">' + stChips + '</div><div class="chips">' + ownerChips + '</div></div>' + bulk + body;
+    '<div class="row filters revfilters"><div class="chips">' + stChips + '</div>' + ownerSel +
+      '<button class="btn text" data-action="revSelecting">' + (S.revSelecting ? 'Cancel' : 'Select') + '</button></div>' + bulk + body;
 }
 const NG_SECTIONS = {
   A1: ['Step 1 · Photocopy and staple', 'Photocopy these forms and staple them together.'],
@@ -2643,6 +2645,8 @@ document.addEventListener('change', e => {
       r[field] = val;
       if (field === 'done') r.doneBy = val ? S.user : '';
     });
+  } else if (k === 'revOwnerSel') {
+    S.revOwner = val; render();
   } else if (k === 'sheetSel') {
     if (el.checked) S.ov.sel[el.dataset.id] = true; else delete S.ov.sel[el.dataset.id];
     renderOv();
