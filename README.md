@@ -10,7 +10,15 @@ Installable task tracker app for the thesis
 - **Frontend:** this repo, hosted free on GitHub Pages. It's an installable app (PWA) that works offline with the last synced data.
 - **Database:** the team's Google Sheet, reached through a small Apps Script API. Every change is logged with who made it on the sheet's **Activity** tab.
 
-## Setup
+## Update the Apps Script (copy and paste)
+The two server files are in the [`apps-script`](apps-script/) folder of this repo:
+- [ThesisTracker.gs](apps-script/ThesisTracker.gs) · [raw](https://raw.githubusercontent.com/Feliciety02/ThesisTracker/main/apps-script/ThesisTracker.gs)
+- [WebApp.gs](apps-script/WebApp.gs) · [raw](https://raw.githubusercontent.com/Feliciety02/ThesisTracker/main/apps-script/WebApp.gs)
+
+1. Open a file above and click **Copy raw file** (the 📋 icon top-right of the code), or open **raw**, select all, copy.
+2. In the sheet: **Extensions → Apps Script**. Open the file with the same name, select everything, delete, paste. The project must have **only these two files**.
+3. **Save** → run **setupTracker** (keeps all data) → **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**.
+
 
 ### 1. Google Sheet + Apps Script (once)
 1. In the tracker Google Sheet, open **Extensions → Apps Script**. You need two script files there:
