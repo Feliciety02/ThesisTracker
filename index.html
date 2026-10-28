@@ -847,7 +847,7 @@ const Demo = (() => {
     addRecord: (kind, o) => Object.assign({ row: recRow++, by: S.user }, o, kind === 'defense' ? { done: !!o.done, doneBy: o.done ? S.user : '' } : {}, kind === 'consults' ? { status: o.status || 'Open', signed: !!o.signed } : {}),
     updateRecord: (kind, row, field, value) => field === 'done' ? { done: value, doneBy: value ? S.user : '' } : { [field]: value },
     deleteRecord: () => true, setSetting: (k, v) => Object.assign({}, S.data.settings, { [k]: v }),
-    submitSamples: () => true, listPhotos: () => ({}),
+    submitSamples: () => true, listPhotos: () => ({}), deleteSample: () => ({ photos: 0 }),
     getData: () => JSON.parse(JSON.stringify(data)),
     authStart: email => { const t = DEMO_ACCOUNTS[email]; if (!t) throw new Error('This email doesn\'t have access.'); return { hasPassword: true }; },
     authForgot: () => ({ codeSent: true }),
@@ -1373,8 +1373,9 @@ function queuedFor(id) { return Object.values(S.queued).filter(j => j.id === id)
 /** The next free label for a person: FA-001, FA-002 … handed out automatically, works offline too. */
 function nextLabel(tab) {
   const m = TEAM.find(t => t.tab === tab);
-  const max = samplesOf(tab).reduce((a, s) => Math.max(a, labelNum(s.id)), 0);
-  return m.prefix + '-' + String(max + 1).padStart(3, '0');
+  const used = new Set(samplesOf(tab).map(s => labelNum(s.id)));
+  let n = 1; while (used.has(n)) n++;          // lowest free number: a deleted sample's label is used again
+  return m.prefix + '-' + String(n).padStart(3, '0');
 }
 /** Saves where the sample was taken. GPS works without signal; the save waits in the outbox if offline. */
 function captureGps(id) {
@@ -1564,7 +1565,7 @@ function sampleCard(x) {
       (gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">📍 Location</a>' : '') +
     '</div>' +
     '<div class="sc-notes"><input type="text" value="' + esc(x.notes) + '" placeholder="Notes" aria-label="Notes" data-change="sample" ' + at + ' data-field="notes"></div>' +
-    '<div class="sc-foot">' + toggle + '</div></div>');
+    '<div class="sc-foot"><button class="btn ghost" style="color:var(--red)" data-action="delSample" data-id="' + esc(x.id) + '">🗑 Delete sample</button><span class="sp"></span>' + toggle + '</div></div>');
 }
 
 /* ---------- overlay: submission list (print) ---------- */
@@ -2216,6 +2217,20 @@ document.addEventListener('click', e => {
   else if (a === 'toggleAddTask') { S.addTaskOpen = !S.addTaskOpen; render(); if (S.addTaskOpen) { const i = document.querySelector('#addForm [name=task]'); if (i) i.focus(); } }
   else if (a === 'toggleAddExp') { S.addExpOpen = !S.addExpOpen; render(); if (S.addExpOpen) { const i = document.querySelector('#addSupply [name=item]'); if (i) i.focus(); } }
   else if (a === 'sampleFilter') { S.sampleFilter = v; render(); }
+  else if (a === 'delSample') {
+    const id = el.dataset.id, x = sampleById(id);
+    if (!x) return;
+    if (Object.keys(S.uploading).concat(Object.keys(S.waiting), Object.keys(S.preparing)).some(k => k.indexOf(id + '_') === 0)) { toast('Wait a moment: ' + id + '\'s photos are still saving.', 3000, true); return; }
+    const n = takenSet(x).size;
+    if (!confirm('Delete ' + id + (n ? ' and its ' + n + ' photo' + (n > 1 ? 's' : '') : '') + '?\n\nPhotos go to the Drive trash. The label ' + id + ' will be used again for your next new sample.')) return;
+    Object.keys(S.queued).filter(k => k.indexOf(id + '_') === 0).forEach(k => { delete S.queued[k]; PhotoQ.del(k); });   // waiting photos must not bring it back
+    Object.keys(S.thumbs).concat(Object.keys(S.issues)).filter(k => k.indexOf(id + '_') === 0).forEach(k => { delete S.thumbs[k]; delete S.issues[k]; });
+    try { const c = JSON.parse(store.get(CAM_STORE) || 'null'); if (c && c.id === id) store.del(CAM_STORE); } catch (err) {}
+    delete S.open['smp_' + id];
+    save('deleteSample', [id], () => { S.data.samples = S.data.samples.filter(s => s.id !== id); })
+      .then(() => toast('Deleted ' + id + ' · label free to reuse', 2200));
+    updateSyncChip();
+  }
   else if (a === 'toggleCard') { S.open[v] = !S.open[v]; render(); }
   else if (a === 'more') { S.more = v; S.addRec = null; render(); window.scrollTo(0, 0); }
   else if (a === 'addRec') { S.addRec = S.addRec === v ? null : v; render(); if (S.addRec) { const i = document.querySelector('form.recform input:not([type=date]),form.recform textarea'); if (i) i.focus(); } }

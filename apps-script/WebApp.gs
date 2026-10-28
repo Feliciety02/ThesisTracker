@@ -56,7 +56,7 @@ function doPost(e) {
       updateRevisions: updateRevisions, rescheduleTasks: rescheduleTasks,
       deleteTask: deleteTask, addSupply: addSupply, deleteSupply: deleteSupply, uploadReceipt: uploadReceipt,
       addRecord: addRecord, updateRecord: updateRecord, deleteRecord: deleteRecord, setSetting: setSetting,
-      submitSamples: submitSamples, listPhotos: listPhotos, getVersion: getVersion,
+      submitSamples: submitSamples, listPhotos: listPhotos, getVersion: getVersion, deleteSample: deleteSample,
     };
     const fn = actions[req.fn];
     if (!fn) throw new Error('Unknown action: ' + req.fn);
@@ -113,6 +113,7 @@ function describe_(fn, a) {
   if (fn === 'rescheduleTasks') return 'moved ' + (a[0] || []).length + ' overdue task(s) to ' + a[1];
   if (fn === 'exportValidatedDataset') return 'exported the RCPC-validated photos into class folders';
   if (fn === 'createSample') return 'started new sample ' + a[0];
+  if (fn === 'deleteSample') return 'deleted sample ' + a[0] + ' and its photos (label can be used again)';
   if (fn === 'deleteTask') {
     const r = ss.getSheetByName(a[0]).getRange(Number(a[1]), 1, 1, 2).getValues()[0];
     return 'deleted task ' + r[0] + ' "' + short_(r[1], 50) + '"';
@@ -412,6 +413,32 @@ function createSample(id) {
   });
 }
 
+/** Deletes a sample: clears its row (so the label can be used again) and moves its photos to the Drive trash. */
+function deleteSample(id) {
+  id = String(id || '').toUpperCase();
+  if (!/^[A-Z]{2}-\d{3,}$/.test(id)) throw new Error('Bad sample label: ' + id);
+  let trashed = 0;
+  try {
+    const it = photoFolder_().getFiles();
+    while (it.hasNext()) { const f = it.next(); if (!f.isTrashed() && f.getName().toUpperCase().indexOf(id + '_') === 0) { f.setTrashed(true); trashed++; } }   // Drive trash: recoverable for 30 days
+  } catch (e) { /* no photo folder yet: nothing to remove */ }
+  try {                                                       // copies made by "Export for training"
+    const exp = PropertiesService.getScriptProperties().getProperty('EXPORT_FOLDER_ID');
+    if (exp) {
+      const subs = DriveApp.getFolderById(exp).getFolders();
+      while (subs.hasNext()) { const fi = subs.next().getFiles(); while (fi.hasNext()) { const f = fi.next(); if (!f.isTrashed() && f.getName().toUpperCase().indexOf(id + '_') === 0) f.setTrashed(true); } }
+    }
+  } catch (e) {}
+  withLock_(() => {
+    const sh = sheet_('DA RCPC Samples');
+    const row = sampleRow_(sh, id);
+    if (row < 0) return;
+    sh.getRange(row, 1, 1, 16).clearContent();               // checkboxes and dropdowns stay; the row is reused by the next new sample
+    sh.getRange(row, 1).setBackground(null);
+  });
+  return { photos: trashed };
+}
+
 function updateSample(id, field, value) {
   const col = { disease: 2, date: 3, site: 4, by: 5, photos: 6, cotton: 8, bagged: 9, submitted: 10, validated: 11, notes: 13, gps: 16 }[field];
   if (!col) throw new Error('Field not editable: ' + field);
@@ -616,7 +643,7 @@ function exportValidatedDataset() {
   const folders = {};
   classes.forEach(c => { const it = root.getFoldersByName(c); folders[c] = it.hasNext() ? it.next() : root.createFolder(c); });
   const existing = {};   // file name -> {cls, file}
-  classes.forEach(c => { const it = folders[c].getFiles(); while (it.hasNext()) { const f = it.next(); existing[f.getName()] = { cls: c, file: f }; } });
+  classes.forEach(c => { const it = folders[c].getFiles(); while (it.hasNext()) { const f = it.next(); if (!f.isTrashed()) existing[f.getName()] = { cls: c, file: f }; } });
 
   const photos = photoFolder_();
   const last = sh.getLastRow();
@@ -629,13 +656,15 @@ function exportValidatedDataset() {
     let any = false;
     for (let n = 1; n <= CFG.photoAngles.length; n++) {
       const name = id + '_' + ('0' + n).slice(-2) + '.jpg';
-      const src = photos.getFilesByName(name);
-      if (!src.hasNext()) continue;
+      const it = photos.getFilesByName(name);
+      let srcFile = null;
+      while (it.hasNext()) { const f = it.next(); if (!f.isTrashed()) { srcFile = f; break; } }   // skip deleted / replaced photos
+      if (!srcFile) continue;
       any = true; counts[cls].images++;
       const have = existing[name];
       if (have && have.cls === cls) continue;
       if (have) have.file.setTrashed(true);            // RCPC class changed: move it
-      src.next().makeCopy(name, folders[cls]); copied++;
+      srcFile.makeCopy(name, folders[cls]); copied++;
     }
     if (any) counts[cls].samples++;
   });
@@ -866,7 +895,7 @@ function listPhotos() {
   const it = photoFolder_().getFiles();
   while (it.hasNext()) {
     const f = it.next(), m = f.getName().match(/^([A-Z]{2}-\d{3,})_(\d{2})\.jpe?g$/i);
-    if (!m) continue;
+    if (!m || f.isTrashed()) continue;
     (out[m[1].toUpperCase()] = out[m[1].toUpperCase()] || []).push({ angle: Number(m[2]), file: f.getId() });
   }
   Object.keys(out).forEach(k => out[k].sort((a, b) => a.angle - b.angle));

@@ -65,6 +65,7 @@ Only the team's six emails (two per member, listed in `accounts` in `ThesisTrack
 - The last screen is just instructions: cut the leaf, wrap the end in damp cotton, bag it, and stick the label (e.g. RJ-004) on masking tape. Nothing to tick or type. The site is copied from your previous leaf and the GPS location is saved automatically.
 - **You don't decide the disease. DA RCPC does.** Leaves show *Not sent yet*, then *Waiting for RCPC*, then the RCPC result. You can still add a guess when editing a leaf, but it's optional and never counted.
 - To retake a photo, tap 📷 on the leaf's card, then tap the photo.
+- To delete a leaf: on its card tap **Edit ▾ → 🗑 Delete sample** (phone). Its photos (and any copies exported for training) go to the Drive trash, and the label is freed: your next new sample reuses the lowest free number.
 - Photos are saved to the **DA RCPC Sample Photos** folder inside the Curated Banana Leaf Disease Dataset folder, named `<label>_01.jpg … _03.jpg`.
 - If the in-app camera isn't allowed, the app falls back to the phone's camera app.
 
