@@ -83,6 +83,9 @@ Only the team's six emails (two per member, listed in `accounts` in `ThesisTrack
 ## Laptops and desktops
 Sample collection is view-only on a computer: no camera, no New sample. You can switch the Samples page to **🖼 Photos** to see every leaf's photos (you need to be signed in to Google with access to the folder) and print the submission list.
 
+## Live updates
+Every change in the app is written to the Google Sheet right away (or, offline, as soon as there's signal). Open apps check for changes every 10 seconds, so what a teammate changes in the app, or what anyone types directly in the Google Sheet, shows up on everyone's screen within seconds. The footer shows **● Live · synced (time)**.
+
 ## Working on the farm (no signal)
 - **Before leaving:** open the app once with signal and make sure you're logged in. That saves the app and the latest data on the phone.
 - **On the farm:** use it normally. Sample details, checkboxes, tasks, and photos are all saved on the phone. A **📴 Offline** bar and a **⏳ N to sync** counter show what's waiting.

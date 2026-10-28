@@ -56,17 +56,18 @@ function doPost(e) {
       updateRevisions: updateRevisions, rescheduleTasks: rescheduleTasks,
       deleteTask: deleteTask, addSupply: addSupply, deleteSupply: deleteSupply, uploadReceipt: uploadReceipt,
       addRecord: addRecord, updateRecord: updateRecord, deleteRecord: deleteRecord, setSetting: setSetting,
-      submitSamples: submitSamples, listPhotos: listPhotos,
+      submitSamples: submitSamples, listPhotos: listPhotos, getVersion: getVersion,
     };
     const fn = actions[req.fn];
     if (!fn) throw new Error('Unknown action: ' + req.fn);
     const args = Array.isArray(req.args) ? req.args : [];
-    if (req.fn !== 'getData' && req.fn !== 'listPhotos') {
+    if (req.fn !== 'getData' && req.fn !== 'listPhotos' && req.fn !== 'getVersion') {
       let what = req.fn;
       try { what = describe_(req.fn, args); } catch (err) {}   // described before the change (so deletes keep their names)
       const result = fn.apply(null, args);   // writes return only what changed (fast)
       try { logActivity_(user, what); } catch (err) { /* never block a save on the log */ }
-      return json_({ ok: true, data: result });
+      bumpVersion_();                        // everyone else's app sees the change within seconds
+      return json_({ ok: true, data: result, version: currentVersion_() });
     }
     return json_({ ok: true, data: fn.apply(null, args) });
   } catch (err) {
@@ -283,6 +284,7 @@ function getData() {
     photoAngles: CFG.photoAngles,
     links: Object.keys(LINKS).map(k => LINKS[k]),
     lists: { expenseCategories: CFG.expenseCategories, statuses: CFG.statuses, priorities: CFG.priorities, categories: CFG.categories, classes, revStatuses: CFG.revStatuses },
+    version: currentVersion_(),
     records: readRecords_(tz),
     settings: readSettings_(),
     panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde', 'Mr. Hernando', 'Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
@@ -870,3 +872,8 @@ function listPhotos() {
   Object.keys(out).forEach(k => out[k].sort((a, b) => a.angle - b.angle));
   return out;
 }
+
+/* ---------- live updates: a tiny "something changed" stamp the apps check every few seconds ---------- */
+function currentVersion_() { return PropertiesService.getScriptProperties().getProperty('DATA_VER') || '0'; }
+function bumpVersion_() { try { PropertiesService.getScriptProperties().setProperty('DATA_VER', String(Date.now())); } catch (e) {} }
+function getVersion() { return currentVersion_(); }

@@ -213,6 +213,7 @@ function onOpen() {
 /** Stamps "Completed On" when a task's status becomes Done. */
 function onEdit(e) {
   if (!e || !e.range) return;
+  try { PropertiesService.getScriptProperties().setProperty('DATA_VER', String(Date.now())); } catch (err) {}   // tells open apps to refresh
   const sh = e.range.getSheet();
   const isMemberTab = CFG.members.some(m => m.tab === sh.getName());
   if (!isMemberTab || e.range.getColumn() !== 5 || e.range.getRow() < 4) return;

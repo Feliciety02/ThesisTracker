@@ -896,7 +896,7 @@ function setOffline(on, at) {
   if (on) el.textContent = "📴 Offline · saving on this phone";
   updateSyncChip();
   const info = document.getElementById('syncInfo');
-  if (info) info.textContent = DEMO ? 'Demo data' : on ? 'Offline copy' : 'Synced ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  if (info) info.textContent = DEMO ? 'Demo data' : on ? 'Offline copy' : '● Live · synced ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 /* ---------- sign-in: email → (code + new password the first time) or password ---------- */
 function lock(msg) {               // show sign-in (also used when the server says the login is no longer valid)
@@ -2394,10 +2394,22 @@ document.addEventListener('submit', e => {
 
 /* auto-refresh so the team sees each other's updates */
 const busy = () => Object.keys(S.uploading).length || Object.keys(S.waiting).length;
-setInterval(() => { if (S.data && navigator.onLine && document.visibilityState === 'visible' && !isTyping() && !busy()) load(true); }, 120000);
+// Live updates: every 10 s ask the server for its tiny "last change" stamp; fetch everything only when it moved.
+// Changes made by teammates in the app OR typed straight into the Google Sheet show up within seconds.
+function checkLive() {
+  if (DEMO || !S.data || !S.user || S.checking || !navigator.onLine || document.visibilityState !== 'visible' || busy()) return;
+  S.checking = true;
+  call('getVersion').then(v => {
+    if (v && v !== S.data.version) return load(true);
+    setOffline(false);
+  }).catch(e => { if (/Unknown action/.test(e.message || '')) S.noLive = true; }).finally(() => { S.checking = false; });
+}
+setInterval(checkLive, 10000);
+// fallback for an older server version that can't answer getVersion yet
+setInterval(() => { if (S.noLive && S.data && navigator.onLine && document.visibilityState === 'visible' && !isTyping() && !busy()) load(true); }, 120000);
 let lastFocusLoad = 0;
 document.addEventListener('visibilitychange', () => {
-  if (S.data && document.visibilityState === 'visible' && !isTyping() && !busy() && Date.now() - lastFocusLoad > 30000) { lastFocusLoad = Date.now(); load(true); }
+  if (S.data && document.visibilityState === 'visible' && !busy() && Date.now() - lastFocusLoad > 5000) { lastFocusLoad = Date.now(); if (S.noLive) { if (!isTyping()) load(true); } else checkLive(); }
 });
 window.addEventListener('online', () => { if (S.data) flushOutbox().then(flushPhotos).then(() => load(true)); });
 window.addEventListener('offline', () => { if (S.data) setOffline(true, (cached() || {}).at); });
