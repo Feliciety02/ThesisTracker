@@ -542,6 +542,69 @@ details.card[open]>summary::after{content:'▴'}
   #ov .cam-sheet{max-height:none;overflow:visible;border-radius:0;padding:0;max-width:none;background:#fff;color:#000}
   .noprint{display:none!important}
 }
+
+/* ================= Google (Material 3) look, in the app's own colours ================= */
+:root{--tonal:#e3edd2;--on-tonal:#1f4b3a;--outline:#c9cfbd;--hover:rgba(31,75,58,.07)}
+@media (prefers-color-scheme: dark){:root{--tonal:#26361f;--on-tonal:#cfe6ad;--outline:#3a4a3f;--hover:rgba(207,230,173,.08)}}
+html{accent-color:var(--brand)}
+h2{font-weight:700;letter-spacing:-.015em}
+/* buttons: pill shaped; secondary = outlined */
+.btn{border-radius:999px;font-weight:600;letter-spacing:.01em;min-height:40px;padding:10px 20px;transition:box-shadow .15s,background-color .15s}
+.btn:hover:not(:disabled){box-shadow:0 1px 3px rgba(31,59,51,.28)}
+.btn.ghost{background:transparent;border:1px solid var(--outline);color:var(--brand)}
+.btn.ghost:hover:not(:disabled){background:var(--hover);box-shadow:none}
+.bigcam,.login-card .btn,.addtoggle{border-radius:999px}
+.batch .newsample{border-radius:16px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.bulk .btn{border-radius:999px}
+/* filter chips: 8px corners, tonal + ✓ when selected */
+.chip{border-radius:8px;border:1px solid var(--outline);background:transparent;padding:6px 12px;font-weight:500;color:var(--ink);min-height:32px;display:inline-flex;align-items:center;gap:6px;transition:background-color .15s}
+.chip:hover{background:var(--hover)}
+.chip.on{background:var(--tonal);color:var(--on-tonal);border-color:transparent;font-weight:600}
+.chip.on:not(:has(.dot))::before{content:'✓';font-weight:800;font-size:12px}
+.chip .dot{margin-right:0}
+/* cards and containers: outlined, softer corners, no heavy shadow */
+.card,.stat,.sc,.lnk,.gal-row,.drow,.rev,.viewbar,.checklist li,.fsteps li{border-radius:16px}
+.card{box-shadow:none}
+.stat{border-color:var(--line)}
+.cam-sheet{border-radius:28px 28px 0 0}
+@media (min-width:700px){.cam-sheet{border-radius:28px}}
+.cam.live .cam-sheet{border-radius:0}
+/* segmented buttons: pill outline, tonal selection */
+.seg{border-radius:999px;border-color:var(--outline)}
+.seg button{font-weight:600;color:var(--ink);background:transparent}
+.seg button+button{border-left-color:var(--outline)}
+.seg button.on.C{background:var(--tonal);color:var(--on-tonal)}
+.seg button.on.NC{background:color-mix(in srgb,var(--ink) 12%,transparent);color:var(--ink)}
+.seg button.on.NA{background:color-mix(in srgb,var(--muted) 18%,transparent);color:var(--ink)}
+/* outlined text fields */
+input:not([type]),input[type=text],input[type=search],input[type=number],input[type=date],input[type=email],input[type=password],input[type=tel],input[type=url],select,textarea{border-radius:8px;border-color:var(--outline);min-height:40px}
+.sheet-table input,.pick,input[type=checkbox]{min-height:0}
+/* icon buttons: round, no box */
+.iconbtn{border:0;background:transparent;border-radius:50%;width:40px;height:40px;transition:background-color .15s}
+.iconbtn:hover{background:var(--hover);border-color:transparent}
+.iconbtn.on{background:var(--tonal)}
+.morebtn{border-color:var(--outline);color:var(--brand);font-weight:600}
+.morebtn:hover{background:var(--hover)}
+.tagp{border-radius:8px}
+.cam-btn{font-weight:700}
+/* snackbar */
+#toast{border-radius:8px;padding:14px 18px;font-weight:500;min-width:min(288px,calc(100% - 32px));text-align:left;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+/* desktop tabs: Google-style underline */
+#nav button{border-radius:0;font-weight:600}
+#nav button.on{background:none;color:var(--brand);box-shadow:inset 0 -3px 0 var(--brand)}
+/* phone navigation bar: tonal pill behind the active icon */
+@media (max-width:720px){
+  .bnav{border-top:0;box-shadow:0 -1px 0 var(--line);padding-top:10px}
+  .bnav button{gap:4px;font-weight:600;font-size:11px;min-height:56px}
+  .bnav svg{width:56px;height:32px;padding:5px 17px;box-sizing:border-box;border-radius:16px;transition:background-color .2s}
+  .bnav button,.bnav button.on{background:none;box-shadow:none;border-radius:0}
+  .bnav button.on{color:var(--on-tonal)}
+  .bnav button.on svg{background:var(--tonal);stroke-width:2.2}
+  .bnav button.on::before{display:none}
+  .bnav .count{top:-2px;left:calc(50% + 8px)}
+  #toast{bottom:calc(88px + env(safe-area-inset-bottom))}      /* above the navigation bar, not hidden behind it */
+}
+#toast{z-index:30}
 </style>
 </head>
 <body>
