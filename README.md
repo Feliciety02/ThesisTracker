@@ -70,6 +70,7 @@ Only the team's six emails (two per member, listed in `accounts` in `ThesisTrack
 - If the in-app camera isn't allowed, the app falls back to the phone's camera app.
 
 ## Field day
+- **Next-day rule:** every leaf must reach DA RCPC **the day after it's collected**. Each leaf shows *Send to RCPC by tomorrow* / *⏰ today*; Home and Samples show a red alert while leaves are due. A leaf that's sent later (or never) is marked **invalid**: it can't go on the submission list, isn't counted in the paper numbers, isn't exported for training, and its row turns red in the sheet.
 - **Before the farm** checklist (Samples page): supplies bought, phone charged, app ready offline, tape, cotton, bags, shears. It resets every day.
 - **Leaves goal**: set it on the Samples page. The progress bar shows the team total.
 - **📝 Submission list**: tick the leaves you're handing over and print or save it as a PDF for DA RCPC. It lists label, date, site and notes, with signature lines and no disease column. On a phone, **Mark as submitted** stamps them all at once.

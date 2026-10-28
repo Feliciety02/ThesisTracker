@@ -249,6 +249,11 @@ tr.filled td.id{color:var(--ok)}
 .tagp{background:var(--soft);border-radius:999px;padding:2px 9px;font-weight:600;font-size:12px;color:var(--ink)}
 .tagp.ok{background:var(--ok-soft);color:var(--ok)}
 .tagp.warn{background:var(--amber-soft);color:var(--amber)}
+.tagp.bad{background:var(--red-soft);color:var(--red)}
+.alertcard{display:flex;gap:12px;align-items:center;background:var(--red-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--red) 30%,transparent);border-radius:16px;padding:12px 14px;margin-bottom:14px;cursor:pointer}
+.alertcard b{color:var(--red)}
+.alertcard .go{margin-left:auto;font-weight:700;color:var(--red);white-space:nowrap}
+.sheet-table tr.late td{color:var(--red)}
 .morebtn{margin-left:auto;background:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;color:var(--ink);cursor:pointer}
 .morebtn:hover{background:var(--soft)}
 .qchip{display:inline-flex;align-items:center;gap:6px;background:var(--amber-soft);color:var(--amber);border-radius:999px;padding:4px 10px;font-weight:700;font-size:12.5px}
@@ -605,6 +610,52 @@ input:not([type]),input[type=text],input[type=search],input[type=number],input[t
   #toast{bottom:calc(88px + env(safe-area-inset-bottom))}      /* above the navigation bar, not hidden behind it */
 }
 #toast{z-index:30}
+
+/* ================= responsive hardening: nothing wider than the screen, at any size ================= */
+html,body{max-width:100%;overflow-x:hidden}
+.row>*,.filters>*,.grid>*,.stats>*,.sc-grid>*,.hand>*,.recform>*,form.add>*,.addsup>*{min-width:0}
+.filters,.filters .chips{min-width:0;max-width:100%}
+.stats,.stats.s6{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
+.stats.s6{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stat input[type=date],.sc-grid input,.sc-grid select,.fl input,.fl select{min-width:0;max-width:100%;width:100%}
+input[type=date]{min-width:0}
+.btn{max-width:100%;white-space:normal}
+.lbl,.tag,.cam-id{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+img,svg,video,table{max-width:100%}
+.sheet-table,.mtable{max-width:none}
+@media (max-width:720px){
+  .stats.s6{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat{padding:12px 14px}
+  .stat .v{font-size:clamp(20px,6.5vw,30px)}
+  .hand b{font-size:clamp(18px,6vw,22px)}
+  .wrap{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .row{flex-wrap:wrap}
+  #q{width:100%!important}
+  .searchwrap{flex:1 1 160px;min-width:0}
+}
+@media (max-width:360px){
+  .stats.s6{gap:8px}
+  .stat .k{font-size:10.5px}
+  .chip{padding:5px 10px;font-size:12.5px}
+  .bnav button{font-size:10px}
+  .bnav svg{width:48px;padding:5px 13px}
+  .brand h1{font-size:18px}
+}
+/* small phones: give squeezed controls their own row */
+@media (max-width:400px){
+  .task{grid-template-columns:minmax(0,1fr) 40px}
+  .task select.status{grid-column:1/-1}
+  .stats.s6 .stat.hot,.stats.s6 .stat.hot2{grid-column:1/-1;order:2}
+  .stats.s6 .stat.hot,.stats.s6 .stat.hot2{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px}
+  .stats.s6 .stat.hot .k,.stats.s6 .stat.hot2 .k{grid-column:1/-1}
+  .stats.s6 .stat.hot input,.stats.s6 .stat.hot2 input{margin-top:0;width:auto;max-width:150px}
+  .rmore{gap:8px}
+}
+/* tablets in portrait: use the space (two columns of cards) */
+@media (min-width:560px) and (max-width:720px){
+  .scards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats.s6{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
@@ -1212,7 +1263,7 @@ function vOverview() {
     '<div class="bar" style="--c:' + x[3] + '"><i style="width:' + pct(x[1], x[2]) + '%"></i></div><b>' + pct(x[1], x[2]) + '%</b></div>').join('');
 
   const lg = leafProgress(), dd = settings().defenseDate, dn = daysUntil(dd);
-  return '<div class="stats s6">' +
+  return rcpcAlert() + '<div class="stats s6">' +
     '<div class="stat tap" data-action="gotoView" data-v="tasks" role="button" tabindex="0"><div class="k">Progress</div><div class="v">' + pct(done, tasks.length) + '%</div><div class="small muted">' + done + ' / ' + tasks.length + ' tasks</div></div>' +
     '<div class="stat tap" data-action="gotoView" data-v="tasks" role="button" tabindex="0"><div class="k">Overdue</div><div class="v" style="color:' + (overdue ? 'var(--red)' : 'inherit') + '">' + overdue + '</div><div class="small muted">tasks</div></div>' +
     '<div class="stat tap" data-action="gotoView" data-v="revisions" role="button" tabindex="0"><div class="k">Panel</div><div class="v">' + revDone + '<span class="muted" style="font-size:16px"> / ' + revApplic.length + '</span></div><div class="small muted">complied</div></div>' +
@@ -1388,9 +1439,39 @@ function captureGps(id) {
 function gpsLink(g) { const m = String(g || '').match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/); return m ? 'https://www.google.com/maps?q=' + m[1] + ',' + m[2] : ''; }
 
 /** Numbers + a ready-to-paste paragraph for section 2.1.2 (Local Test Set), from the sample log. */
+/* DA RCPC rule: a leaf must be submitted the day after it was collected, or it is no longer fresh (invalid). */
+function addDays(iso, n) { const d = toDate(iso); d.setDate(d.getDate() + n); return localDay(d); }
+function freshness(x) {
+  if (!x.date) return { st: 'nodate' };
+  const due = addDays(x.date, 1);
+  if (x.submitted) return { st: x.submitted <= due ? 'ok' : 'late', due };
+  const n = daysUntil(due);
+  return { st: n < 0 ? 'expired' : n === 0 ? 'today' : 'tomorrow', due, n };
+}
+const isValidLeaf = x => freshness(x).st === 'ok';
+const dueLabel = due => { const n = daysUntil(due); return n === 0 ? 'today' : n === 1 ? 'tomorrow' : fmt(due); };
+function freshPill(x) {
+  const f = freshness(x);
+  if (f.st === 'late') return '<span class="tagp bad">Sent late · invalid</span>';
+  if (f.st === 'expired') return '<span class="tagp bad">Not sent in time · invalid</span>';
+  if (f.st === 'today') return '<span class="tagp bad">⏰ Send to RCPC today</span>';
+  if (f.st === 'tomorrow') return '<span class="tagp warn">Send to RCPC by ' + esc(dueLabel(f.due)) + '</span>';
+  return '';
+}
+function dueLeaves() {      // not yet sent and still fresh, soonest first
+  return S.data.samples.filter(x => ['today', 'tomorrow'].indexOf(freshness(x).st) > -1).sort((a, b) => a.date < b.date ? -1 : 1);
+}
+function rcpcAlert(onSamples) {
+  const due = dueLeaves();
+  if (!due.length) return '';
+  const today = due.filter(x => freshness(x).st === 'today').length;
+  return '<div class="alertcard" ' + (onSamples ? 'data-action="openSheet"' : 'data-action="gotoView" data-v="samples"') + ' role="button" tabindex="0">🚨<div><b>' + due.length + ' lea' + (due.length === 1 ? 'f' : 'ves') + ' must reach DA RCPC ' +
+    (today ? 'today' : 'by ' + esc(dueLabel(freshness(due[0]).due))) + '</b><div class="small">The day after collection, or they become invalid.</div></div><span class="go">' + (onSamples ? 'List →' : 'Send →') + '</span></div>';
+}
+
 function paperNumbers() {
   const d = S.data, cls = d.lists.classes.filter(c => !/unsure|unknown/i.test(c));
-  const validated = d.samples.filter(x => cls.indexOf(x.validated) > -1);
+  const validated = d.samples.filter(x => cls.indexOf(x.validated) > -1 && isValidLeaf(x));   // late or expired leaves don't count
   const useVal = validated.length > 0;      // DA RCPC decides each leaf's disease; nothing is counted before that
   const set = validated;
   const key = x => x.validated;
@@ -1463,10 +1544,13 @@ function prefarmCard() {
 }
 function handoverCard() {
   const d = S.data, st = settings();
-  const ready = d.samples.filter(x => !x.submitted && (x.angles || []).length >= MIN_ANGLES).length;
-  const sent = d.samples.filter(x => x.submitted).length;
+  const due = dueLeaves().length;
+  const sent = d.samples.filter(x => freshness(x).st === 'ok').length;
+  const invalid = d.samples.filter(x => ['late', 'expired'].includes(freshness(x).st)).length;
   return '<div class="card" style="margin-bottom:14px;padding:14px 16px"><h3 style="margin:0">DA RCPC hand-over</h3>' +
-    '<div class="hand" style="grid-template-columns:1fr 1fr"><div><b>' + ready + '</b><span>ready to send</span></div><div><b>' + sent + '</b><span>sent to RCPC</span></div></div>' +
+    '<p class="small muted" style="margin:4px 0 0">Every leaf must reach DA RCPC the day after it\'s collected.</p>' +
+    '<div class="hand" style="grid-template-columns:repeat(' + (invalid ? 3 : 2) + ',1fr)"><div><b>' + due + '</b><span>to send</span></div><div><b>' + sent + '</b><span>sent on time</span></div>' +
+      (invalid ? '<div style="background:var(--red-soft)"><b style="color:var(--red)">' + invalid + '</b><span>invalid (late)</span></div>' : '') + '</div>' +
     '<button class="btn" data-action="openSheet">📝 Submission list</button>' +
     '<div class="goalrow"><label class="fl">Leaves goal<input type="number" min="0" inputmode="numeric" placeholder="e.g. 30" value="' + esc(st.leafGoal || '') + '" data-change="setting" data-field="leafGoal"></label></div></div>';
 }
@@ -1504,7 +1588,7 @@ function vSamples() {
         '<div class="chips"><button class="chip ' + (!S.gallery ? 'on' : '') + '" data-action="gallery" data-v="0">Cards</button><button class="chip ' + (S.gallery ? 'on' : '') + '" data-action="gallery" data-v="1">🖼 Photos</button></div>' +
         (d.photoFolderUrl ? '<a class="btn ghost" href="' + esc(d.photoFolderUrl) + '" target="_blank" rel="noopener">📁 Drive ↗</a>' : '') + '</div>' + handoverCard();
 
-  return top +
+  return rcpcAlert(true) + top +
     '<div class="row filters"><div class="chips">' + chips + '</div><div class="sp"></div>' +
       (qn ? '<span class="qchip">⏳ ' + qn + ' photo' + (qn > 1 ? 's' : '') + ' waiting for signal</span>' : '') + '</div>' +
     paperCard() +
@@ -1536,9 +1620,10 @@ function sampleCard(x) {
   const match = '';      // RCPC decides; our guess is only a note
   const key = 'smp_' + x.id, open = IS_PHONE && !!S.open[key];
   const pills = [
-    x.validated ? '<span class="tagp ok">RCPC: ' + esc(x.validated) + '</span>' : x.submitted ? '<span class="tagp warn">Waiting for RCPC</span>' : '<span class="tagp">Not sent yet</span>',
+    freshPill(x),
+    !['late', 'expired'].includes(freshness(x).st) ? (x.validated ? '<span class="tagp ok">RCPC: ' + esc(x.validated) + '</span>' : x.submitted ? '<span class="tagp warn">Waiting for RCPC</span>' : '') : '',
     x.bagged ? '<span class="tagp ok">✓ Bagged</span>' : '',
-    x.submitted ? '<span class="tagp ok">Sent ' + esc(fmt(x.submitted).replace(/^\w+, /, '')) + '</span>' : '',
+    freshness(x).st === 'ok' ? '<span class="tagp ok">Sent ' + esc(fmt(x.submitted).replace(/^\w+, /, '')) + '</span>' : '',
     x.disease && !x.validated ? '<span class="tagp">Our guess: ' + esc(x.disease) + '</span>' : ''].join('');
   const toggle = !IS_PHONE ? '' : '<button class="morebtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '">' + (open ? 'Less ▴' : 'Edit ▾') + '</button>';
   const photoBtn = IS_PHONE
@@ -1575,11 +1660,14 @@ function renderOv() {
   if (!S.ov || !S.data) return;
   document.getElementById('ovBody').innerHTML = sheetHtml();
 }
-function sheetCandidates() { return S.data.samples.filter(x => !x.submitted).sort((a, b) => a.id < b.id ? -1 : 1); }
+function sheetCandidates() { return S.data.samples.filter(x => !x.submitted && freshness(x).st !== 'expired').sort((a, b) => a.id < b.id ? -1 : 1); }
 function sheetHtml() {
   const o = S.ov, list = sheetCandidates(), sel = list.filter(x => o.sel[x.id]);
-  const rows = list.map((x, i) => '<tr class="' + (o.sel[x.id] ? '' : 'noprint') + '"><td class="noprint"><input type="checkbox" data-change="sheetSel" data-id="' + esc(x.id) + '"' + (o.sel[x.id] ? ' checked' : '') + ' aria-label="Include ' + esc(x.id) + '"></td>' +
-    '<td><b style="font-family:ui-monospace,monospace">' + esc(x.id) + '</b></td><td>' + esc(x.date ? fmt(x.date).replace(/^\w+, /, '') : '—') + '</td><td>' + esc(x.site || '—') + '</td><td class="hs">' + esc(ownerOf(x.id)) + '</td>' +
+  const lateOn = x => x.date && o.date > addDays(x.date, 1);
+  const lateSel = sel.filter(lateOn).length;
+  const expired = S.data.samples.filter(x => freshness(x).st === 'expired').length;
+  const rows = list.map((x, i) => '<tr class="' + (o.sel[x.id] ? '' : 'noprint') + (lateOn(x) ? ' late' : '') + '"><td class="noprint"><input type="checkbox" data-change="sheetSel" data-id="' + esc(x.id) + '"' + (o.sel[x.id] ? ' checked' : '') + ' aria-label="Include ' + esc(x.id) + '"></td>' +
+    '<td><b style="font-family:ui-monospace,monospace">' + esc(x.id) + '</b></td><td>' + esc(x.date ? fmt(x.date).replace(/^\w+, /, '') : '—') + (lateOn(x) ? '<div class="small noprint">late: due ' + esc(fmt(addDays(x.date, 1)).replace(/^\w+, /, '')) + '</div>' : '') + '</td><td>' + esc(x.site || '—') + '</td><td class="hs">' + esc(ownerOf(x.id)) + '</td>' +
     '<td class="hs">' + (x.angles || []).length + '</td><td>' + esc(x.notes || '') + '</td></tr>').join('');
   return '<div class="cam-head noprint"><div><div class="eyebrow">DA RCPC hand-over</div><h2 style="margin:4px 0 0">📝 Submission list</h2></div><span class="sp"></span>' +
       '<button class="iconbtn" data-action="ovClose" aria-label="Close">✕</button></div>' +
@@ -1588,6 +1676,8 @@ function sheetHtml() {
       '<div class="small">' + esc(S.data.thesisTitle) + '<br>Fe Anne Malasarte · Rho Alphone Jornadal · Charisse Priego · BSCS, University of Mindanao</div>' +
       '<div class="row" style="margin:12px 0;gap:10px"><label class="fl" style="width:170px">Hand-over date<input type="date" value="' + esc(o.date) + '" data-change="sheetDate"></label>' +
         '<b style="align-self:end;padding-bottom:8px">' + sel.length + ' sample' + (sel.length === 1 ? '' : 's') + '</b></div>' +
+      (lateSel ? '<p class="small noprint" style="color:var(--red);font-weight:700;margin:0 0 8px">⚠ ' + lateSel + ' leaf' + (lateSel > 1 ? 'ves' : '') + ' would arrive later than the day after collection and become invalid.</p>' : '') +
+      (expired ? '<p class="small muted noprint" style="margin:0 0 8px">' + expired + ' leaf' + (expired > 1 ? 'ves' : '') + ' missed the next-day deadline and can\'t be submitted.</p>' : '') +
       (list.length ? '<div class="tscroll"><table class="sheet-table"><thead><tr><th class="noprint"></th><th>Label</th><th>Collected</th><th>Site</th><th class="hs">By</th><th class="hs">Photos</th><th>Notes</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
         : '<div class="empty">No samples waiting to be sent.</div>') +
       '<p class="small" style="margin-top:12px">Disease class: to be identified by DA RCPC. Each leaf is wrapped in damp cotton and bagged with its label on masking tape.</p>' +
@@ -1781,6 +1871,7 @@ function camFinishHtml(x) {          // instructions only: nothing to tick or ty
       '<li><span class="n">2</span><span>Wrap the cut end in <b>damp cotton</b>.</span></li>' +
       '<li><span class="n">3</span><span>Put it in a <b>plastic bag</b>.</span></li>' +
       '<li><span class="n">4</span><span>Stick the <b>' + esc(x.id) + '</b> tape on the bag.</span></li>' +
+      '<li><span class="n">5</span><span>Bring it to DA RCPC by <b>' + esc(x.date ? fmt(addDays(x.date, 1)) : 'tomorrow') + '</b> (the next day).</span></li>' +
     '</ol>' +
     '<button class="btn bigcam" data-action="camNextSample">＋ Next leaf (' + esc(nextLabel(me)) + ')</button>' +
     '<button class="btn bigcam ghost" data-action="camDone">Done for now</button>';
@@ -2254,12 +2345,14 @@ document.addEventListener('click', e => {
   }
   else if (a === 'openSheet') {
     const sel = {}; sheetCandidates().forEach(x => { if ((x.angles || []).length >= MIN_ANGLES) sel[x.id] = true; });
-    openOv({ type: 'sheet', sel, date: S.data.rcpcDate && daysUntil(S.data.rcpcDate) >= 0 ? S.data.rcpcDate : localDay() });
+    openOv({ type: 'sheet', sel, date: localDay() });
   }
   else if (a === 'sheetPrint') { window.print(); }
   else if (a === 'sheetSubmit') {
     const ids = Object.keys(S.ov.sel), date = S.ov.date || localDay();
-    if (!ids.length || !confirm('Mark ' + ids.length + ' sample(s) as submitted to DA RCPC on ' + fmt(date) + '?')) return;
+    const late = ids.filter(id => { const x = sampleById(id); return x && x.date && date > addDays(x.date, 1); });
+    if (!ids.length || !confirm('Mark ' + ids.length + ' sample(s) as submitted to DA RCPC on ' + fmt(date) + '?' +
+      (late.length ? '\n\n⚠ ' + late.join(', ') + ' would be LATE (more than a day after collection) and invalid.' : ''))) return;
     save('submitSamples', [ids, date], () => { ids.forEach(id => { const x = sampleById(id); if (x) x.submitted = date; }); });
     closeOv();
   }

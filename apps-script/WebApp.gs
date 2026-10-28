@@ -653,6 +653,7 @@ function exportValidatedDataset() {
   rows.forEach(r => {
     const id = String(r[0] || ''), cls = String(r[10] || '');
     if (!id || classes.indexOf(cls) < 0) return;
+    if (!submittedOnTime_(r[2], r[9])) return;          // DA RCPC rule: submitted the day after collection, or the leaf is invalid
     let any = false;
     for (let n = 1; n <= CFG.photoAngles.length; n++) {
       const name = id + '_' + ('0' + n).slice(-2) + '.jpg';
@@ -906,3 +907,10 @@ function listPhotos() {
 function currentVersion_() { return PropertiesService.getScriptProperties().getProperty('DATA_VER') || '0'; }
 function bumpVersion_() { try { PropertiesService.getScriptProperties().setProperty('DATA_VER', String(Date.now())); } catch (e) {} }
 function getVersion() { return currentVersion_(); }
+
+/** A leaf is valid only if it reached DA RCPC no later than the day after it was collected. */
+function submittedOnTime_(collected, submitted) {
+  if (!(collected instanceof Date) || !(submitted instanceof Date)) return false;
+  const day = d => Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+  return day(submitted) - day(collected) <= 1;
+}
