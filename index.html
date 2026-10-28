@@ -332,7 +332,6 @@ tr.filled td.id{color:var(--ok)}
 .resume button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--amber-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--amber) 35%,transparent);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:600}
 .resume button .lbl{font-size:15px}
 .resume button .go{margin-left:auto;font-weight:800;color:var(--amber);white-space:nowrap}
-.ready-off{font-size:12.5px;font-weight:700;opacity:.9;margin-top:6px}
 .photo-pill{border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px;white-space:nowrap;background:var(--soft)}
 .photo-pill.ok{background:var(--ok-soft);color:var(--ok)}
 .photo-pill.part{background:var(--amber-soft);color:var(--amber)}
@@ -497,9 +496,6 @@ details.card[open]>summary::after{content:'▴'}
 @media screen and (max-width:600px){.sheet-table .hs{display:none}}
 .sign{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;font-size:13px}
 .sign div{border-top:1px solid var(--ink);padding-top:6px}
-.res-lbl{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:40px;font-weight:800;color:var(--brand);text-align:center;margin:8px 0 2px}
-.res-btns{display:grid;gap:10px;margin-top:16px}
-.res-btns .btn{min-height:56px;font-size:16px}
 .mtable{width:100%;min-width:560px;border-collapse:collapse;font-size:13px}
 .mtable th{position:static}
 .mtable td,.mtable th{padding:8px;border-bottom:1px solid var(--line);text-align:right}
@@ -632,10 +628,16 @@ async function call(fn, ...args) {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ token: store.get(TOKEN_STORE) || '', fn, args }),
     });
-  } catch (e) { const err = new Error("Can't reach the tracker server. Check your internet connection."); err.network = true; throw err; }
+  } catch (e) {
+    const err = new Error(navigator.onLine
+      ? "The tracker server has a setup error (your internet is fine). In Apps Script: keep only ThesisTracker.gs and WebApp.gs, deploy a New version with access \"Anyone\"."
+      : "You're offline.");
+    err.network = true; err.server = navigator.onLine;     // writes still wait safely in the outbox
+    throw err;
+  }
   let j;
   try { j = await res.json(); }
-  catch (e) { throw new Error('The tracker server sent an unexpected reply. In Apps Script, the deployment access must be "Anyone".'); }
+  catch (e) { throw new Error('The tracker server has a setup error (your internet is fine). In Apps Script: keep only ThesisTracker.gs and WebApp.gs, deploy a New version with access "Anyone".'); }
   if (!j.ok) { const err = new Error(j.error || 'Request failed'); err.auth = !!j.auth; throw err; }
   if (fn === 'getData' && j.data) store.set(DATA_STORE, JSON.stringify({ at: Date.now(), d: j.data }));
   return j.data;
@@ -742,7 +744,7 @@ const Demo = (() => {
       classes: ['Cordana Leaf Spot','Black Sigatoka','Healthy','Unsure'], revStatuses: ['C','NC','NA'],
       expenseCategories: ['Sample collection','Printing','Transport','Food','Materials','Fees','Other'] },
     panel: { adviser: 'Ms. Barbosa', members: ['Mr. Aborde','Mr. Hernando','Ms. Yara'], defense: 'Outline Defense · Sep 22, 2026 · Accepted with major revision' },
-    settings: { leafGoal: 30, classGoal: 10, defenseDate: iso(45) },
+    settings: { leafGoal: 30, defenseDate: iso(45) },
     records: {
       training: [
         { row: 3, date: iso(-9), model: 'Baseline EfficientNetB0', run: 'scratch-1', dataset: 'Curated 900 · 70/15/15', epochs: 30, accuracy: 91.4, precision: 91.0, recall: 90.6, f1: 90.8, size: 16.3, speed: 142, notes: 'Retrained from scratch', by: 'Rho' },
@@ -939,7 +941,7 @@ async function authSubmit(form) {
     }
     a.busy = false; renderAuth('');
   } catch (e) {
-    a.busy = false; renderAuth(e.network ? 'No signal. Signing in needs internet once.' : (e.message || String(e)));
+    a.busy = false; renderAuth(e.network && !e.server ? 'No signal. Signing in needs internet once.' : (e.message || String(e)));
   }
 }
 function finishSignIn(r) {
@@ -1313,7 +1315,7 @@ function paperNumbers() {
   }
   const lc = c => /healthy/i.test(c) ? 'healthy' : c.replace(/Leaf Spot/, 'leaf spot');
   const list = per.map(p => p.n + ' ' + lc(p.c));
-  const text = !set.length ? 'Numbers appear here once DA RCPC sends results. Enter them with "Enter RCPC results" on the Samples page.' : 'The local test set consists of ' + set.length + ' banana leaf samples (' + imgs.toLocaleString('en-US') + ' images) collected from ' +
+  const text = !set.length ? '' : 'The local test set consists of ' + set.length + ' banana leaf samples (' + imgs.toLocaleString('en-US') + ' images) collected from ' +
     (sites.length ? sites.join(', ') : '[farm / barangay]') + ' on ' + when + ': ' + list.slice(0, -1).join(', ') + ', and ' + list[list.length - 1] + ' samples. ' +
     'Each sample was photographed from three to five angles and submitted fresh to the DA Regional Crop Protection Center (RCPC) Davao' +
     ', which identified the disease class of each sample.';
@@ -1368,17 +1370,12 @@ function prefarmCard() {
 function handoverCard() {
   const d = S.data, st = settings();
   const ready = d.samples.filter(x => !x.submitted && (x.angles || []).length >= MIN_ANGLES).length;
-  const waiting = d.samples.filter(x => x.submitted && !x.validated).length;
-  const back = d.samples.filter(x => x.validated).length;
+  const sent = d.samples.filter(x => x.submitted).length;
   return '<div class="card" style="margin-bottom:14px;padding:14px 16px"><h3 style="margin:0">DA RCPC hand-over</h3>' +
-    '<div class="hand"><div><b>' + ready + '</b><span>ready to send</span></div><div><b>' + waiting + '</b><span>waiting for results</span></div><div><b>' + back + '</b><span>results in</span></div></div>' +
-    '<div class="row" style="gap:8px">' +
-      '<button class="btn" data-action="openSheet">📝 Submission list</button>' +
-      (IS_PHONE && waiting ? '<button class="btn ghost" data-action="openResults">🧪 Enter RCPC results (' + waiting + ')</button>' : '') + '</div>' +
-    '<div class="goalrow"><label class="fl">Leaves goal<input type="number" min="0" inputmode="numeric" placeholder="e.g. 30" value="' + esc(st.leafGoal || '') + '" data-change="setting" data-field="leafGoal"></label>' +
-      '<label class="fl">Per disease goal<input type="number" min="0" inputmode="numeric" placeholder="e.g. 10" value="' + esc(st.classGoal || '') + '" data-change="setting" data-field="classGoal"></label></div></div>';
+    '<div class="hand" style="grid-template-columns:1fr 1fr"><div><b>' + ready + '</b><span>ready to send</span></div><div><b>' + sent + '</b><span>sent to RCPC</span></div></div>' +
+    '<button class="btn" data-action="openSheet">📝 Submission list</button>' +
+    '<div class="goalrow"><label class="fl">Leaves goal<input type="number" min="0" inputmode="numeric" placeholder="e.g. 30" value="' + esc(st.leafGoal || '') + '" data-change="setting" data-field="leafGoal"></label></div></div>';
 }
-
 function vSamples() {
   const d = S.data, me = S.user, meM = TEAM.find(t => t.tab === me) || TEAM[0];
   const filt = S.sampleFilter || me;
@@ -1396,14 +1393,13 @@ function vSamples() {
   }).join('');
   const qn = Object.keys(S.queued).length;
   const unfinished = mine.filter(x => takenSet(x).size < MIN_ANGLES).sort((a, b) => labelNum(a.id) - labelNum(b.id));
-  const offlineReady = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
   const lp = leafProgress();
   const top = IS_PHONE
     ? '<div class="batch">' +
         '<div><div class="k">Next label</div><div class="big">' + esc(next) + '</div>' +
         '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' · ' + withPhotos + ' with photos</div>' +
         (lp.goal ? '<div class="gbar"><i style="width:' + lp.p + '%"></i></div><div class="small" style="opacity:.9">Team: ' + lp.done + ' of ' + lp.goal + ' leaves with photos</div>' : '') +
-        '<div class="ready-off">' + (offlineReady ? '✓ Works without signal' : '⚠ Open once with signal before the farm') + '</div></div>' +
+        '</div>' +
         '<div class="sp"></div>' +
         '<button class="btn newsample" data-action="newSample">＋ New sample 📷</button></div>' +
       (unfinished.length ? '<div class="resume">' + unfinished.slice(0, 3).map(x =>
@@ -1424,11 +1420,11 @@ function vSamples() {
 
 function paperCard() {
   const p = paperNumbers(), d = S.data;
-  const cg = settings().classGoal;
-  const rows = p.per.map(r => '<tr><td>' + esc(r.c) + '</td><td style="text-align:right">' + r.n + (cg ? '<span class="muted"> / ' + cg + '</span>' : '') + '</td><td style="text-align:right">' + r.img + '</td></tr>').join('');
+  if (!p.n) return '';                      // nothing to show until DA RCPC results are in the sheet
+  const rows = p.per.map(r => '<tr><td>' + esc(r.c) + '</td><td style="text-align:right">' + r.n + '</td><td style="text-align:right">' + r.img + '</td></tr>').join('');
   return '<details class="card" style="margin-bottom:14px"' + (S.paperOpen ? ' open' : '') + ' data-action="paperToggle"><summary>📄 Paper numbers · ' +
       (p.n ? p.n + ' RCPC-confirmed leaves, ' + p.imgs + ' images' : '<span class="muted" style="font-weight:600">waiting for RCPC results</span>') + '</summary>' +
-    '<table style="width:100%;min-width:0;margin:10px 0"><thead><tr><th>Class (RCPC)</th><th style="text-align:right">Leaves' + (cg ? ' / goal' : '') + '</th><th style="text-align:right">Images</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<table style="width:100%;min-width:0;margin:10px 0"><thead><tr><th>Class (RCPC)</th><th style="text-align:right">Leaves</th><th style="text-align:right">Images</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<div class="paper" id="paperText">' + esc(p.text) + '</div>' +
     '<div class="row" style="margin-top:10px">' + (p.n ? '<button class="btn" data-action="copyPaper">📋 Copy</button>' : '') +
     (p.useVal ? '<button class="btn ghost" data-action="exportSet"' + busyBtn(S.exporting, '📦 Export for training', 'Exporting…') + '</button>' : '') +
@@ -1467,7 +1463,6 @@ function sampleCard(x) {
       '<label>Collected<input type="date" value="' + esc(x.date) + '" data-change="sample" ' + at + ' data-field="date"></label>' +
       '<label class="wide">Site<input type="text" value="' + esc(x.site) + '" placeholder="Farm / barangay" data-change="sample" ' + at + ' data-field="site"></label>' +
       '<label>Submitted to RCPC<input type="date" value="' + esc(x.submitted) + '" data-change="sample" ' + at + ' data-field="submitted"></label>' +
-      '<label>RCPC result' + sel(x.validated, 'validated') + '</label>' +
     '</div>' +
     '<div class="sc-foot">' +
       '<label class="ck"><input type="checkbox" ' + (x.cotton ? 'checked' : '') + ' data-change="sample" ' + at + ' data-field="cotton">Cotton</label>' +
@@ -1479,12 +1474,12 @@ function sampleCard(x) {
     '<div class="sc-foot">' + toggle + '</div></div>');
 }
 
-/* ---------- overlays: submission list (print) and RCPC results ---------- */
+/* ---------- overlay: submission list (print) ---------- */
 function openOv(o) { S.ov = o; document.getElementById('ov').hidden = false; renderOv(); }
 function closeOv() { S.ov = null; document.getElementById('ov').hidden = true; render(); }
 function renderOv() {
   if (!S.ov || !S.data) return;
-  document.getElementById('ovBody').innerHTML = S.ov.type === 'sheet' ? sheetHtml() : resultsHtml();
+  document.getElementById('ovBody').innerHTML = sheetHtml();
 }
 function sheetCandidates() { return S.data.samples.filter(x => !x.submitted).sort((a, b) => a.id < b.id ? -1 : 1); }
 function sheetHtml() {
@@ -1508,20 +1503,6 @@ function sheetHtml() {
       '<button class="btn ghost" data-action="sheetPrint"' + (sel.length ? '' : ' disabled') + '>🖨 Print / save PDF</button>' +
       (IS_PHONE ? '<button class="btn" data-action="sheetSubmit"' + (sel.length ? '' : ' disabled') + '>✓ Mark ' + sel.length + ' as submitted</button>' : '') + '</div>';
 }
-function resultsQueue() { return S.data.samples.filter(x => x.submitted && !x.validated).sort((a, b) => a.id < b.id ? -1 : 1); }
-function resultsHtml() {
-  const o = S.ov, q = o.ids.map(sampleById).filter(Boolean), x = q[o.i];
-  const head = '<div class="cam-head"><div><div class="eyebrow">RCPC results · ' + Math.min(o.i + 1, q.length) + ' of ' + q.length + '</div><h2 style="margin:4px 0 0">🧪 What did DA RCPC say?</h2></div><span class="sp"></span>' +
-    '<button class="iconbtn" data-action="ovClose" aria-label="Close">✕</button></div>';
-  if (!x) return head + '<div class="empty" style="margin-top:16px">✓ All results entered (' + o.saved + ' saved).</div><button class="btn bigcam" data-action="ovClose">Done</button>';
-  const cls = S.data.lists.classes;
-  return head +
-    '<div class="res-lbl">' + esc(x.id) + '</div>' +
-    '<div class="small muted" style="text-align:center">' + esc([x.site, x.date ? fmt(x.date) : '', 'sent ' + fmt(x.submitted)].filter(Boolean).join(' · ')) + '</div>' +
-    '<div class="res-btns">' + cls.map(c => '<button class="btn' + (/unsure/i.test(c) ? ' ghost' : '') + '" data-action="resultPick" data-v="' + esc(c) + '">' + esc(/unsure/i.test(c) ? 'Unclear / other' : c) + '</button>').join('') +
-      '<button class="btn ghost" data-action="resultSkip">Skip for now</button></div>';
-}
-
 /* ---------- desktop photo gallery ---------- */
 function loadPhotoIndex() {
   if (S.photoIndex && !S.photoIndex.__err) return;
@@ -2117,7 +2098,7 @@ document.addEventListener('click', e => {
     if (S.auth.sending || S.auth.busy) return;
     S.auth.sending = true; renderAuth('');
     call('authForgot', S.auth.email).then(() => { S.auth.sending = false; S.auth.step = 'code'; renderAuth(''); toast('Code sent', 1800); })
-      .catch(e => { S.auth.sending = false; renderAuth(e.network ? 'No signal.' : e.message); });
+      .catch(e => { S.auth.sending = false; renderAuth(e.network && !e.server ? 'No signal.' : e.message); });
     return;
   }
   if (a === 'installNow') { doInstall(); return; }
@@ -2163,14 +2144,6 @@ document.addEventListener('click', e => {
     save('submitSamples', [ids, date], () => { ids.forEach(id => { const x = sampleById(id); if (x) x.submitted = date; }); });
     closeOv();
   }
-  else if (a === 'openResults') { const ids = resultsQueue().map(x => x.id); if (ids.length) openOv({ type: 'results', ids, i: 0, saved: 0 }); }
-  else if (a === 'resultPick') {
-    const id = S.ov.ids[S.ov.i];
-    save('updateSample', [id, 'validated', v], () => { sampleById(id).validated = v; });
-    if (navigator.vibrate) navigator.vibrate(30);
-    S.ov.i++; S.ov.saved++; renderOv();
-  }
-  else if (a === 'resultSkip') { S.ov.i++; renderOv(); }
   else if (a === 'ovClose') { closeOv(); }
   else if (a === 'gallery') { S.gallery = v === '1'; if (S.gallery) { if (S.photoIndex && S.photoIndex.__err) S.photoIndex = null; loadPhotoIndex(); } render(); }
   else if (a === 'newSample') { newSample(); }

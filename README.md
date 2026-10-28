@@ -62,10 +62,9 @@ Only the team's six emails (two per member, listed in `accounts` in `ThesisTrack
 
 ## Field day
 - **Before the farm** checklist (Samples page): supplies bought, phone charged, app ready offline, tape, cotton, bags, shears. It resets every day.
-- **Leaves goal** and **per disease goal**: set them on the Samples page. The progress bar shows the team total.
+- **Leaves goal**: set it on the Samples page. The progress bar shows the team total.
 - **📝 Submission list**: tick the leaves you're handing over and print or save it as a PDF for DA RCPC. It lists label, date, site and notes, with signature lines and no disease column. On a phone, **Mark as submitted** stamps them all at once.
-- **🧪 Enter RCPC results**: when results come back, step through each leaf and tap the class.
-- **📄 Paper numbers** count **only RCPC-confirmed leaves**.
+- **When DA RCPC sends results** (likely as their own spreadsheet): copy each leaf's result into the **RCPC Validated Class** column of the **DA RCPC Samples** tab, matching by label. The app picks them up by itself: leaves show the RCPC result, and **📄 Paper numbers** appears, counting **only RCPC-confirmed leaves**.
 
 ## Training, consultations, final defense (More tab)
 - **Training runs**: log each baseline / enhanced run (accuracy, precision, recall, F1, size, phone speed). **📋 Copy table for Chapter 4** copies the best run per model; paste it into Google Docs and it becomes a table.
