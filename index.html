@@ -656,6 +656,28 @@ img,svg,video,table{max-width:100%}
   .scards{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stats.s6{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* ================= header: always one tidy row ================= */
+.hd{flex-wrap:nowrap;gap:12px}
+.brand{flex:1 1 auto;min-width:0}
+.brand>div{min-width:0}
+.brand h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-right{flex:0 0 auto;flex-wrap:nowrap;gap:8px}
+.install{display:inline-flex;align-items:center;gap:6px;min-height:36px}
+.install[hidden]{display:none}
+.install svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#syncChip{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:900px){ #countPill{display:none} }
+@media (max-width:720px){
+  .install{width:40px;height:40px;padding:0;justify-content:center;border-radius:50%}
+  .install span{display:none}
+  #syncChip{max-width:96px;font-size:11.5px;padding:4px 8px}
+}
+@media (max-width:480px){
+  #syncChip .lng{display:none}
+  .brand h1{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:clamp(14px,4.6vw,21px);line-height:1.05}
+}
+@media (max-width:360px){ .logo{width:32px;height:32px} .hd{gap:8px} .brand{gap:8px} }
 </style>
 </head>
 <body>
@@ -698,7 +720,7 @@ img,svg,video,table{max-width:100%}
         </div>
       </div>
       <div class="hd-right">
-        <button class="install" id="installBtn" data-action="install" hidden>⬇ Install app</button>
+        <button class="install" id="installBtn" data-action="install" hidden aria-label="Install app" title="Install app"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span>Install app</span></button>
         <button class="me" id="meChip" data-action="logout" hidden title="Log out"></button>
         <span class="qchip" id="syncChip" hidden></span>
         <div class="pill" id="countPill">DA RCPC submission · <b>set date</b></div>
@@ -1136,8 +1158,9 @@ function updateSyncChip() {
   const el = document.getElementById('syncChip');
   if (!el) return;
   el.hidden = !n;
-  if (navigator.onLine && (flushing || Object.keys(S.uploading).length)) el.innerHTML = SPIN + 'Syncing ' + n;
-  else el.textContent = '⏳ ' + n + ' to sync';
+  el.title = n + ' change' + (n > 1 ? 's' : '') + ' waiting to sync';
+  if (navigator.onLine && (flushing || Object.keys(S.uploading).length)) el.innerHTML = SPIN + '<span class="lng">Syncing </span>' + n;
+  else el.innerHTML = '⏳ ' + n + '<span class="lng"> to sync</span>';
 }
 function flushOutbox() {
   if (flushing) return flushing;
@@ -1576,6 +1599,7 @@ function vSamples() {
     ? '<div class="batch">' +
         '<div><div class="k">Next label</div><div class="big">' + esc(next) + '</div>' +
         '<div class="small" style="opacity:.85">' + mine.length + ' sample' + (mine.length === 1 ? '' : 's') + ' · ' + withPhotos + ' with photos</div>' +
+        (!IOS_DEVICE ? '<button class="linkbtn" style="color:#fff;opacity:.9;margin-top:6px;font-size:12.5px" data-action="phoneCopy">📲 Copies on this phone: <b>' + (phoneCopyOn() ? 'On' : 'Off') + '</b></button>' : '') +
         (lp.goal ? '<div class="gbar"><i style="width:' + lp.p + '%"></i></div><div class="small" style="opacity:.9">Team: ' + lp.done + ' of ' + lp.goal + ' leaves with photos</div>' : '') +
         '</div>' +
         '<div class="sp"></div>' +
@@ -1763,6 +1787,18 @@ function photoStatusLine(x) {
   const up = states.filter(s => s === 'up' || s === 'prep').length, q = states.filter(s => s === 'q').length;
   return up ? SPIN + 'Uploading ' + up + ' photo' + (up > 1 ? 's' : '') + '…' : esc(q ? '📴 ' + q + ' photo' + (q > 1 ? 's' : '') + ' saved on this phone · uploads when there\'s signal' : states.length ? '✓ All photos saved to Drive' : '');
 }
+/* A copy of each photo is also saved on the phone (Gallery → Download), named by its label: FA-001_01.jpg, not IMG_2026… */
+const PHONE_COPY = 'bt:phoneCopy';
+const IOS_DEVICE = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const phoneCopyOn = () => IS_PHONE && !IOS_DEVICE && store.get(PHONE_COPY) !== '0';
+function saveToPhone(blob, name) {
+  try {
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 20000);
+  } catch (e) { /* the Drive copy is the one that matters */ }
+}
 let camStream = null;
 const liveCamOK = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext;
 function startStream() {
@@ -1836,6 +1872,7 @@ function snap() {
       const iss = photoIssues(c);
       if (iss.length) { S.issues[key] = iss.join(' and '); toast('⚠ Photo ' + a + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); renderCam(); }
       c.toBlob(b => {
+        if (phoneCopyOn()) saveToPhone(b, fname(x.id, a));
         const r = new FileReader();
         r.onload = () => { delete S.preparing[key]; acceptShot({ id: x.id, angle: a, b64: String(r.result).split(',')[1], at: Date.now() }, S.thumbs[key]); };
         r.onerror = () => { delete S.preparing[key]; delete S.thumbs[key]; toast('Photo ' + a + ' could not be saved. Take it again.', 4000, true); renderCam(); };
@@ -2033,6 +2070,7 @@ document.getElementById('camInput').addEventListener('change', async e => {
     const p = await shrinkPhoto(file);
     delete S.preparing[key];
     const job = { id, angle, b64: p.full.split(',')[1], at: Date.now() };
+    if (phoneCopyOn()) fetch(p.full).then(r => r.blob()).then(b => saveToPhone(b, fname(id, angle))).catch(() => {});
     if (p.issues.length) { S.issues[key] = p.issues.join(' and '); toast('⚠ Photo ' + angle + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); } else delete S.issues[key];
     await acceptShot(job, p.thumb);
     if (S.cam && S.cam.id === id && takenSet(sampleById(id)).size >= MAX_ANGLES && !S.cam.target) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }
@@ -2321,6 +2359,10 @@ document.addEventListener('click', e => {
     save('deleteSample', [id], () => { S.data.samples = S.data.samples.filter(s => s.id !== id); })
       .then(() => toast('Deleted ' + id + ' · label free to reuse', 2200));
     updateSyncChip();
+  }
+  else if (a === 'phoneCopy') {
+    const on = !phoneCopyOn(); store.set(PHONE_COPY, on ? '1' : '0'); render();
+    toast(on ? 'Each photo is also saved on this phone (Gallery → Download), named like FA-001_01.jpg' : 'Photos are saved to Drive only', 3500);
   }
   else if (a === 'toggleCard') { S.open[v] = !S.open[v]; render(); }
   else if (a === 'more') { S.more = v; S.addRec = null; render(); window.scrollTo(0, 0); }

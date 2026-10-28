@@ -278,7 +278,7 @@ function getData() {
     rcpcDate: dash ? fmtDate_(dash.getRange('E4').getValue(), tz) : '',
     members, revisions, samples, supplies,
     activity: readActivity_(tz),
-    photoFolderUrl: folderUrl_('PHOTO_FOLDER_ID_V2'),
+    photoFolderUrl: 'https://drive.google.com/drive/folders/' + PHOTO_ROOT_ID,
     receiptFolderUrl: folderUrl_('RECEIPT_FOLDER_ID'),
     exportFolderUrl: folderUrl_('EXPORT_FOLDER_ID'),
     backupFolderUrl: folderUrl_('BACKUP_FOLDER_ID'),
@@ -419,8 +419,8 @@ function deleteSample(id) {
   if (!/^[A-Z]{2}-\d{3,}$/.test(id)) throw new Error('Bad sample label: ' + id);
   let trashed = 0;
   try {
-    const it = photoFolder_().getFiles();
-    while (it.hasNext()) { const f = it.next(); if (!f.isTrashed() && f.getName().toUpperCase().indexOf(id + '_') === 0) { f.setTrashed(true); trashed++; } }   // Drive trash: recoverable for 30 days
+    photoFilesFor_(id).forEach(f => { f.setTrashed(true); trashed++; });   // Drive trash: recoverable for 30 days
+    const sf = sampleFolder_(id, false); if (sf) sf.setTrashed(true);       // and the leaf's own folder
   } catch (e) { /* no photo folder yet: nothing to remove */ }
   try {                                                       // copies made by "Export for training"
     const exp = PropertiesService.getScriptProperties().getProperty('EXPORT_FOLDER_ID');
@@ -513,23 +513,58 @@ function setRcpcDate(iso) {
 }
 
 /* ---------- sample photos (Google Drive) ---------- */
-// The team's "Curated Banana Leaf Disease Dataset" folder (everyone already has access).
+// Photos are saved in the team's sample-photo folder, one folder per member and one per leaf:
+//   <photo folder> / Fe Anne (FA) / FA-001 / FA-001_01.jpg, FA-001_02.jpg, FA-001_03.jpg
+const PHOTO_ROOT_ID = '19nx98pKjnIASqs6NZ5rSo_260TY1xCAA';
+// Older versions saved everything flat in "Curated Banana Leaf Disease Dataset / DA RCPC Sample Photos".
 const DATASET_FOLDER_ID = '1OxFuhfrEIChjzVFISjBL0J8yrMM2af-P';
-// Photos go into ONE subfolder there, so they never mix with the curated images:
-//   Curated Banana Leaf Disease Dataset / DA RCPC Sample Photos / FA-001_01.jpg …
 const PHOTO_SUBFOLDER = 'DA RCPC Sample Photos';
 
-function photoFolder_() {
-  const props = PropertiesService.getScriptProperties();
-  const id = props.getProperty('PHOTO_FOLDER_ID_V2');
-  if (id) {
-    try { const f = DriveApp.getFolderById(id); if (!f.isTrashed()) return f; } catch (e) {}
+function photoRoot_() { return DriveApp.getFolderById(PHOTO_ROOT_ID); }
+function photoFolder_() { return photoRoot_(); }
+function memberFolderName_(id) {
+  const m = CFG.members.find(x => String(id).indexOf(x.prefix + '-') === 0);
+  return m ? m.tab + ' (' + m.prefix + ')' : 'Other';
+}
+function childFolder_(parent, name, create) {
+  const it = parent.getFoldersByName(name);
+  while (it.hasNext()) { const f = it.next(); if (!f.isTrashed()) return f; }
+  return create ? parent.createFolder(name) : null;
+}
+/** The leaf's own folder (FA-001), inside its member's folder. */
+function sampleFolder_(id, create) {
+  const mf = childFolder_(photoRoot_(), memberFolderName_(id), create);
+  return mf ? childFolder_(mf, id, create) : null;
+}
+/** The old flat folder, if it exists (never created any more). */
+function legacyPhotoFolder_() {
+  const id = PropertiesService.getScriptProperties().getProperty('PHOTO_FOLDER_ID_V2');
+  if (!id) return null;
+  try { const f = DriveApp.getFolderById(id); return f.isTrashed() ? null : f; } catch (e) { return null; }
+}
+/** Live (not trashed) photo files for a leaf: its folder first, then any left in the old flat folder. */
+function photoFilesFor_(id) {
+  const out = [], seen = {};
+  const add = f => { const n = f.getName(); if (!f.isTrashed() && n.toUpperCase().indexOf(id + '_') === 0 && !seen[n]) { seen[n] = 1; out.push(f); } };
+  try { const sf = sampleFolder_(id, false); if (sf) { const it = sf.getFiles(); while (it.hasNext()) add(it.next()); } } catch (e) {}
+  try { const lf = legacyPhotoFolder_(); if (lf) { const it = lf.getFiles(); while (it.hasNext()) add(it.next()); } } catch (e) {}
+  return out;
+}
+/** Moves photos from the old flat folder into the member / leaf folders and updates the sheet links. Safe to run again. */
+function migrateLegacyPhotos_() {
+  const lf = legacyPhotoFolder_();
+  if (!lf) return 0;
+  const sh = SpreadsheetApp.getActive().getSheetByName('DA RCPC Samples');
+  let moved = 0; const ids = {};
+  const it = lf.getFiles();
+  while (it.hasNext()) {
+    const f = it.next(), m = f.getName().match(/^([A-Z]{2}-\d{3,})_(\d{2})\.jpe?g$/i);
+    if (!m || f.isTrashed()) continue;
+    const id = m[1].toUpperCase();
+    f.moveTo(sampleFolder_(id, true)); moved++; ids[id] = 1;
   }
-  const parent = DriveApp.getFolderById(DATASET_FOLDER_ID);
-  const it = parent.getFoldersByName(PHOTO_SUBFOLDER);
-  const f = it.hasNext() ? it.next() : parent.createFolder(PHOTO_SUBFOLDER);
-  props.setProperty('PHOTO_FOLDER_ID_V2', f.getId());
-  return f;
+  if (sh) Object.keys(ids).forEach(id => { const r = sampleRow_(sh, id); if (r > 0) sh.getRange(r, 14).setFormula('=HYPERLINK("' + sampleFolder_(id, false).getUrl() + '","Open photos ↗")'); });
+  return moved;
 }
 
 /**
@@ -543,10 +578,9 @@ function uploadPhoto(id, angle, b64) {
   const sh = sheet_('DA RCPC Samples');
   createSample(id);                       // a sample started offline gets its row here if needed
 
-  const folder = photoFolder_();
+  const folder = sampleFolder_(id, true);                 // <photo folder> / Fe Anne (FA) / FA-001
   const name = id + '_' + ('0' + angle).slice(-2) + '.jpg';
-  const old = folder.getFilesByName(name);
-  while (old.hasNext()) old.next().setTrashed(true);
+  photoFilesFor_(id).filter(f => f.getName() === name).forEach(f => f.setTrashed(true));   // a retake replaces the old one
   folder.createFile(Utilities.newBlob(Utilities.base64Decode(String(b64).replace(/^data:image\/\w+;base64,/, '')), 'image/jpeg', name));
 
   return withLock_(() => {
@@ -570,15 +604,17 @@ function uploadPhoto(id, angle, b64) {
 function setupPhotoFolder() {
   const ui = SpreadsheetApp.getUi();
   let f;
-  try { f = photoFolder_(); }
+  try { f = photoRoot_(); CFG.members.forEach(m => childFolder_(f, m.tab + ' (' + m.prefix + ')', true)); }
   catch (e) {
-    ui.alert('Could not open the dataset folder',
-      'Make sure the account that owns this script can EDIT the "Curated Banana Leaf Disease Dataset" folder.\n\n' + e.message, ui.ButtonSet.OK);
+    ui.alert('Could not open the photo folder',
+      'Make sure the account that owns this script can EDIT this folder:\nhttps://drive.google.com/drive/folders/' + PHOTO_ROOT_ID + '\n\n' + e.message, ui.ButtonSet.OK);
     return;
   }
+  let moved = 0; try { moved = migrateLegacyPhotos_(); } catch (e) {}
   ui.alert('Photo folder connected 📷',
-    'Photos from the app are saved here:\nCurated Banana Leaf Disease Dataset / ' + PHOTO_SUBFOLDER + '\n' + f.getUrl() +
-    '\n\nNow make a New version of the web app deployment (Deploy → Manage deployments → ✏️ → New version) so the app can save photos.',
+    'Photos from the app are saved here, one folder per member and per leaf:\n' + f.getUrl() +
+    (moved ? '\n\nMoved ' + moved + ' older photo(s) into their leaf folders.' : '') +
+    '\n\nIf you changed the script, make a New version of the deployment (Deploy → Manage deployments → ✏️ → New version).',
     ui.ButtonSet.OK);
 }
 
@@ -645,7 +681,6 @@ function exportValidatedDataset() {
   const existing = {};   // file name -> {cls, file}
   classes.forEach(c => { const it = folders[c].getFiles(); while (it.hasNext()) { const f = it.next(); if (!f.isTrashed()) existing[f.getName()] = { cls: c, file: f }; } });
 
-  const photos = photoFolder_();
   const last = sh.getLastRow();
   const rows = last >= 4 ? sh.getRange(4, 1, last - 3, 11).getValues() : [];
   const counts = {}; classes.forEach(c => { counts[c] = { samples: 0, images: 0 }; });
@@ -655,11 +690,10 @@ function exportValidatedDataset() {
     if (!id || classes.indexOf(cls) < 0) return;
     if (!submittedOnTime_(r[2], r[9])) return;          // DA RCPC rule: submitted the day after collection, or the leaf is invalid
     let any = false;
+    const files = photoFilesFor_(id);
     for (let n = 1; n <= CFG.photoAngles.length; n++) {
       const name = id + '_' + ('0' + n).slice(-2) + '.jpg';
-      const it = photos.getFilesByName(name);
-      let srcFile = null;
-      while (it.hasNext()) { const f = it.next(); if (!f.isTrashed()) { srcFile = f; break; } }   // skip deleted / replaced photos
+      const srcFile = files.find(f => f.getName() === name);      // deleted / replaced photos are already skipped
       if (!srcFile) continue;
       any = true; counts[cls].images++;
       const have = existing[name];
@@ -893,12 +927,19 @@ function submitSamples(ids, iso) {
 /** For the desktop gallery: every sample photo in the Drive folder, grouped by label. */
 function listPhotos() {
   const out = {};
-  const it = photoFolder_().getFiles();
-  while (it.hasNext()) {
-    const f = it.next(), m = f.getName().match(/^([A-Z]{2}-\d{3,})_(\d{2})\.jpe?g$/i);
-    if (!m || f.isTrashed()) continue;
-    (out[m[1].toUpperCase()] = out[m[1].toUpperCase()] || []).push({ angle: Number(m[2]), file: f.getId() });
+  const add = f => {
+    const m = f.getName().match(/^([A-Z]{2}-\d{3,})_(\d{2})\.jpe?g$/i);
+    if (!m || f.isTrashed()) return;
+    const id = m[1].toUpperCase(), list = (out[id] = out[id] || []);
+    if (!list.some(p => p.angle === Number(m[2]))) list.push({ angle: Number(m[2]), file: f.getId() });
+  };
+  const members = photoRoot_().getFolders();
+  while (members.hasNext()) {
+    const mf = members.next(); if (mf.isTrashed()) continue;
+    const leaves = mf.getFolders();
+    while (leaves.hasNext()) { const lf = leaves.next(); if (lf.isTrashed()) continue; const it = lf.getFiles(); while (it.hasNext()) add(it.next()); }
   }
+  const old = legacyPhotoFolder_(); if (old) { const it = old.getFiles(); while (it.hasNext()) add(it.next()); }
   Object.keys(out).forEach(k => out[k].sort((a, b) => a.angle - b.angle));
   return out;
 }

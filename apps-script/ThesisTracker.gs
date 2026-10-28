@@ -281,6 +281,7 @@ function setupTracker() {
   applyPaperReviewOct28_(ss);
   ensureWeeklyBackup_();
   ensureWeeklyDigest_();
+  try { migrateLegacyPhotos_(); } catch (e) { /* photo folder not reachable yet: "Connect photo folder" shows why */ }
 
   // summary tabs: always refreshed (they only hold formulas)
   [['Links', buildLinks_], ['All Open Tasks', buildOpenTasks_], ['Dashboard', buildDashboard_]].forEach(([name, build]) => replaceTab_(ss, name, build));

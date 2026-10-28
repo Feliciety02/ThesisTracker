@@ -66,7 +66,8 @@ Only the team's six emails (two per member, listed in `accounts` in `ThesisTrack
 - **You don't decide the disease. DA RCPC does.** Leaves show *Not sent yet*, then *Waiting for RCPC*, then the RCPC result. You can still add a guess when editing a leaf, but it's optional and never counted.
 - To retake a photo, tap 📷 on the leaf's card, then tap the photo.
 - To delete a leaf: on its card tap **Edit ▾ → 🗑 Delete sample** (phone). Its photos (and any copies exported for training) go to the Drive trash, and the label is freed: your next new sample reuses the lowest free number.
-- Photos are saved to the **DA RCPC Sample Photos** folder inside the Curated Banana Leaf Disease Dataset folder, named `<label>_01.jpg … _03.jpg`.
+- Photos are saved to the team's [sample photo folder](https://drive.google.com/drive/folders/19nx98pKjnIASqs6NZ5rSo_260TY1xCAA), one folder per member and one per leaf: `Fe Anne (FA) / FA-001 / FA-001_01.jpg … _03.jpg`. Running **setupTracker** (or **📷 Connect photo folder**) moves photos saved by older versions into these folders.
+- A copy of each photo is also saved on the phone (Android: Gallery → Download), already named by its label. Turn it off with **📲 Copies on this phone** on the Samples page. Chrome may ask once to allow multiple downloads: tap **Allow**.
 - If the in-app camera isn't allowed, the app falls back to the phone's camera app.
 
 ## Field day
