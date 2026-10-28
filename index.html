@@ -115,7 +115,7 @@ h3{font-family:var(--hfont);font-size:18px;margin:0 0 10px;font-weight:700;lette
 .chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:6px}
 input:not([type]),input[type=text],input[type=search],input[type=number],input[type=date],input[type=email],input[type=password],input[type=tel],input[type=url],select,textarea{
   background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
-input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--brand) 40%,transparent);outline-offset:1px;border-color:var(--brand)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
 .btn{border:0;background:var(--brand);color:var(--brand-ink);padding:9px 16px;border-radius:10px;font-weight:700;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
 .btn:disabled{opacity:.5;cursor:default}
@@ -456,9 +456,10 @@ header{padding-top:env(safe-area-inset-top)}
 .auth-links .linkbtn{font-size:13.5px;padding:6px 2px;display:inline-flex;align-items:center}
 .login-err:empty{display:none}
 .pwwrap{position:relative;display:block}
-.pwwrap input{width:100%;padding-right:78px!important}
-.pwbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--soft);border:0;border-radius:8px;padding:7px 10px;font-weight:700;font-size:12.5px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0}
-.pwbtn:hover{background:var(--line)}
+.pwwrap input{width:100%;padding-right:48px!important}
+.pwbtn{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:transparent;border:0;padding:0;display:grid;place-items:center;color:var(--muted);cursor:pointer}
+.pwbtn:hover{background:var(--soft);color:var(--ink)}
+.pwbtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .fhint{font-size:12px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0;min-height:1em}
 .fhint.ok{color:var(--ok)}.fhint.warn{color:var(--red)}
 .searchwrap{position:relative;display:inline-block}
@@ -912,7 +913,7 @@ function renderAuth(err) {
   const field = (label, html) => '<label>' + label + html + '</label>';
   const shown = !!a.showPw;
   const pwField = (label, auto, extra, hint) => '<label>' + label + '<span class="pwwrap"><input type="' + (shown ? 'text' : 'password') + '" name="pw" autocomplete="' + auto + '" autocapitalize="off" spellcheck="false" required' + (extra || '') + '>' +
-      '<button type="button" class="pwbtn" data-action="pwToggle" aria-pressed="' + shown + '" aria-label="' + (shown ? 'Hide password' : 'Show password') + '">' + (shown ? '🙈 Hide' : '👁 Show') + '</button></span>' +
+      '<button type="button" class="pwbtn" data-action="pwToggle" aria-pressed="' + shown + '" aria-label="' + (shown ? 'Hide password' : 'Show password') + '" title="' + (shown ? 'Hide password' : 'Show password') + '">' + (shown ? EYE_OFF : EYE) + '</button></span>' +
       '<span class="fhint" id="pwHint">' + (hint || '') + '</span></label>';
   const pill = '<div class="acct-pill"><span class="av">' + esc((a.email || '?')[0].toUpperCase()) + '</span><span>' + esc(a.email) + '</span></div>' +
     '<input type="email" name="email" autocomplete="username" value="' + esc(a.email) + '" hidden>';
@@ -941,6 +942,8 @@ function renderAuth(err) {
   document.getElementById('loginErr').textContent = err || '';
   const first = f.querySelector('input:not([hidden])'); if (first) setTimeout(() => first.focus(), 30);
 }
+const EYE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
 function pwLenHint(v) { const n = (v || '').length; return n >= 8 ? '✓ Long enough' : n ? n + ' of 8 characters' : 'At least 8 characters'; }
 async function authSubmit(form) {
   const a = S.auth;
@@ -2120,8 +2123,9 @@ document.addEventListener('click', e => {
     const inp = el.parentNode.querySelector('input');
     S.auth.showPw = inp.type === 'password';
     inp.type = S.auth.showPw ? 'text' : 'password';
-    el.textContent = S.auth.showPw ? '🙈 Hide' : '👁 Show';
-    el.setAttribute('aria-pressed', S.auth.showPw); el.setAttribute('aria-label', S.auth.showPw ? 'Hide password' : 'Show password');
+    el.innerHTML = S.auth.showPw ? EYE_OFF : EYE;
+    const lbl = S.auth.showPw ? 'Hide password' : 'Show password';
+    el.setAttribute('aria-pressed', S.auth.showPw); el.setAttribute('aria-label', lbl); el.title = lbl;
     inp.focus(); const L = inp.value.length; try { inp.setSelectionRange(L, L); } catch (err) {}
     return;
   }
