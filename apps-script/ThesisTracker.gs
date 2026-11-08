@@ -398,14 +398,18 @@ function addTasksOct28b_(ss) {
     const sh = ss.getSheetByName(m.tab), add = NEW_TASKS_OCT28B[m.tab] || [];
     if (!sh || !add.length) return;
     const vals = sh.getRange(4, 1, CFG.maxRows, 2).getValues();
-    const have = vals.map(r => String(r[0]));
     add.forEach(t => {
-      if (have.indexOf(t[0]) > -1) return;
+      if (vals.some(r => r[1] === t[1])) return;
       const i = vals.findIndex(r => !r[1]);
-      if (i < 0) return;
-      sh.getRange(i + 4, 1, 1, 6).setValues([t.slice(0, 6)]);
+      if (i < 0) throw new Error('No room for task on ' + m.tab + ': ' + t[1]);
+      let id = t[0];
+      if (vals.some(r => r[0] === id)) {
+        const max = vals.reduce((n, r) => { const hit = String(r[0] || '').match(/(\d+)$/); return hit ? Math.max(n, Number(hit[1])) : n; }, 0);
+        id = m.tab.charAt(0).toUpperCase() + '-' + String(max + 1).padStart(2, '0');
+      }
+      sh.getRange(i + 4, 1, 1, 6).setValues([[id].concat(t.slice(1, 6))]);
       sh.getRange(i + 4, 8).setValue(t[7]);
-      vals[i] = [t[0], t[1]];
+      vals[i] = [id, t[1]];
     });
   });
   props.setProperty('TASKS_OCT28B', '1');
