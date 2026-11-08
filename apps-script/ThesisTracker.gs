@@ -12,8 +12,9 @@
  *  4. Go back to the sheet — a "Thesis Tracker" menu appears.
  *
  *  WHAT IT BUILDS
- *  Dashboard · Fe Anne · Rho · Cha · All Open Tasks · Panel Revisions
- *  DA RCPC Samples · Expenses · Links · Lists (hidden) · Activity
+ *  Dashboard · Fe Anne · Rho · Cha · All Open Tasks · Panel Revisions · NG Checklist
+ *  DA RCPC Samples · Expenses · Training Runs · Consultations · Final Defense
+ *  Dataset Sources · Links · Lists (hidden) · Activity
  *
  *  Each member edits their OWN tab. The Dashboard and "All Open Tasks"
  *  update automatically. Marking a task "Done" stamps the completion date.
@@ -26,7 +27,7 @@ const CFG = {
   timezone: 'Asia/Manila',
   maxRows: 200,
   sampleRows: 300,        // room for this many samples; labels are handed out by the app (FA-001, RJ-001, CP-001 …)
-  photoAngles: ['Top surface', 'Underside', 'Lesion close-up'],  // exactly 3 photos per leaf
+  photoAngles: ['Whole leaf', 'Left side only', 'Top lesions', 'Right side only', 'Back in different light'],
   // Who can sign in to the app (email → member). Two emails each; add or remove here, then deploy a New version.
   accounts: {
     'f.malasarte.543849@umindanao.edu.ph': 'Fe Anne', 'feannemlsrte@gmail.com': 'Fe Anne',
@@ -58,6 +59,41 @@ const LINKS = {
 };
 
 const OCT2 = new Date(2026, 9, 2); // original task-bar deadline (Fri, Oct 2)
+const NOV9_MEETING_TASK = 'Join the Nov 9 DahonMD thesis meeting and review the agenda';
+const NOV9_MEETING_AGENDA = `DAHONMD THESIS TASK BOARD — NOV 9, 2026
+
+1. Finalize During Meeting
+[ ] Confirm final disease classes — Black Sigatoka, Cordana, Healthy; decide whether Panama remains included.
+[ ] Approve sample target — proposed: 100 individual leaves plus 20 backup candidates.
+[ ] Approve photo requirements — proposed: 5 photos per leaf, 500 images for 100 leaves.
+[ ] Agree on collection distribution — proposed: 80 symptomatic and 20 apparently healthy; actual disease labels are unknown.
+[ ] Discuss Cordana dataset issue — review images that may actually be Sigatoka.
+[ ] Assign members and responsibilities — documentation, RCPC, collection, ML, and APK.
+[ ] Consult Ma'am Cha — approve sampling, laboratory validation, and testing methodology.
+
+2. RCPC Letters & Requirements
+[ ] Prepare official request letter — address it to the verified RCPC XI official.
+[ ] Secure required signatures — lead researcher, Ma'am Cha as adviser, and Chair/Dean if required.
+[ ] Compile supporting documents — school IDs, approved abstract, and sampling plan.
+[ ] Coordinate with RCPC XI — confirm appointments, sample quantity, lab location, and forms.
+[ ] Confirm laboratory capabilities — Cordana vs Sigatoka identification, methods, and individual reports.
+[ ] Confirm cost and discount — student waiver, price per sample, total budget, and processing time.
+
+3. Collection Preparation
+[ ] Confirm farm locations and permission — identify plants and secure collection permission.
+[ ] Buy and prepare supplies — ziplocks or approved packaging, tape, marker, gloves, and clean cutter.
+[ ] Confirm storage instructions — do not add wet cotton unless RCPC specifically requires it.
+[ ] Create sample tracking sheet — sample ID, plant ID, location, date, photos, and laboratory results.
+[ ] Finalize updated APK — camera angle, distance, leaf portion, and image capture reminders.
+[ ] Finalize collection schedule — who collects, photographs, labels, and transports samples.
+
+4. Laboratory & Testing
+[ ] Collect and photograph leaves — unique sample IDs and five standardized images per leaf.
+[ ] Submit samples to RCPC — follow approved packaging and keep submission receipts.
+[ ] Receive laboratory findings — match diagnoses and limitations to each sample ID.
+[ ] Finalize verified testing dataset — exclude or flag inconclusive and out-of-scope samples.
+[ ] Run final DahonMD evaluation — confusion matrix, accuracy, precision, recall, F1, and per-class metrics.
+[ ] Compile thesis evidence — laboratory reports, dataset records, field photos, and results.`;
 
 // [ID, Task, Category, Priority, Status, Due, LinkKey, Notes]
 const TASKS = {
@@ -70,12 +106,13 @@ const TASKS = {
     ['F-06', 'Request datasets from DA (follow up through DA RCPC)', 'DA RCPC', 'Medium', 'Waiting', '', '', 'Main office redirected us to RCPC.'],
     ['F-07', 'Sort the Curated Banana Leaf Disease Dataset folder (with Cha)', 'Dataset', 'High', 'Not Started', OCT2, 'curatedFolder', 'Shared with Cha (C-04).'],
     ['F-08', 'Contact DA RCPC Davao: confirm submission day, office hours, and samples needed per class', 'DA RCPC', 'High', 'Not Started', '', '', 'Put the agreed date on the Dashboard (yellow cell).'],
-    ['F-09', 'Buy supplies: cotton, plastic bags, markers, masking tape', 'DA RCPC', 'High', 'Not Started', '', '', 'See Expenses tab.'],
-    ['F-10', 'Lead field collection of fresh banana leaf samples (whole team)', 'DA RCPC', 'High', 'Not Started', '', '', 'Collect close to submission day so leaves stay fresh.'],
-    ['F-11', 'Submit fresh, labeled samples to DA RCPC Davao', 'DA RCPC', 'High', 'Not Started', '', '', 'Bring the printed Sample Log.'],
+    ['F-09', 'Confirm RCPC packaging; prepare bags, tape, marker, gloves, and clean cutter', 'DA RCPC', 'High', 'Not Started', '', '', 'See Expenses tab. Use wet cotton only if RCPC requires it.'],
+    ['F-10', 'Lead field collection of fresh banana leaf samples (whole team)', 'DA RCPC', 'High', 'Not Started', '', '', 'Collect the day before you go: every leaf must reach DA RCPC the day after it is collected.'],
+    ['F-11', 'Submit fresh, labeled samples to DA RCPC Davao', 'DA RCPC', 'High', 'Not Started', '', '', 'Bring the printed Submission list (Samples page).'],
     ['F-13', 'Collect + photograph your samples: tap New sample in the app for each leaf (labels FA-001, FA-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
-    ['F-14', 'Run Thesis Tracker → Connect photo folder (once) so app photos save into the Curated dataset folder', 'DA RCPC', 'High', 'Not Started', '', '', 'Do this before the field collection day.'],
+    ['F-14', 'Run Thesis Tracker → Connect photo folder (once) so app photos save into the sample photo folder', 'DA RCPC', 'High', 'Not Started', '', '', 'Do this before the field collection day.'],
     ['F-12', 'Lead panel revisions: Problem, Purpose, Objectives, Scope & Limitations', 'Panel Revision', 'High', 'Done', '', '', 'Done in the Oct 28 paper (see Panel Revisions).'],
+    ['F-17', NOV9_MEETING_TASK, 'Admin', 'High', 'Not Started', new Date(2026, 10, 9), '', NOV9_MEETING_AGENDA],
   ],
   'Rho': [
     ['R-01', 'Retrain the baseline model from scratch and record results in the Training Results tab', 'Model', 'High', 'Not Started', OCT2, 'trainingResults', ''],
@@ -83,9 +120,10 @@ const TASKS = {
     ['R-03', 'Record the image count for each class', 'Dataset', 'Medium', 'Not Started', OCT2, '', ''],
     ['R-04', 'Get the public dataset links from Public Dataset Sources and send them to Cha for citation', 'Dataset', 'Medium', 'Not Started', OCT2, 'publicSources', 'Send to c.priego.545409@umindanao.edu.ph'],
     ['R-05', 'Collect + photograph your samples: tap New sample in the app for each leaf (labels RJ-001, RJ-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
-    ['R-08', 'Check all sample photos in the Drive photo folder (3+ angles each, correct names) before adding them to the dataset', 'Dataset', 'Medium', 'Not Started', '', '', 'Curated Banana Leaf Disease Dataset → DA RCPC Sample Photos.'],
+    ['R-08', 'Check all sample photos in the Drive photo folder (5 views each, correct names) before adding them to the dataset', 'Dataset', 'Medium', 'Not Started', '', '', 'Sample photo folder: one folder per member, then one per leaf.'],
     ['R-06', 'Add RCPC-validated images to the dataset and update the per-class counts', 'Dataset', 'Medium', 'Not Started', '', '', 'After RCPC returns results.'],
     ['R-07', 'Methodology revisions: preprocessing, training split, model construction, hyperparameter tuning', 'Panel Revision', 'High', 'Done', '', '', 'Done by Fe Anne in the Oct 28 paper.'],
+    ['R-10', NOV9_MEETING_TASK, 'Admin', 'High', 'Not Started', new Date(2026, 10, 9), '', NOV9_MEETING_AGENDA],
   ],
   'Cha': [
     ['C-01', 'Fill in the Dataset Validation Letter', 'Letters', 'Medium', 'Done', '', 'validationLetter', ''],
@@ -94,10 +132,11 @@ const TASKS = {
     ['C-04', 'Sort the Curated Banana Leaf Disease Dataset folder (with Fe Anne)', 'Dataset', 'High', 'Not Started', OCT2, 'curatedFolder', 'Shared with Fe Anne (F-07).'],
     ['C-05', 'Cite the public dataset sources in the paper (IEEE)', 'Paper', 'Medium', 'Waiting', '', 'publicSources', 'Waiting for links from Rho (R-04).'],
     ['C-06', 'Collect + photograph your samples: tap New sample in the app for each leaf (labels CP-001, CP-002 … are automatic)', 'DA RCPC', 'High', 'Not Started', '', '', 'Copy the label the app shows onto masking tape. The app names the photos for you.'],
-    ['C-10', 'Before submission: check the Sample Log is complete for all three batches (FA, RJ, CP)', 'DA RCPC', 'High', 'Not Started', '', '', 'Every submitted bag needs disease, date, site and 3+ photos.'],
+    ['C-10', 'Before submission: check the Sample Log is complete for all three batches (FA, RJ, CP)', 'DA RCPC', 'High', 'Not Started', '', '', 'Every submitted bag needs date, site and 5 photos. DA RCPC decides the disease.'],
     ['C-07', 'Write up the DA RCPC validation process in Methodology – Data Collection', 'Paper', 'Medium', 'Not Started', '', '', ''],
     ['C-09', 'Paper 2.1.2 Local Test Set: replace [name] / [position] with the DA RCPC validator, fill in [phone model], and fix the "August 90" collection dates', 'Paper', 'High', 'Not Started', '', 'thesisDoc', 'Do this once RCPC returns the validation.'],
     ['C-08', 'Formatting revisions: CCS concepts, general terms, keywords, tables/figures, IEEE refs, ACM format', 'Panel Revision', 'High', 'In Progress', '', '', 'Fe Anne did these in the Oct 28 paper. Only left: fix the Grad-CAM citation [36]→[35] and renumber so citations follow first appearance.'],
+    ['C-12', NOV9_MEETING_TASK, 'Admin', 'High', 'Not Started', new Date(2026, 10, 9), '', NOV9_MEETING_AGENDA],
   ],
 };
 
@@ -151,8 +190,8 @@ const REVISIONS = [
 
 // Starting rows for the Expenses tab: [Item, Purpose, Qty, Unit cost, Paid by / buyer, Notes]  (category: Sample collection)
 const SUPPLIES = [
-  ['Cotton', 'Wrap cut leaf ends (slightly damp) to keep samples fresh', 1, '', 'Fe Anne', 'Required by DA RCPC'],
-  ['Plastic bags (resealable)', 'One bag per sample', 1, '', 'Fe Anne', 'Required by DA RCPC'],
+  ['Cotton', 'Use only if RCPC specifically requires wet cotton', 1, '', 'Fe Anne', 'Optional until RCPC confirms'],
+  ['Plastic bags (resealable)', 'Use only if approved by RCPC; one per sample', 1, '', 'Fe Anne', 'Confirm packaging with RCPC'],
   ['Permanent markers', 'Write sample ID on labels', 2, '', 'Fe Anne', 'Required by DA RCPC'],
   ['Masking tape', 'Labels on each bag', 1, '', 'Fe Anne', 'Required by DA RCPC'],
   ['Cooler / ice box', 'Keep samples cool during transport', 1, '', '', 'Suggested'],
@@ -232,6 +271,7 @@ const SETTINGS = { leafGoal: 'number', classGoal: 'number', defenseDate: 'date' 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Thesis Tracker')
     .addItem('Connect photo folder', 'setupPhotoFolder')
+    .addItem('Rename sample photos now', 'autoRenamePhotosMenu')
     .addItem('Export RCPC-validated photos to class folders', 'exportValidatedDatasetMenu')
     .addItem('Back up this sheet now', 'backupNow')
     .addItem('Reset someone\'s app password', 'resetMemberPassword')
@@ -261,8 +301,8 @@ function onEdit(e) {
       if (!stamp.getValue()) stamp.setValue(new Date());
       if (!by.getValue()) {
         let email = ''; try { email = Session.getActiveUser().getEmail(); } catch (err) {}
-        const m = CFG.members.find(x => x.email === email);
-        if (m) by.setValue(m.tab);
+        const tab = accountTab_(email);                  // either of the member's two emails
+        if (tab) by.setValue(tab);
       }
     } else { stamp.clearContent(); by.clearContent(); }
   }
@@ -281,7 +321,8 @@ function onEdit(e) {
  */
 function setupTracker() {
   const ss = SpreadsheetApp.getActive();
-  const ui = SpreadsheetApp.getUi();
+  let ui = null;
+  try { ui = SpreadsheetApp.getUi(); } catch (e) { /* editor run: no spreadsheet UI */ }
   ss.setSpreadsheetTimeZone(CFG.timezone);
   if (!/Tracker/i.test(ss.getName())) ss.rename(CFG.title);
 
@@ -315,6 +356,10 @@ function setupTracker() {
   upgradeDoneByColumns_(ss);
   applyPaperReviewOct28_(ss);
   addTasksOct28b_(ss);
+  fixTaskTextNov6_(ss);
+  fixFivePhotoTaskText_(ss);
+  addNov9MeetingAgenda_(ss);
+  fixPackagingGuidanceNov9_(ss);
   ensureWeeklyBackup_();
   ensureWeeklyDigest_();
   try { migrateLegacyPhotos_(); } catch (e) { /* photo folder not reachable yet: "Connect photo folder" shows why */ }
@@ -328,14 +373,15 @@ function setupTracker() {
 
   const order = ['Dashboard', ...CFG.members.map(m => m.tab), 'All Open Tasks', 'Panel Revisions', 'NG Checklist', 'DA RCPC Samples', 'Expenses',
                  ...Object.keys(RECORDS).map(k => RECORDS[k].tab), 'Links'];
-  order.forEach((name, i) => { const s = ss.getSheetByName(name); if (s) { ss.setActiveSheet(s); ss.moveActiveSheet(i + 1); } });
+  order.filter((n, i) => order.indexOf(n) === i).forEach((name, i) => { const s = ss.getSheetByName(name); if (s) { ss.setActiveSheet(s); ss.moveActiveSheet(i + 1); } });
   ss.setActiveSheet(ss.getSheetByName('Dashboard'));
   ss.getSheetByName('Lists').hideSheet();
-  onOpen();
-  ui.alert('Tracker ready',
-    (built.length ? 'Built: ' + built.join(', ') + '\n' : '') +
+  if (ui) onOpen();
+  const report = (built.length ? 'Built: ' + built.join(', ') + '\n' : '') +
     (kept.length ? 'Kept with all their data: ' + kept.join(', ') + '\n' : '') +
-    '\nNothing with data was erased. You can run this again any time.', ui.ButtonSet.OK);
+    '\nNothing with data was erased. You can run this again any time.';
+  if (ui) ui.alert('Tracker ready', report, ui.ButtonSet.OK);
+  else console.log('Tracker ready\n' + report);
 }
 
 /** Tasks added after the tracker was first built (Oct 28). Added once; deleting them later is respected. */
@@ -365,6 +411,101 @@ function addTasksOct28b_(ss) {
   props.setProperty('TASKS_OCT28B', '1');
 }
 
+/** One meeting task per member. Existing task rows and completion states are left intact. */
+function addNov9MeetingAgenda_(ss) {
+  const props = PropertiesService.getScriptProperties();
+  if (props.getProperty('NOV9_MEETING_AGENDA_ADDED')) return;
+  CFG.members.forEach(m => {
+    const sh = ss.getSheetByName(m.tab);
+    if (!sh) throw new Error('Missing member tab: ' + m.tab);
+    const values = sh.getRange(4, 1, CFG.maxRows, 2).getValues();
+    if (values.some(r => r[1] === NOV9_MEETING_TASK)) return;
+    const i = values.findIndex(r => !r[1]);
+    if (i < 0) throw new Error('No room for meeting task on ' + m.tab);
+    const max = values.reduce((n, r) => {
+      const hit = String(r[0] || '').match(/(\d+)$/);
+      return hit ? Math.max(n, Number(hit[1])) : n;
+    }, 0);
+    const id = m.tab.charAt(0).toUpperCase() + '-' + String(max + 1).padStart(2, '0');
+    const row = i + 4;
+    sh.getRange(row, 1, 1, 6).setValues([[id, NOV9_MEETING_TASK, 'Admin', 'High', 'Not Started', new Date(2026, 10, 9)]]);
+    sh.getRange(row, 8).setValue(NOV9_MEETING_AGENDA);
+  });
+  props.setProperty('NOV9_MEETING_AGENDA_ADDED', '1');
+}
+
+/** Replace only obsolete packaging instructions in existing sheets. */
+function fixPackagingGuidanceNov9_(ss) {
+  const fe = ss.getSheetByName('Fe Anne');
+  if (fe && fe.getLastRow() >= 4) {
+    const rows = fe.getRange(4, 1, fe.getLastRow() - 3, 2).getValues();
+    rows.forEach((r, i) => {
+      if (r[0] !== 'F-09') return;
+      if (r[1] === 'Buy supplies: cotton, plastic bags, markers, masking tape') {
+        fe.getRange(i + 4, 2).setValue('Confirm RCPC packaging; prepare bags, tape, marker, gloves, and clean cutter');
+        fe.getRange(i + 4, 8).setValue('See Expenses tab. Use wet cotton only if RCPC requires it.');
+      }
+    });
+  }
+  const expenses = ss.getSheetByName('Expenses');
+  if (expenses && expenses.getLastRow() >= 3) {
+    const rows = expenses.getRange(3, 1, expenses.getLastRow() - 2, 2).getValues();
+    rows.forEach((r, i) => {
+      if (r[0] !== 'Cotton' || r[1] !== 'Wrap cut leaf ends (slightly damp) to keep samples fresh') return;
+      expenses.getRange(i + 3, 2).setValue('Use only if RCPC specifically requires wet cotton');
+      if (expenses.getRange(i + 3, 8).getValue() === 'Required by DA RCPC') expenses.getRange(i + 3, 8).setValue('Optional until RCPC confirms');
+    });
+    rows.forEach((r, i) => {
+      if (r[0] !== 'Plastic bags (resealable)' || r[1] !== 'One bag per sample') return;
+      expenses.getRange(i + 3, 2).setValue('Use only if approved by RCPC; one per sample');
+      if (expenses.getRange(i + 3, 8).getValue() === 'Required by DA RCPC') expenses.getRange(i + 3, 8).setValue('Confirm packaging with RCPC');
+    });
+  }
+  const samples = ss.getSheetByName('DA RCPC Samples');
+  if (samples && samples.getRange(3, 8).getValue() === 'Wrapped in Cotton') samples.getRange(3, 8).setValue('Wet Cotton (RCPC only)');
+}
+
+/** Task wording that went out of date. Runs once; a cell someone already reworded is left alone. */
+function fixTaskTextNov6_(ss) {
+  const props = PropertiesService.getScriptProperties();
+  if (props.getProperty('TASK_TEXT_NOV06')) return;
+  const swaps = [
+    ['Collect close to submission day so leaves stay fresh.', 'Collect the day before you go: every leaf must reach DA RCPC the day after it is collected.'],
+    ['Bring the printed Sample Log.', 'Bring the printed Submission list (Samples page).'],
+    ['Run Thesis Tracker → Connect photo folder (once) so app photos save into the Curated dataset folder', 'Run Thesis Tracker → Connect photo folder (once) so app photos save into the sample photo folder'],
+    ['Check all sample photos in the Drive photo folder (3+ angles each, correct names) before adding them to the dataset', 'Check all sample photos in the Drive photo folder (3 angles each, correct names) before adding them to the dataset'],
+    ['Curated Banana Leaf Disease Dataset → DA RCPC Sample Photos.', 'Sample photo folder: one folder per member, then one per leaf.'],
+    ['Every submitted bag needs disease, date, site and 3+ photos.', 'Every submitted bag needs date, site and 3 photos. DA RCPC decides the disease.'],
+  ];
+  CFG.members.forEach(m => {
+    const sh = ss.getSheetByName(m.tab);
+    if (!sh || sh.getLastRow() < 4) return;
+    [2, 8].forEach(col => {
+      const rng = sh.getRange(4, col, sh.getLastRow() - 3, 1);
+      rng.getValues().forEach((r, i) => { const hit = swaps.find(x => x[0] === r[0]); if (hit) rng.getCell(i + 1, 1).setValue(hit[1]); });
+    });
+  });
+  props.setProperty('TASK_TEXT_NOV06', '1');
+}
+
+/** Update only the old three-photo wording in existing member task rows. */
+function fixFivePhotoTaskText_(ss) {
+  const swaps = [
+    ['Check all sample photos in the Drive photo folder (3 angles each, correct names) before adding them to the dataset',
+     'Check all sample photos in the Drive photo folder (5 views each, correct names) before adding them to the dataset'],
+    ['Every submitted bag needs date, site and 3 photos. DA RCPC decides the disease.',
+     'Every submitted bag needs date, site and 5 photos. DA RCPC decides the disease.'],
+  ];
+  CFG.members.forEach(m => {
+    const sh = ss.getSheetByName(m.tab);
+    if (!sh || sh.getLastRow() < 4) return;
+    [2, 8].forEach(col => {
+      const rng = sh.getRange(4, col, sh.getLastRow() - 3, 1);
+      rng.getValues().forEach((r, i) => { const hit = swaps.find(x => x[0] === r[0]); if (hit) rng.getCell(i + 1, 1).setValue(hit[1]); });
+    });
+  });
+}
+
 /** true if any of the given columns has a value from firstRow down */
 function hasData_(sh, firstRow, cols) {
   const last = sh.getLastRow();
@@ -387,7 +528,7 @@ function replaceTab_(ss, name, build) {
   if (old) ss.deleteSheet(old);
 }
 
-/** Expenses tab from an older version: add Category / Date / Receipt columns, never touching rows */
+/** Expenses tab from an older version: add Category / Date / Receipt columns. Rows are kept; only a blank category on a starter supply is filled in. */
 function upgradeExpensesTab_(ss) {
   const sh = ss.getSheetByName('Expenses');
   if (!sh) return;
@@ -397,6 +538,9 @@ function upgradeExpensesTab_(ss) {
   const total = (() => { const v = sh.getRange(3, 4, Math.max(1, sh.getLastRow() - 2), 1).getValues(); for (let i = 0; i < v.length; i++) if (v[i][0] === 'TOTAL') return i + 3; return sh.getLastRow() + 1; })();
   const n = Math.max(1, total - 3);
   sh.getRange(3, 9, n, 1).setDataValidation(listRule_(ss, 7));
+  // rows from before the Category column: the app's checklist and "Buy supplies" task only count 'Sample collection'
+  const starter = SUPPLIES.map(x => x[0]);
+  sh.getRange(3, 1, n, 9).getValues().forEach((r, i) => { if (!r[8] && starter.indexOf(String(r[0]).trim()) > -1) sh.getRange(i + 3, 9).setValue('Sample collection'); });
   sh.getRange(3, 10, n, 1).setNumberFormat('mmm d, yyyy');
   sh.getRange(1, 1, 1, 11).breakApart().merge().setValue('  Thesis Expenses · anyone can add what they bought or paid for');
   [190, 260, 60, 110, 110, 120, 70, 180, 140, 110, 130].forEach((w, i) => sh.setColumnWidth(i + 1, w));
@@ -497,6 +641,7 @@ function upgradeSamplesTab_(ss) {
   if (!head[1]) sh.getRange(3, 15).setValue('Angles Taken');
   if (sh.getRange(3, 2).getValue() === 'Suspected Disease') sh.getRange(3, 2).setValue('Our Guess (optional)');   // DA RCPC decides the disease
   setSampleRules_(sh);                                   // next-day submission rule colours
+  if (sh.getLastRow() >= 4) sh.getRange(4, 12, sh.getLastRow() - 3, 1).setFormulaR1C1(MATCH_FORMULA);   // "Match?" stays blank when nobody guessed
   sh.getRange(3, 14, 1, 2).setBackground('#37474f').setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
 }
 
@@ -677,7 +822,7 @@ function buildSamples_(ss) {
   const sh = ss.insertSheet('DA RCPC Samples');
   sh.setTabColor('#2e7d32');
   const H = ['Sample ID', 'Our Guess (optional)', 'Date Collected', 'Collection Site (farm / barangay)', 'Collected By', 'No. of Photos',
-             'Expected Photo File Names', 'Wrapped in Cotton', 'Bagged & Labeled', 'Submitted to RCPC', 'RCPC Validated Class', 'Match?', 'Notes',
+             'Expected Photo File Names', 'Wet Cotton (RCPC only)', 'Bagged & Labeled', 'Submitted to RCPC', 'RCPC Validated Class', 'Match?', 'Notes',
              'Photo Folder', 'Angles Taken', 'GPS (lat, lng)'];
   const n = CFG.sampleRows;
   banner_(sh, 1, '  DA RCPC Davao — Fresh Leaf Sample Log', H.length, '#2e7d32', 15);
@@ -714,8 +859,8 @@ function setSampleRules_(sh) {
     rule_('=AND($J4<>"",$C4<>"",INT($J4)>INT($C4)+1)', sh.getRange(4, 1, n, 16), '#fbe9e6', '#b83226'),
     rule_('=AND($A4<>"",$C4<>"",$J4="",TODAY()>=$C4+1)', sh.getRange(4, 10, n, 1), '#fff1d6', null),
     rule_('=$J4<>""', sh.getRange(4, 1, n, 1), '#c8e6c9', null),
-    rule_('=AND($F4<>"",$F4<3)', sh.getRange(4, 6, n, 1), '#eef3df', '#4a6a1a'),
-    rule_('=$F4>=3', sh.getRange(4, 6, n, 1), '#c8e6c9', '#1b5e20'),
+    rule_('=AND($F4<>"",$F4<' + CFG.photoAngles.length + ')', sh.getRange(4, 6, n, 1), '#eef3df', '#4a6a1a'),
+    rule_('=$F4>=' + CFG.photoAngles.length, sh.getRange(4, 6, n, 1), '#c8e6c9', '#1b5e20'),
   ]);
   sh.getRange(3, 10).setNote('Must be the day after "Date Collected". Later than that = the leaf is no longer fresh and its result is invalid (row turns red).');
 }
@@ -791,7 +936,7 @@ function weeklyDigest() {
   });
   const smp = ss.getSheetByName('DA RCPC Samples');
   const sv = smp && smp.getLastRow() >= 4 ? smp.getRange(4, 1, smp.getLastRow() - 3, 11).getValues().filter(r => r[0]) : [];
-  const withPhotos = sv.filter(r => Number(r[5]) >= 3).length, newWeek = sv.filter(r => r[2] instanceof Date && r[2] >= weekAgo).length;
+  const withPhotos = sv.filter(r => Number(r[5]) >= CFG.photoAngles.length).length, newWeek = sv.filter(r => r[2] instanceof Date && r[2] >= weekAgo).length;
   const sent = sv.filter(r => r[9]).length, validated = sv.filter(r => r[10] && r[10] !== 'Unsure').length;
   const invalid = sv.filter(r => r[2] instanceof Date && (r[9] ? !submittedOnTime_(r[2], r[9]) : (today - r[2]) / 864e5 > 1.5)).length;
   const rev = ss.getSheetByName('Panel Revisions');
@@ -890,9 +1035,9 @@ function buildDashboard_(ss) {
   const ms = [
     ['Panel revisions complied', '=COUNTIF(\'Panel Revisions\'!E4:E,"C")', '=COUNTA(\'Panel Revisions\'!C4:C)-COUNTIF(\'Panel Revisions\'!E4:E,"NA")', '#ef6c00'],
     ['Samples with a collection date', '=COUNTA(\'DA RCPC Samples\'!C4:C)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!A4:A))', '#2e7d32'],
-    ['Collected samples with 3+ photos', '=COUNTIFS(\'DA RCPC Samples\'!C4:C,"<>",\'DA RCPC Samples\'!F4:F,">=3")', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
+    ['Collected samples with ' + CFG.photoAngles.length + ' photos', '=COUNTIFS(\'DA RCPC Samples\'!C4:C,"<>",\'DA RCPC Samples\'!F4:F,">=' + CFG.photoAngles.length + '")', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
     ['Samples submitted to RCPC', '=COUNTA(\'DA RCPC Samples\'!J4:J)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
-    ['Samples validated by RCPC', '=COUNTA(\'DA RCPC Samples\'!K4:K)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!J4:J))', '#2e7d32'],
+    ['Samples validated by RCPC', '=COUNTA(\'DA RCPC Samples\'!K4:K)-COUNTIF(\'DA RCPC Samples\'!K4:K,"Unsure")', '=MAX(1,COUNTA(\'DA RCPC Samples\'!J4:J))', '#2e7d32'],
     ['Expenses paid / bought', '=COUNTIF(Expenses!G3:G,TRUE)', '=MAX(1,COUNTA(Expenses!A3:A))', '#6d4c41'],
   ];
   ms.forEach((x, i) => {
