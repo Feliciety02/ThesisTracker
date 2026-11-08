@@ -942,7 +942,7 @@ body.noscroll{overflow:hidden}
 .act-sel{display:flex;flex-direction:column;font-size:12px;font-weight:700;color:var(--muted);gap:2px;flex:1;max-width:260px}
 .act-sel select{margin:0}
 .sc-more{border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
-.sample-photo-list{display:grid;gap:6px;margin:10px 0}.sample-photo-row{display:flex;justify-content:space-between;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:8px;background:var(--soft);color:var(--ink);font:inherit;font-size:13px;text-align:left}.sample-photo-row[data-action]{cursor:pointer}.sample-photo-row[data-action]:focus-visible{outline:2px solid var(--brand);outline-offset:2px}.sample-photo-row .muted{white-space:nowrap}
+.sample-photo-list{display:grid;gap:6px;margin:10px 0}.sample-photo-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;width:100%;padding:8px 10px;border-radius:8px;background:var(--soft);color:var(--ink);font-size:13px}.sample-photo-target{flex:1 1 140px;min-width:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left}.sample-photo-target[data-action]{cursor:pointer}.sample-photo-target[data-action]:focus-visible{outline:2px solid var(--brand);outline-offset:2px}.sample-photo-target small{display:block;color:var(--muted)}.sample-photo-row .muted{font-size:11px;white-space:nowrap}.sample-photo-row a{white-space:nowrap;font-weight:700}
 .goalrow{margin-top:12px;max-width:220px}
 /* tighter spacing on phones */
 @media (max-width:720px){
@@ -1302,13 +1302,19 @@ const Demo = (() => {
     updateRevisions: () => true, rescheduleTasks: () => true,
     createSample: id => ({ id, row: 100 + S.data.samples.length }),
     deleteTask: () => true,
+    deletePhoto: (id, angle) => {
+      const sm = S.data.samples.find(x => x.id === id);
+      const angles = (sm.angles || []).filter(a => a !== angle);
+      return { angles, photos: angles.length, images: (sm.images || []).map(p => p.angle === angle ? { ...p, url: '', capturedAt: 0 } : p) };
+    },
     deleteSupply: () => true,
     addSupply: x => ({ row: 50 + S.data.supplies.length, item: x.item, purpose: x.purpose || '', qty: x.qty === '' ? 1 : +x.qty, cost: x.cost === '' ? '' : +x.cost, assigned: x.assigned || '', bought: !!x.bought, notes: '', category: x.category || 'Other', date: x.date || iso(0), receipt: '' }),
     uploadReceipt: () => ({ receipt: 'https://drive.google.com/' }),
-    uploadPhoto: (id, angle) => {
+    uploadPhoto: (id, angle, b64, date, capturedAt) => {
       const sm = S.data.samples.find(x => x.id === id);
       const angles = sm.angles.concat(sm.angles.indexOf(angle) < 0 ? [angle] : []).sort((a, b) => a - b);
-      return { angles, photos: angles.length, folder: 'https://drive.google.com/drive/folders/1OxFuhfrEIChjzVFISjBL0J8yrMM2af-P', date: sm.date || localDay() };
+      const images = (sm.images || []).filter(x => x.angle !== angle).concat({ angle, name: fname(id, angle), url: 'https://drive.google.com/', capturedAt: Number(capturedAt) || Date.now() }).sort((a, b) => a.angle - b.angle);
+      return { angles, photos: angles.length, images, folder: 'https://drive.google.com/drive/folders/1OxFuhfrEIChjzVFISjBL0J8yrMM2af-P', date: sm.date || localDay() };
     },
     addTask: (tab, t) => {
       const m = S.data.members.find(x => x.tab === tab);
@@ -2141,7 +2147,7 @@ function vSamples() {
     '<option value="' + esc(t) + '"' + (who === t ? ' selected' : '') + '>' + esc(t === me ? 'Mine' : t === 'All' ? 'Everyone' : t) + '</option>').join('') + '</select>';
   const head = '<div class="ptitle"><h2>Samples</h2>' + whoSel + '</div>' +
     '<div class="card smpsum"><div class="ss">' +
-      '<div><b>' + today + '</b><span>collected today</span></div>' +
+      '<div><b>' + today + '</b><span>photographed today</span></div>' +
       '<div class="' + (pool.some(x => freshness(x).st === 'today') ? 'bad' : '') + '"><b>' + pool.filter(x => ['today', 'tomorrow'].indexOf(freshness(x).st) > -1).length + '</b><span>to send</span></div>' +
       '<div><b>' + lp.done + (lp.goal ? '<small>/' + lp.goal + '</small>' : '') + '</b><span>team leaves</span></div></div>' +
       (lp.goal ? '<div class="bar"><i style="width:' + lp.p + '%"></i></div>' : '') +
@@ -2215,8 +2221,12 @@ function sampleCard(x) {
   const photoRows = angleNames().map((name, i) => {
     const state = angleState(x, i + 1);
     const status = { prep: 'Preparing', up: 'Uploading', q: 'Waiting for Drive', done: 'Saved to Drive' }[state] || 'Not taken';
-    const tag = IS_PHONE ? 'button' : 'div';
-    return '<' + tag + ' class="sample-photo-row"' + (IS_PHONE ? ' type="button" data-action="camAngle" data-id="' + esc(x.id) + '" data-angle="' + (i + 1) + '" aria-label="' + (state ? 'Retake ' : 'Take ') + esc(name) + '"' : '') + '><span>' + (i + 1) + '. ' + esc(name) + '</span><span class="muted">' + esc(status) + '</span></' + tag + '>';
+    const image = (x.images || []).find(p => p.angle === i + 1);
+    const taken = image && image.capturedAt ? new Date(image.capturedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+    const tag = IS_PHONE ? 'button' : 'span';
+    return '<div class="sample-photo-row"><' + tag + ' class="sample-photo-target"' + (IS_PHONE ? ' type="button" data-action="camAngle" data-id="' + esc(x.id) + '" data-angle="' + (i + 1) + '" aria-label="' + (state ? 'Retake ' : 'Take ') + esc(name) + '"' : '') + '>' + (i + 1) + '. ' + esc(name) + (taken ? '<small>' + esc(taken) + '</small>' : '') + '</' + tag + '><span class="muted">' + esc(status) + '</span>' +
+      (image && image.url ? '<a href="' + esc(image.url) + '" target="_blank" rel="noopener" aria-label="Open ' + esc(name) + ' in Drive">Open</a>' : '') +
+      (owner === S.user && image && image.url && state === 'done' ? '<button class="linkbtn" style="color:var(--red)" data-action="delPhoto" data-id="' + esc(x.id) + '" data-angle="' + (i + 1) + '" aria-label="Delete ' + esc(name) + ' photo">' + ic('delete') + '</button>' : '') + '</div>';
   }).join('');
   return '<div class="sc smp st-' + st + '" style="--c:' + m.color + '">' +
     '<div class="sc-top"><span class="lbl">' + esc(x.id) + '</span>' + (S.sampleFilter === 'All' || owner !== S.user ? '<span class="sc-own">' + esc(owner) + '</span>' : '') +
@@ -2229,10 +2239,9 @@ function sampleCard(x) {
       '<div class="small muted">Captured on: ' + esc(x.date ? fmt(x.date) : 'shown after the first photo is saved') + '</div>' +
       '<div class="sample-photo-list">' + photoRows + '</div>' +
       '<div class="sc-foot">' +
-      (IS_PHONE ? '<button class="linkbtn" data-action="cam" ' + at + '>' + ic('photo_camera') + ' Take or retake photos</button>' : '') +
       (phoneCopies ? '<button class="linkbtn" data-action="camGallery" ' + at + '>' + (isIOS ? 'Save phone photos to Photos' : 'Download phone photos') + '</button>' : '') +
       (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">' + ic('photo_library') + ' Open Drive photos</a>' : '<span class="small muted">Drive link appears after upload</span>') +
-      '<span class="sp"></span>' + (IS_PHONE ? '<button class="btn text" style="color:var(--red)" data-action="delSample" ' + at + '>' + ic('delete') + ' Delete</button>' : '') +
+      '<span class="sp"></span>' + (IS_PHONE && owner === S.user ? '<button class="btn text" style="color:var(--red)" data-action="delSample" ' + at + '>' + ic('delete') + ' Delete sample</button>' : '') +
     '</div></div>') + '</div>';
 }
 
@@ -2261,7 +2270,7 @@ function sheetHtml() {
         '<b style="align-self:end;padding-bottom:8px">' + sel.length + ' sample' + (sel.length === 1 ? '' : 's') + '</b></div>' +
       (lateSel ? '<p class="small noprint" style="color:var(--red);font-weight:700;margin:0 0 8px">' + ic('warning') + ' ' + lateSel + ' leaf' + (lateSel > 1 ? 'ves' : '') + ' would arrive later than the day after collection and become invalid.</p>' : '') +
       (expired ? '<p class="small muted noprint" style="margin:0 0 8px">' + expired + ' leaf' + (expired > 1 ? 'ves' : '') + ' missed the next-day deadline and can\'t be submitted.</p>' : '') +
-      (list.length ? '<div class="tscroll"><table class="sheet-table"><thead><tr><th class="noprint"></th><th>Label</th><th>Collected</th><th>Site</th><th class="hs">By</th><th class="hs">Photos</th><th>Notes</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+    (list.length ? '<div class="tscroll"><table class="sheet-table"><thead><tr><th class="noprint"></th><th>Label</th><th>First photo</th><th>Site</th><th class="hs">By</th><th class="hs">Photos</th><th>Notes</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
         : '<div class="empty">No samples waiting to be sent.</div>') +
       '<p class="small" style="margin-top:12px">Disease class: to be identified by DA RCPC. Follow RCPC-approved packaging and label each sample. Use wet cotton only if RCPC requires it.</p>' +
       '<div class="sign"><div>Submitted by (name &amp; signature)</div><div>Received by DA RCPC (name, signature, date)</div></div>' +
@@ -2482,7 +2491,6 @@ function camFinishHtml(x) {          // instructions only: nothing to tick or ty
       '<li><span class="n">4</span><span>Stick the <b>' + esc(x.id) + '</b> tape on the bag.</span></li>' +
       '<li><span class="n">5</span><span>Bring it to DA RCPC by <b>' + esc(x.date ? fmt(addDays(x.date, 1)) : 'tomorrow') + '</b> (the next day).</span></li>' +
     '</ol>' + camGalleryHtml(x) +
-    '<p class="small muted" style="margin:14px 0 0;text-align:center">Both buttons mark ' + esc(x.id) + ' as bagged and labeled.</p>' +
     '<button class="btn bigcam" data-action="camNextSample">' + ic('photo_camera') + ' Bagged · next leaf (' + esc(nextLabel(me)) + ')</button>' +
     '<button class="btn bigcam ghost" data-action="camDone">Bagged · done for now</button>';
 }
@@ -2715,7 +2723,7 @@ async function sendPhoto(job) {
   if (job.kind === 'receipt') return sendReceipt(job, key);
   try {
     const sm = S.data && sampleById(job.id);
-    const patch = await call('uploadPhoto', job.id, job.angle, job.b64, job.date || (sm ? sm.date : ''));
+    const patch = await call('uploadPhoto', job.id, job.angle, job.b64, job.date || (sm ? sm.date : ''), job.at || Date.now());
     if (sm && patch) { Object.assign(sm, patch); persist(); }
     if (!S.redo[key]) await PhotoQ.del(key);
     driveAuthorizationNoticeShown = false;
@@ -3196,7 +3204,7 @@ document.addEventListener('click', e => {
     return;
   }
   if (a === 'smpStage') { S.smpStage = v; render(); return; }
-  if (a === 'smpBag') { const x = sampleById(el.dataset.id); if (x) { markPacked(x.id); toast('Saved: ' + x.id + ' bagged', 1500); } return; }
+  if (a === 'smpBag') { const x = sampleById(el.dataset.id); if (x) markPacked(x.id); return; }
   if (a === 'smpSent') {
     const x = sampleById(el.dataset.id); if (!x) return;
     save('updateSample', [x.id, 'submitted', localDay()], () => { x.submitted = localDay(); });
@@ -3214,6 +3222,29 @@ document.addEventListener('click', e => {
   else if (a === 'toggleAddTask') { S.addTaskOpen = !S.addTaskOpen; render(); if (S.addTaskOpen) { const i = document.querySelector('#addForm [name=task]'); if (i) i.focus(); } }
   else if (a === 'toggleAddExp') { S.addExpOpen = !S.addExpOpen; render(); if (S.addExpOpen) { const i = document.querySelector('#addSupply [name=item]'); if (i) i.focus(); } }
   else if (a === 'sampleFilter') { S.sampleFilter = v; render(); }
+  else if (a === 'delPhoto') {
+    const id = el.dataset.id, angle = +el.dataset.angle, x = sampleById(id);
+    if (!x || ownerOf(id) !== S.user || angleState(x, angle) !== 'done') return;
+    const key = id + '_' + angle, name = fname(id, angle);
+    if (!confirm('Delete ' + name + ' from this sample and Drive?\n\nIt goes to Drive trash. The named copy on this Android phone will also be removed if available.')) return;
+    save('deletePhoto', [id, angle], () => {
+      x.angles = (x.angles || []).filter(a => a !== angle);
+      x.photos = x.angles.length;
+      x.images = (x.images || []).map(p => p.angle === angle ? { ...p, url: '', capturedAt: 0 } : p);
+    }).then(async patch => {
+      const queued = outbox().some(j => j.fn === 'deletePhoto' && j.args[0] === id && j.args[1] === angle);
+      if (!patch && !queued) return;
+      if (patch) Object.assign(x, patch);
+      delete S.thumbs[key]; delete S.shots[key];
+      S.phonePending[id] = (S.phonePending[id] || []).filter(a => a !== angle);
+      PhotoQ.galleryDel(key).catch(() => {});
+      if (nativeCameraAvailable() && window.ThesisBackgroundUpload.deleteNamedPhoto) {
+        try { await window.ThesisBackgroundUpload.deleteNamedPhoto(name); }
+        catch (e) { toast('Drive photo removed. Delete the old Gallery copy manually if it is still there.', 4500, true); }
+      }
+      persist(); render();
+    });
+  }
   else if (a === 'delSample') {
     const id = el.dataset.id, x = sampleById(id);
     if (!x) return;

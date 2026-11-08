@@ -37,6 +37,12 @@ public class BackgroundUploadPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void deleteNamedPhoto(PluginCall call) {
+        try { call.resolve(new JSObject().put("deleted", NamedGallery.delete(getContext(), call.getString("name", "")))); }
+        catch (Exception e) { call.reject("Could not delete named photo from Gallery", e); }
+    }
+
+    @PluginMethod
     public void setSession(PluginCall call) {
         String token = call.getString("token", ""), url = call.getString("url", "");
         if (token.isEmpty() || !url.matches("https://script\\.google\\.com/macros/s/[^/]+/exec")) {

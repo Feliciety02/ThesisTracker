@@ -88,6 +88,7 @@ public final class PhotoUploadWorker extends Worker {
             args.put(job.getInt("angle"));
             args.put(job.getString("b64"));
             args.put(job.optString("date", ""));
+            args.put(job.optLong("at", 0));
         }
         return postRequest(apiUrl, token, fn, args);
     }

@@ -9,7 +9,7 @@ function setupContext(getUi) {
   const messages = [];
   const context = vm.createContext({
     console: { log: message => messages.push(String(message)), error: message => messages.push(String(message)) },
-    SpreadsheetApp: { getUi },
+    SpreadsheetApp: { getUi, getActive: () => ({ getSheetByName: () => null }) },
     CFG: { members: [{ tab: 'Fe Anne', prefix: 'FA' }] },
   });
   vm.runInContext(source, context);
@@ -44,4 +44,16 @@ test('missing Drive scope is diagnosed separately from folder sharing', () => {
   assert.match(messages.join('\n'), /Google Drive permission needed/);
   assert.match(messages.join('\n'), /oauthScopes/);
   assert.doesNotMatch(messages.join('\n'), /can EDIT this folder/);
+});
+
+test('connecting the photo folder refreshes existing sample image rows', () => {
+  const { context } = setupContext(() => { throw new Error('No spreadsheet UI'); });
+  context.SpreadsheetApp.getActive = () => ({ getSheetByName: () => ({
+    getLastRow: () => 6,
+    getRange: () => ({ getValues: () => [['FA-001'], ['↳ 01 Whole leaf'], ['RJ-002']] }),
+  }) });
+  let ids;
+  context.syncPhotoCounts_ = value => { ids = Array.from(value); };
+  context.setupPhotoFolder();
+  assert.deepEqual(ids, ['FA-001', 'RJ-002']);
 });

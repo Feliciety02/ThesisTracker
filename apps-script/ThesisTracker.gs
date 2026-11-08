@@ -340,7 +340,7 @@ function setupTracker() {
     ['Lists', buildLists_, sh => sh.getLastRow() > 1],
     ...CFG.members.map(m => [m.tab, s => buildMemberTab_(s, m), sh => hasData_(sh, 4, [2])]),
     ['Panel Revisions', buildRevisions_, sh => hasData_(sh, 4, [3])],
-    ['DA RCPC Samples', buildSamples_, sh => hasData_(sh, 4, [2, 3, 4, 6, 10, 11, 13])],
+    ['DA RCPC Samples', buildSamples_, sh => hasData_(sh, 4, [1, 2, 3, 4, 6, 10, 11, 13])],
     ['Expenses', buildExpenses_, sh => hasData_(sh, 3, [1])],
     ...Object.keys(RECORDS).map(k => [RECORDS[k].tab, s => buildRecordTab_(s, k), sh => hasData_(sh, 3, RECORDS[k].fields.map((f, i) => i + 1))]),
   ];
@@ -636,16 +636,25 @@ function ensureWeeklyBackup_() {
   ScriptApp.newTrigger('weeklyBackup').timeBased().onWeekDay(ScriptApp.WeekDay.SUNDAY).atHour(21).inTimezone(CFG.timezone).create();
 }
 
-/** older Samples tabs: add the photo columns the app needs, without touching any rows */
+/** Bring older Samples tabs into the parent + five image-row layout while preserving existing values. */
 function upgradeSamplesTab_(ss) {
   const sh = ss.getSheetByName('DA RCPC Samples');
   if (!sh) return;
   const head = sh.getRange(3, 14, 1, 2).getValues()[0];
-  if (!head[0]) sh.getRange(3, 14).setValue('Photo Folder');
+  sh.getRange(3, 3).setValue('First Photo Date');
+  sh.getRange(3, 7).setValue('Photo File Name(s)');
+  sh.getRange(3, 14).setValue('Drive Folder / Image');
   if (!head[1]) sh.getRange(3, 15).setValue('Angles Taken');
-  if (sh.getRange(3, 2).getValue() === 'Suspected Disease') sh.getRange(3, 2).setValue('Our Guess (optional)');   // DA RCPC decides the disease
+  const ids = sh.getLastRow() >= 4 ? sh.getRange(4, 1, sh.getLastRow() - 3, 1).getValues()
+    .map((r, i) => ({ id: String(r[0] || ''), row: i + 4 }))
+    .filter(x => /^[A-Z]{2}-\d{3,}$/.test(x.id)).reverse() : [];
+  ids.forEach(x => ensureSampleImageRows_(sh, x.id, x.row));
+  sh.setColumnWidth(1, 175);
+  sh.setColumnWidth(3, 150);
+  sh.setColumnWidth(14, 135);
+  sh.hideColumns(2);                         // legacy guesses stay preserved, but the photo workflow does not use them
+  sh.hideColumns(12);                        // legacy guess comparison is no longer part of collection
   setSampleRules_(sh);                                   // next-day submission rule colours
-  if (sh.getLastRow() >= 4) sh.getRange(4, 12, sh.getLastRow() - 3, 1).setFormulaR1C1(MATCH_FORMULA);   // "Match?" stays blank when nobody guessed
   sh.getRange(3, 14, 1, 2).setBackground('#37474f').setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
 }
 
@@ -825,14 +834,14 @@ function buildRevisions_(ss) {
 function buildSamples_(ss) {
   const sh = ss.insertSheet('DA RCPC Samples');
   sh.setTabColor('#2e7d32');
-  const H = ['Sample ID', 'Our Guess (optional)', 'Date Collected', 'Collection Site (farm / barangay)', 'Collected By', 'No. of Photos',
-             'Expected Photo File Names', 'Wet Cotton (RCPC only)', 'Bagged & Labeled', 'Submitted to RCPC', 'RCPC Validated Class', 'Match?', 'Notes',
-             'Photo Folder', 'Angles Taken', 'GPS (lat, lng)'];
+  const H = ['Sample / View', 'Legacy Guess', 'First Photo Date', 'Collection Site (farm / barangay)', 'Collected By', 'No. of Photos',
+             'Photo File Name(s)', 'Wet Cotton (RCPC only)', 'Bagged & Labeled', 'Submitted to RCPC', 'RCPC Validated Class', 'Legacy Match', 'Notes',
+             'Drive Folder / Image', 'Angles Taken', 'GPS (lat, lng)'];
   const n = CFG.sampleRows;
   banner_(sh, 1, '  DA RCPC Davao — Fresh Leaf Sample Log', H.length, '#2e7d32', 15);
   sh.getRange(2, 1, 1, H.length).merge()
-    .setValue('  Rows are added by the app: tap New sample and it hands out the next label (' + CFG.members.map(m => m.prefix + '-### = ' + m.tab).join(' · ') +
-      '). Copy that label onto masking tape. Photos are named from it (FA-003 → FA-003_01.jpg …). Submit samples FRESH.')
+    .setValue('  New sample reserves a label on the phone (' + CFG.members.map(m => m.prefix + '-### = ' + m.tab).join(' · ') +
+      '). A new label adds one sample row and five image rows below it. The first photo sets the capture date. Copy the label onto masking tape and submit samples fresh.')
     .setBackground('#e8f5e9').setFontWeight('bold').setFontColor('#1b5e20').setWrap(true);
   sh.setRowHeight(2, 40);
   headers_(sh, 3, H, '#37474f');
@@ -849,7 +858,9 @@ function buildSamples_(ss) {
   sh.getRange(4, 1, n, 1).setFontWeight('bold').setHorizontalAlignment('center');
   sh.getRange(4, 8, n, 2).insertCheckboxes();
   sh.getRange(4, 6, n, 1).setHorizontalAlignment('center');
-  [80, 140, 110, 220, 100, 80, 230, 85, 85, 110, 150, 85, 220, 120, 90, 170].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  [175, 140, 150, 220, 100, 80, 230, 85, 85, 110, 150, 85, 220, 135, 90, 170].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  sh.hideColumns(2);
+  sh.hideColumns(12);
   sh.setFrozenRows(3);
   const lcol = sh.getRange(4, 12, n, 1);
   setSampleRules_(sh);
@@ -859,14 +870,14 @@ function buildSamples_(ss) {
 function setSampleRules_(sh) {
   const n = Math.max(CFG.sampleRows, sh.getMaxRows() - 3);
   sh.setConditionalFormatRules([
-    rule_('=AND($A4<>"",$C4<>"",$J4="",TODAY()>$C4+1)', sh.getRange(4, 1, n, 16), '#fbe9e6', '#b83226'),
-    rule_('=AND($J4<>"",$C4<>"",INT($J4)>INT($C4)+1)', sh.getRange(4, 1, n, 16), '#fbe9e6', '#b83226'),
-    rule_('=AND($A4<>"",$C4<>"",$J4="",TODAY()>=$C4+1)', sh.getRange(4, 10, n, 1), '#fff1d6', null),
-    rule_('=$J4<>""', sh.getRange(4, 1, n, 1), '#c8e6c9', null),
+    rule_('=AND(REGEXMATCH(TO_TEXT($A4),"^[A-Z]{2}-[0-9]{3,}$"),$C4<>"",$J4="",TODAY()>$C4+1)', sh.getRange(4, 1, n, 16), '#fbe9e6', '#b83226'),
+    rule_('=AND(REGEXMATCH(TO_TEXT($A4),"^[A-Z]{2}-[0-9]{3,}$"),$J4<>"",$C4<>"",INT($J4)>INT($C4)+1)', sh.getRange(4, 1, n, 16), '#fbe9e6', '#b83226'),
+    rule_('=AND(REGEXMATCH(TO_TEXT($A4),"^[A-Z]{2}-[0-9]{3,}$"),$C4<>"",$J4="",TODAY()>=$C4+1)', sh.getRange(4, 10, n, 1), '#fff1d6', null),
+    rule_('=AND(REGEXMATCH(TO_TEXT($A4),"^[A-Z]{2}-[0-9]{3,}$"),$J4<>"")', sh.getRange(4, 1, n, 1), '#c8e6c9', null),
     rule_('=AND($F4<>"",$F4<' + CFG.photoAngles.length + ')', sh.getRange(4, 6, n, 1), '#eef3df', '#4a6a1a'),
     rule_('=$F4>=' + CFG.photoAngles.length, sh.getRange(4, 6, n, 1), '#c8e6c9', '#1b5e20'),
   ]);
-  sh.getRange(3, 10).setNote('Must be the day after "Date Collected". Later than that = the leaf is no longer fresh and its result is invalid (row turns red).');
+  sh.getRange(3, 10).setNote('The app uses the first saved photo day as the sample date. RCPC submission is due the next day; later results are flagged invalid.');
 }
 
 function buildExpenses_(ss) {
@@ -939,7 +950,7 @@ function weeklyDigest() {
       '</td><td style="padding:6px 10px">' + open.length + '</td><td style="padding:6px 10px;color:' + (late.length ? '#b83226' : '#1f3b33') + '">' + late.length + '</td></tr>');
   });
   const smp = ss.getSheetByName('DA RCPC Samples');
-  const sv = smp && smp.getLastRow() >= 4 ? smp.getRange(4, 1, smp.getLastRow() - 3, 11).getValues().filter(r => r[0]) : [];
+  const sv = smp && smp.getLastRow() >= 4 ? smp.getRange(4, 1, smp.getLastRow() - 3, 11).getValues().filter(r => /^[A-Z]{2}-\d{3,}$/.test(String(r[0] || ''))) : [];
   const withPhotos = sv.filter(r => Number(r[5]) >= CFG.photoAngles.length).length, newWeek = sv.filter(r => r[2] instanceof Date && r[2] >= weekAgo).length;
   const sent = sv.filter(r => r[9]).length, validated = sv.filter(r => r[10] && r[10] !== 'Unsure').length;
   const invalid = sv.filter(r => r[2] instanceof Date && (r[9] ? !submittedOnTime_(r[2], r[9]) : (today - r[2]) / 864e5 > 1.5)).length;
@@ -1038,10 +1049,10 @@ function buildDashboard_(ss) {
   headers_(sh, mr, ['Milestone', '', 'Done', 'Total', '', '', '', 'Progress', '%', '', ''], '#455a64');
   const ms = [
     ['Panel revisions complied', '=COUNTIF(\'Panel Revisions\'!E4:E,"C")', '=COUNTA(\'Panel Revisions\'!C4:C)-COUNTIF(\'Panel Revisions\'!E4:E,"NA")', '#ef6c00'],
-    ['Samples with a collection date', '=COUNTA(\'DA RCPC Samples\'!C4:C)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!A4:A))', '#2e7d32'],
-    ['Collected samples with ' + CFG.photoAngles.length + ' photos', '=COUNTIFS(\'DA RCPC Samples\'!C4:C,"<>",\'DA RCPC Samples\'!F4:F,">=' + CFG.photoAngles.length + '")', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
-    ['Samples submitted to RCPC', '=COUNTA(\'DA RCPC Samples\'!J4:J)', '=MAX(1,COUNTA(\'DA RCPC Samples\'!C4:C))', '#2e7d32'],
-    ['Samples validated by RCPC', '=COUNTA(\'DA RCPC Samples\'!K4:K)-COUNTIF(\'DA RCPC Samples\'!K4:K,"Unsure")', '=MAX(1,COUNTA(\'DA RCPC Samples\'!J4:J))', '#2e7d32'],
+    ['Samples with first photo date', '=COUNTIFS(\'DA RCPC Samples\'!A4:A,"??-???*",\'DA RCPC Samples\'!C4:C,"<>")', '=MAX(1,COUNTIF(\'DA RCPC Samples\'!A4:A,"??-???*"))', '#2e7d32'],
+    ['Samples with ' + CFG.photoAngles.length + ' photos', '=COUNTIFS(\'DA RCPC Samples\'!A4:A,"??-???*",\'DA RCPC Samples\'!C4:C,"<>",\'DA RCPC Samples\'!F4:F,">=' + CFG.photoAngles.length + '")', '=MAX(1,COUNTIFS(\'DA RCPC Samples\'!A4:A,"??-???*",\'DA RCPC Samples\'!C4:C,"<>"))', '#2e7d32'],
+    ['Samples submitted to RCPC', '=COUNTIFS(\'DA RCPC Samples\'!A4:A,"??-???*",\'DA RCPC Samples\'!J4:J,"<>")', '=MAX(1,COUNTIFS(\'DA RCPC Samples\'!A4:A,"??-???*",\'DA RCPC Samples\'!C4:C,"<>"))', '#2e7d32'],
+    ['Samples validated by RCPC', '=COUNTIFS(\'DA RCPC Samples\'!A4:A,"??-???*",\'DA RCPC Samples\'!K4:K,"<>",\'DA RCPC Samples\'!K4:K,"<>Unsure")', '=MAX(1,COUNTIFS(\'DA RCPC Samples\'!A4:A,"??-???*",\'DA RCPC Samples\'!J4:J,"<>"))', '#2e7d32'],
     ['Expenses paid / bought', '=COUNTIF(Expenses!G3:G,TRUE)', '=MAX(1,COUNTA(Expenses!A3:A))', '#6d4c41'],
   ];
   ms.forEach((x, i) => {

@@ -75,6 +75,26 @@ final class NamedGallery {
         return target.toString();
     }
 
+    static boolean delete(Context context, String name) throws IOException {
+        if (name == null || !name.matches("[A-Za-z0-9_-]{1,95}\\.jpg")) throw new IOException("Invalid Gallery filename");
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            File target = new File(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Banana Thesis Tracker"), name);
+            if (!target.exists()) return false;
+            if (!target.delete()) throw new IOException("Cannot delete Gallery photo");
+            MediaScannerConnection.scanFile(context, new String[] { target.getAbsolutePath() }, null, null);
+            return true;
+        }
+        String saved = context.getSharedPreferences("named-gallery", Context.MODE_PRIVATE).getString(name, "");
+        if (saved.isEmpty()) return false;
+        try {
+            boolean deleted = context.getContentResolver().delete(Uri.parse(saved), null, null) > 0;
+            context.getSharedPreferences("named-gallery", Context.MODE_PRIVATE).edit().remove(name).apply();
+            return deleted;
+        } catch (SecurityException e) {
+            throw new IOException("Cannot delete Gallery photo", e);
+        }
+    }
+
     private static void copy(InputStream in, OutputStream out) throws IOException {
         byte[] bytes = new byte[16384];
         int n;

@@ -56,7 +56,7 @@ function doPost(e) {
       updateRevisions: updateRevisions, rescheduleTasks: rescheduleTasks,
       deleteTask: deleteTask, addSupply: addSupply, deleteSupply: deleteSupply, uploadReceipt: uploadReceipt,
       addRecord: addRecord, updateRecord: updateRecord, deleteRecord: deleteRecord, setSetting: setSetting,
-      submitSamples: submitSamples, listPhotos: listPhotos, getVersion: getVersion, deleteSample: deleteSample,
+      submitSamples: submitSamples, listPhotos: listPhotos, getVersion: getVersion, deleteSample: deleteSample, deletePhoto: deletePhoto,
     };
     const fn = actions[req.fn];
     if (!fn) throw new Error('Unknown action: ' + req.fn);
@@ -118,6 +118,7 @@ function describe_(fn, a) {
   if (fn === 'exportValidatedDataset') return 'exported the RCPC-validated photos into class folders';
   if (fn === 'createSample') return 'started new sample ' + a[0];
   if (fn === 'deleteSample') return 'deleted sample ' + a[0] + ' and its photos (label can be used again)';
+  if (fn === 'deletePhoto') return 'deleted photo ' + imageFileName_(a[0], Number(a[1]));
   if (fn === 'deleteTask') {
     const r = ss.getSheetByName(a[0]).getRange(Number(a[1]), 1, 1, 2).getValues()[0];
     return 'deleted task ' + r[0] + ' "' + short_(r[1], 50) + '"';
@@ -233,15 +234,27 @@ function getData() {
   }
 
   const samples = [];
+  const imagesById = {};
   const smp = ss.getSheetByName('DA RCPC Samples');
   if (smp && smp.getLastRow() >= 4) {
     const srng = smp.getRange(4, 1, smp.getLastRow() - 3, 16);
     const sf = srng.getFormulas();
     srng.getValues().forEach((r, i) => {
-      if (!r[0]) return;
+      const sampleId = String(r[0] || '');
+      if (!SAMPLE_ID_RE.test(sampleId)) {
+        const base = /^↳/.test(sampleId) ? photoBase_(r[6]) : '';
+        if (base) {
+          const id = base.split('_')[0], angle = Number(base.split('_')[1]);
+          const link = parseLink_(sf[i][13], r[13]);
+          (imagesById[id] = imagesById[id] || []).push({ angle, name: String(r[6]), url: link ? link.url : '',
+            capturedAt: r[2] instanceof Date ? r[2].getTime() : 0 });
+        }
+        return;
+      }
       const fl = parseLink_(sf[i][13], r[13]);
       samples.push({
         folder: fl ? fl.url : '',
+        images: [],
         angles: String(r[14] || '').split(/[^0-9]+/).filter(String).map(Number),
         gps: String(r[15] || ''),
         row: i + 4, id: String(r[0]), disease: String(r[1] || ''), date: fmtDate_(r[2], tz), site: String(r[3] || ''),
@@ -249,6 +262,7 @@ function getData() {
         submitted: fmtDate_(r[9], tz), validated: String(r[10] || ''), notes: String(r[12] || ''),
       });
     });
+    samples.forEach(s => { s.images = (imagesById[s.id] || []).sort((a, b) => a.angle - b.angle); });
   }
 
   const supplies = [];
@@ -394,7 +408,45 @@ function sampleRow_(sh, id) {
   return -1;
 }
 
-const MATCH_FORMULA = '=IF(OR(RC11="",RC2=""),"",IF(RC11=RC2,"Match","Differs"))';   // blank until there is both a guess and an RCPC result
+function imageFileName_(id, angle) { return id + '_' + ('0' + angle).slice(-2) + '.jpg'; }
+function imageRowLabel_(angle) { return '↳ ' + ('0' + angle).slice(-2) + ' ' + CFG.photoAngles[angle - 1]; }
+function requireSampleOwner_(id) {
+  const owner = CFG.members.find(m => id.indexOf(m.prefix + '-') === 0);
+  if (CURRENT_USER && (!owner || owner.tab !== CURRENT_USER)) throw new Error('Only the member who owns this sample can delete it or its photos.');
+}
+function emptySampleSlot_(values) {
+  // Blank template rows can contain unchecked boxes and the old Match? formula.
+  return [0, 1, 2, 3, 4, 5, 6, 9, 10, 12, 13, 14, 15].every(i => values[i] === '' || values[i] == null) &&
+    [7, 8].every(i => values[i] === '' || values[i] == null || values[i] === false);
+}
+/** Keep five identifiable image rows immediately beneath the parent sample. Safe to rerun. */
+function ensureSampleImageRows_(sh, id, parentHint) {
+  const parent = parentHint || sampleRow_(sh, id);
+  if (parent < 4) throw new Error('Sample row not found: ' + id);
+  const count = CFG.photoAngles.length;
+  if (parent + count <= sh.getMaxRows() && sh.getRange(parent + 1, 1, count, 15).getValues()
+      .every((r, i) => String(r[0] || '') === imageRowLabel_(i + 1) && String(r[14] || '') === String(i + 1))) return parent;
+  for (let angle = 1; angle <= count; angle++) {
+    const row = parent + angle, name = imageFileName_(id, angle);
+    if (row > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), row - sh.getMaxRows());
+    const cells = sh.getRange(row, 1, 1, 16);
+    const values = cells.getValues()[0];
+    const label = imageRowLabel_(angle);
+    if (String(values[0] || '') !== label || String(values[14] || '') !== String(angle)) {
+      if (!emptySampleSlot_(values) && !(String(values[0] || '') === label && !values[14])) sh.insertRowsBefore(row);
+      const target = sh.getRange(row, 1, 1, 16);
+      target.clearContent().clearDataValidations();
+      sh.getRange(row, 7).setValue(name);
+    }
+    sh.getRange(row, 1).setValue(label);
+    if (!sh.getRange(row, 7).getValue()) sh.getRange(row, 7).setValue(name);
+    sh.getRange(row, 15).setNumberFormat('@').setValue(String(angle));
+    sh.getRange(row, 3).setNumberFormat('mmm d, yyyy h:mm am/pm');
+    sh.getRange(row, 1, 1, 16).setBackground('#f3f7ef').setFontColor('#355c43');
+    sh.setRowHeight(row, 28);
+  }
+  return parent;
+}
 
 /** Adds a new sample row for a label the app handed out (FA-004, RJ-012, …). Safe to call twice. */
 function createSample(id, date) {
@@ -404,18 +456,23 @@ function createSample(id, date) {
   return withLock_(() => {
     const sh = sheet_('DA RCPC Samples');
     let row = sampleRow_(sh, id);
-    if (row > 0) return { id: id, row: row };
-    const vals = sh.getRange(4, 1, Math.max(1, sh.getMaxRows() - 3), 1).getValues();
+    if (row > 0) { ensureSampleImageRows_(sh, id); return { id: id, row: row }; }
+    const vals = sh.getRange(4, 1, Math.max(1, sh.getMaxRows() - 3), 16).getValues();
     row = -1;
-    for (let i = 0; i < vals.length; i++) if (!vals[i][0]) { row = i + 4; break; }
+    for (let i = 0; i < vals.length; i++) if (emptySampleSlot_(vals[i])) { row = i + 4; break; }
     if (row < 0) { sh.insertRowsAfter(sh.getMaxRows(), 50); row = vals.length + 4; }
     sh.getRange(row, 1).setValue(id).setBackground(m.light).setFontWeight('bold').setHorizontalAlignment('center');
     sh.getRange(row, 5).setValue(m.tab);
-    // The first saved photo sets the capture day, including when it uploads later from an offline phone.
-    if (/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) sh.getRange(row, 3).setValue(parseDate_(date));
+    sh.getRange(row, 2).setDataValidation(listRule_(SpreadsheetApp.getActive(), 4));
+    sh.getRange(row, 5).setDataValidation(listRule_(SpreadsheetApp.getActive(), 6));
+    sh.getRange(row, 11).setDataValidation(listRule_(SpreadsheetApp.getActive(), 4));
+    sh.getRange(row, 8, 1, 2).insertCheckboxes();
+    sh.getRange(row, 3).setNumberFormat('mmm d, yyyy');
+    sh.getRange(row, 10).setNumberFormat('mmm d, yyyy');
+    // Reserving a label does not count as photographing the leaf.
     sh.getRange(row, 7).setFormulaR1C1('=IF(RC6="","",RC1&"_01.jpg … "&RC1&"_"&TEXT(RC6,"00")&".jpg")');
-    sh.getRange(row, 12).setFormulaR1C1(MATCH_FORMULA);
     sh.getRange(row, 15).setNumberFormat('@');
+    ensureSampleImageRows_(sh, id);
     return { id: id, row: row };
   });
 }
@@ -424,6 +481,7 @@ function createSample(id, date) {
 function deleteSample(id) {
   id = String(id || '').toUpperCase();
   if (!/^[A-Z]{2}-\d{3,}$/.test(id)) throw new Error('Bad sample label: ' + id);
+  requireSampleOwner_(id);
   let trashed = 0;
   try {
     photoFilesFor_(id).forEach(f => { f.setTrashed(true); trashed++; });   // Drive trash: recoverable for 30 days
@@ -440,6 +498,8 @@ function deleteSample(id) {
     const sh = sheet_('DA RCPC Samples');
     const row = sampleRow_(sh, id);
     if (row < 0) return;
+    ensureSampleImageRows_(sh, id);
+    sh.deleteRows(row + 1, CFG.photoAngles.length);
     sh.getRange(row, 1, 1, 16).clearContent();               // checkboxes and dropdowns stay; the row is reused by the next new sample
     sh.getRange(row, 1).setBackground(null);
   });
@@ -447,13 +507,15 @@ function deleteSample(id) {
 }
 
 function updateSample(id, field, value) {
-  const col = { disease: 2, date: 3, site: 4, by: 5, photos: 6, cotton: 8, bagged: 9, submitted: 10, validated: 11, notes: 13, gps: 16 }[field];
+  id = String(id || '').toUpperCase();
+  if (!SAMPLE_ID_RE.test(id)) throw new Error('Bad sample label: ' + id);
+  const col = { disease: 2, date: 3, site: 4, cotton: 8, bagged: 9, submitted: 10, validated: 11, notes: 13, gps: 16 }[field];
   if (!col) throw new Error('Field not editable: ' + field);
   if (field === 'date' || field === 'submitted') value = parseDate_(value);
   createSample(id);                       // in case it was started offline on another path
   return withLock_(() => {
     const sh = sheet_('DA RCPC Samples');
-    sh.getRange(sampleRow_(sh, String(id).toUpperCase()), col).setValue(value);
+    sh.getRange(sampleRow_(sh, id), col).setValue(value);
     return true;
   });
 }
@@ -585,8 +647,8 @@ function legacyPhotoFolder_() {
 }
 /** Live (not trashed) photo files for a leaf: its folder first, then any left in the old flat folder. */
 function photoFilesFor_(id) {
-  const out = [], seen = {};
-  const add = f => { const n = f.getName(); if (!f.isTrashed() && n.toUpperCase().indexOf(id + '_') === 0 && !seen[n]) { seen[n] = 1; out.push(f); } };
+  const out = [];
+  const add = f => { if (!f.isTrashed() && f.getName().toUpperCase().indexOf(id + '_') === 0) out.push(f); };
   try { const sf = sampleFolder_(id, false); if (sf) { const it = sf.getFiles(); while (it.hasNext()) add(it.next()); } } catch (e) {}
   oldPhotoRoots_().forEach(r => { try {
     const mf = childFolder_(r, memberFolderName_(id), false), sf = mf && childFolder_(mf, id, false);
@@ -636,7 +698,7 @@ function migrateLegacyPhotos_() {
  * Saves one photo as  <ID>_<NN>.jpg  in the leaf's own folder (see above).
  * Retaking an angle replaces the old file. Returns only what changed for that sample.
  */
-function uploadPhoto(id, angle, b64, date) {
+function uploadPhoto(id, angle, b64, date, capturedAt) {
   id = String(id || '').toUpperCase(); angle = Number(angle);
   if (!(angle >= 1 && angle <= CFG.photoAngles.length)) throw new Error('Angle must be 1–' + CFG.photoAngles.length);
   if (!b64 || String(b64).length < 100) throw new Error('Empty photo');
@@ -644,12 +706,13 @@ function uploadPhoto(id, angle, b64, date) {
   createSample(id, date);                 // a sample started offline gets its row here if needed
 
   const folder = sampleFolder_(id, true);                 // <photo folder> / Fe Anne (FA) / FA-001
-  const name = id + '_' + ('0' + angle).slice(-2) + '.jpg';
-  photoFilesFor_(id).filter(f => photoBase_(f.getName()) === name.replace(/\.jpg$/, '')).forEach(f => f.setTrashed(true));   // a retake replaces the old one
-  folder.createFile(Utilities.newBlob(Utilities.base64Decode(String(b64).replace(/^data:image\/\w+;base64,/, '')), 'image/jpeg', name));
+  const name = imageFileName_(id, angle);
+  const previous = photoFilesFor_(id).filter(f => photoBase_(f.getName()) === name.replace(/\.jpg$/, ''));
+  const file = folder.createFile(Utilities.newBlob(Utilities.base64Decode(String(b64).replace(/^data:image\/\w+;base64,/, '')), 'image/jpeg', name));
+  previous.forEach(f => f.setTrashed(true));   // only retire the old image after the new file exists
+  const captured = Number(capturedAt) > 946684800000 && Number(capturedAt) < Date.now() + 86400000 ? new Date(Number(capturedAt)) : new Date();
 
   return withLock_(() => {
-    const tz = SpreadsheetApp.getActive().getSpreadsheetTimeZone();
     const row = sampleRow_(sh, id);
     const cell = sh.getRange(row, 15);
     const angles = String(cell.getValue() || '').split(/[^0-9]+/).filter(String).map(Number);
@@ -658,10 +721,56 @@ function uploadPhoto(id, angle, b64, date) {
     cell.setNumberFormat('@').setValue(angles.join(' '));
     sh.getRange(row, 6).setValue(angles.length);
     const dateCell = sh.getRange(row, 3);
-    if (!dateCell.getValue()) dateCell.setValue(/^\d{4}-\d{2}-\d{2}$/.test(String(date || '')) ? parseDate_(date) : new Date());
+    if (!dateCell.getValue()) dateCell.setValue(captured);
     const url = folder.getUrl();
     sh.getRange(row, 14).setFormula('=HYPERLINK("' + url + '","Open photos")');
-    return { angles: angles, photos: angles.length, folder: url, date: fmtDate_(dateCell.getValue(), tz) };
+    const imageRow = row + angle;
+    sh.getRange(imageRow, 7).setValue(name);
+    sh.getRange(imageRow, 3).setValue(captured).setNumberFormat('mmm d, yyyy h:mm am/pm');
+    sh.getRange(imageRow, 14).setFormula('=HYPERLINK("' + file.getUrl() + '","Open image")');
+    return samplePhotoPatch_(sh, row, id);
+  });
+}
+
+function samplePhotoPatch_(sh, row, id) {
+  const values = sh.getRange(row, 1, 1, 16).getValues()[0];
+  const folderFormula = sh.getRange(row, 14).getFormulas()[0][0];
+  const folder = parseLink_(folderFormula, values[13]);
+  const imageRange = sh.getRange(row + 1, 1, CFG.photoAngles.length, 16);
+  const imageValues = imageRange.getValues(), imageFormulas = imageRange.getFormulas();
+  const images = imageValues.map((v, i) => {
+    const link = parseLink_(imageFormulas[i][13], v[13]);
+    return { angle: i + 1, name: String(v[6] || imageFileName_(id, i + 1)), url: link ? link.url : '',
+      capturedAt: v[2] instanceof Date ? v[2].getTime() : 0 };
+  });
+  const angles = String(values[14] || '').split(/[^0-9]+/).filter(String).map(Number);
+  return { angles, photos: angles.length, folder: folder ? folder.url : '',
+    date: fmtDate_(values[2], SpreadsheetApp.getActive().getSpreadsheetTimeZone()), images };
+}
+
+/** Remove one uploaded view; the five labeled image rows remain ready for a retake. */
+function deletePhoto(id, angle) {
+  id = String(id || '').toUpperCase(); angle = Number(angle);
+  if (!SAMPLE_ID_RE.test(id) || !(angle >= 1 && angle <= CFG.photoAngles.length)) throw new Error('Bad sample photo');
+  requireSampleOwner_(id);
+  const sh = sheet_('DA RCPC Samples');
+  const row = sampleRow_(sh, id);
+  if (row < 4) throw new Error('Sample not found: ' + id);
+  const name = id + '_' + ('0' + angle).slice(-2);
+  const files = photoFilesFor_(id).filter(f => photoBase_(f.getName()) === name);
+  if (!files.length) throw new Error('Photo not found in Drive: ' + imageFileName_(id, angle));
+  files.forEach(f => f.setTrashed(true));
+  return withLock_(() => {
+    ensureSampleImageRows_(sh, id);
+    const remaining = photoFilesFor_(id).map(f => photoBase_(f.getName())).filter(Boolean)
+      .map(b => Number(b.split('_')[1])).filter(a => a >= 1 && a <= CFG.photoAngles.length);
+    const angles = Array.from(new Set(remaining)).sort((a, b) => a - b);
+    sh.getRange(row, 15).setNumberFormat('@').setValue(angles.join(' '));
+    sh.getRange(row, 6).setValue(angles.length);
+    sh.getRange(row + angle, 3).clearContent();
+    sh.getRange(row + angle, 7).setValue(imageFileName_(id, angle));
+    sh.getRange(row + angle, 14).clearContent();
+    return samplePhotoPatch_(sh, row, id);
   });
 }
 
@@ -683,6 +792,11 @@ function setupPhotoFolder() {
   }
   let moved = 0; try { moved = migrateLegacyPhotos_(); } catch (e) {}
   let renamed = 0; try { renamed = autoRenamePhotos_().renamed; } catch (e) {}
+  const samples = SpreadsheetApp.getActive().getSheetByName('DA RCPC Samples');
+  if (samples && samples.getLastRow() >= 4) {
+    const ids = samples.getRange(4, 1, samples.getLastRow() - 3, 1).getValues().map(r => String(r[0] || '')).filter(id => SAMPLE_ID_RE.test(id));
+    if (ids.length) syncPhotoCounts_(ids);
+  }
   ensureRenameTrigger_();
   const message = 'Photos from the app are saved in "' + RCPC_FOLDER_NAME + '", one folder per member and per leaf:\n' + f.getUrl() +
     (moved ? '\n\nMoved ' + moved + ' older photo(s) into their leaf folders.' : '') +
@@ -782,11 +896,23 @@ function syncPhotoCounts_(ids) {
   withLock_(() => {
     ids.forEach(id => {
       const row = sampleRow_(sh, id); if (row < 0) return;
-      const angles = [];
-      photoFilesFor_(id).forEach(f => { const b = photoBase_(f.getName()); const a = b ? Number(b.split('_')[1]) : 0; if (a >= 1 && a <= CFG.photoAngles.length && angles.indexOf(a) < 0) angles.push(a); });
+      ensureSampleImageRows_(sh, id);
+      const files = {};
+      photoFilesFor_(id).forEach(f => { const b = photoBase_(f.getName()); const a = b ? Number(b.split('_')[1]) : 0; if (a >= 1 && a <= CFG.photoAngles.length && !files[a]) files[a] = f; });
+      const angles = Object.keys(files).map(Number);
       angles.sort((a, b) => a - b);
       sh.getRange(row, 15).setNumberFormat('@').setValue(angles.join(' '));
       sh.getRange(row, 6).setValue(angles.length);
+      for (let angle = 1; angle <= CFG.photoAngles.length; angle++) {
+        const link = sh.getRange(row + angle, 14);
+        if (files[angle]) {
+          sh.getRange(row + angle, 7).setValue(files[angle].getName());
+          link.setFormula('=HYPERLINK("' + files[angle].getUrl() + '","Open image")');
+        } else {
+          sh.getRange(row + angle, 7).setValue(imageFileName_(id, angle));
+          link.clearContent(); sh.getRange(row + angle, 3).clearContent();
+        }
+      }
       const sf = sampleFolder_(id, false);
       if (sf) sh.getRange(row, 14).setFormula('=HYPERLINK("' + sf.getUrl() + '","Open photos")');
     });
@@ -875,7 +1001,7 @@ function exportValidatedDataset() {
   let copied = 0;
   rows.forEach(r => {
     const id = String(r[0] || ''), cls = String(r[10] || '');
-    if (!id || classes.indexOf(cls) < 0) return;
+    if (!SAMPLE_ID_RE.test(id) || classes.indexOf(cls) < 0) return;
     if (!submittedOnTime_(r[2], r[9])) return;          // DA RCPC rule: submitted the day after collection, or the leaf is invalid
     const files = photoFilesFor_(id);
     const complete = CFG.photoAngles.every((_, i) => files.some(f => photoBase_(f.getName()) === id + '_' + ('0' + (i + 1)).slice(-2)));
@@ -1170,7 +1296,7 @@ function autoLinks_() {
   const revSh = ss.getSheetByName('Panel Revisions');
   const revs = revSh && revSh.getLastRow() >= 4 ? revSh.getRange(4, 1, revSh.getLastRow() - 3, 7).getValues().filter(r => r[2]).map(r => ({ owner: String(r[3]), status: String(r[4] || 'NC'), page: String(r[5] || ''), signed: r[6] === true })) : [];
   const smpSh = ss.getSheetByName('DA RCPC Samples');
-  const samples = smpSh && smpSh.getLastRow() >= 4 ? smpSh.getRange(4, 1, smpSh.getLastRow() - 3, 10).getValues().filter(r => r[0]).map(r => ({ id: String(r[0]), submitted: !!r[9] })) : [];
+  const samples = smpSh && smpSh.getLastRow() >= 4 ? smpSh.getRange(4, 1, smpSh.getLastRow() - 3, 10).getValues().filter(r => SAMPLE_ID_RE.test(String(r[0] || ''))).map(r => ({ id: String(r[0]), submitted: !!r[9] })) : [];
   const expSh = ss.getSheetByName('Expenses');
   let supplies = [];
   if (expSh) { const tot = suppliesTotalRow_(expSh); if (tot > 3) supplies = expSh.getRange(3, 1, tot - 3, 9).getValues().filter(r => r[0] && r[8] === 'Sample collection').map(r => r[6] === true); }
