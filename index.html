@@ -1396,7 +1396,10 @@ function load(quiet) {
     // a sample started on this phone that the server hasn't confirmed yet must not disappear (e.g. the app was closed mid-save)
     const fresh = new Set((d.samples || []).map(x => x.id));
     const unconfirmed = ((S.data && S.data.samples) || []).filter(x => !x.row && !fresh.has(x.id));
-    unconfirmed.forEach(x => { d.samples.push(x); call('createSample', x.id, x.date).then(r => { const y = sampleById(x.id); if (y && r) { y.row = r.row; persist(); } }).catch(() => {}); });
+    unconfirmed.forEach(x => {
+      d.samples.push(x);
+      if (x.date) call('createSample', x.id, x.date).then(r => { const y = sampleById(x.id); if (y && r) { y.row = r.row; persist(); } }).catch(() => {});
+    });
     S.data = d; setOffline(false); persist();
     if (!quiet || !isTyping()) render();
     renderCam();
@@ -2052,9 +2055,7 @@ function newSample() {
   S.data.samples.push({ row: 0, id, disease: '', date: '', site: lastSite, by: S.user, photos: '',
     cotton: false, bagged: false, submitted: '', validated: '', notes: '', folder: '', angles: [] });
   S.sampleFilter = S.user;
-  captureGps(id);
-  save('createSample', [id, '']).then(r => { if (r && sampleById(id)) sampleById(id).row = r.row; });
-  if (lastSite) save('updateSample', [id, 'site', lastSite]);
+  persist();
   openCam(id);
 }
 
@@ -2792,9 +2793,17 @@ async function acceptShot(job, thumb, blob) {
       const writes = outbox();
       writes.push({ fn: 'updateSample', args: [job.id, 'date', sample.date], user: S.user, at: Date.now() });
       setOutbox(writes);
-      flushOutbox();
     }
   }
+  if (job.firstCapture) {
+    captureGps(job.id);
+    if (sample.site && !DEMO) {
+      const writes = outbox();
+      writes.push({ fn: 'updateSample', args: [job.id, 'site', sample.site], user: S.user, at: Date.now() });
+      setOutbox(writes);
+    }
+  }
+  if (job.firstCapture && !DEMO) flushOutbox();
   job.date = sample ? sample.date : localDay(new Date(job.at || Date.now()));
   S.thumbs[job.id + '_' + job.angle] = thumb;
   if (navigator.vibrate) navigator.vibrate(40);       // little buzz = photo kept
