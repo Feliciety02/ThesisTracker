@@ -411,8 +411,8 @@ function createSample(id, date) {
     if (row < 0) { sh.insertRowsAfter(sh.getMaxRows(), 50); row = vals.length + 4; }
     sh.getRange(row, 1).setValue(id).setBackground(m.light).setFontWeight('bold').setHorizontalAlignment('center');
     sh.getRange(row, 5).setValue(m.tab);
-    // the phone's date: a leaf collected offline and synced tomorrow must keep today's date (next-day RCPC rule)
-    sh.getRange(row, 3).setValue(/^\d{4}-\d{2}-\d{2}$/.test(String(date || '')) ? parseDate_(date) : new Date());
+    // The first saved photo sets the capture day, including when it uploads later from an offline phone.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) sh.getRange(row, 3).setValue(parseDate_(date));
     sh.getRange(row, 7).setFormulaR1C1('=IF(RC6="","",RC1&"_01.jpg … "&RC1&"_"&TEXT(RC6,"00")&".jpg")');
     sh.getRange(row, 12).setFormulaR1C1(MATCH_FORMULA);
     sh.getRange(row, 15).setNumberFormat('@');
@@ -658,7 +658,7 @@ function uploadPhoto(id, angle, b64, date) {
     cell.setNumberFormat('@').setValue(angles.join(' '));
     sh.getRange(row, 6).setValue(angles.length);
     const dateCell = sh.getRange(row, 3);
-    if (!dateCell.getValue()) dateCell.setValue(new Date());  // first photo = collected today
+    if (!dateCell.getValue()) dateCell.setValue(/^\d{4}-\d{2}-\d{2}$/.test(String(date || '')) ? parseDate_(date) : new Date());
     const url = folder.getUrl();
     sh.getRange(row, 14).setFormula('=HYPERLINK("' + url + '","Open photos")');
     return { angles: angles, photos: angles.length, folder: url, date: fmtDate_(dateCell.getValue(), tz) };

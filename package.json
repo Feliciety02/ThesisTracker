@@ -1,0 +1,22 @@
+{
+  "name": "banana-thesis-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:native": "node scripts/build-native.mjs",
+    "sync:native": "npm run build:native && cap sync",
+    "test:photo-queue": "node --test tests/photo-queue.test.mjs"
+  },
+  "dependencies": {
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/camera": "^8.2.6",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "esbuild": "^0.25.0",
+    "fake-indexeddb": "^6.2.7"
+  }
+}

@@ -1,0 +1,17 @@
+node_modules/
+dist/
+artifacts/
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+*.jks
+*.keystore
+signing.properties
+/*.apk
+/*.apk.sha256
+/*.apk.idsig

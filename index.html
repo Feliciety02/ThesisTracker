@@ -131,9 +131,19 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);b
 .task.done .t-title{text-decoration:line-through}
 .t-title{font-weight:600}
 .t-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;font-size:13px;color:var(--muted);align-items:center}
-.task-agenda{margin-top:8px;font-size:13px}
-.task-agenda summary{cursor:pointer;color:var(--brand);font-weight:700}
-.task-agenda-body{margin-top:8px;padding:12px;border-radius:10px;background:var(--soft);white-space:pre-wrap;line-height:1.5;max-height:55vh;overflow:auto}
+.task-agenda{font-size:13px;min-width:0}
+.task-agenda summary{cursor:pointer;color:var(--brand);font-weight:700;list-style:none;min-height:44px;display:flex;align-items:center;gap:8px}
+.task-agenda summary::-webkit-details-marker{display:none}
+.task-agenda summary::after{content:'⌄';margin-left:auto;font-size:20px;line-height:1}
+.task-agenda[open] summary::after{transform:rotate(180deg)}
+.task-agenda summary:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
+.task-agenda-hint{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
+.task-agenda-body{margin-top:8px;padding:12px;border-radius:10px;background:var(--soft);max-height:55vh;overflow:auto}
+.agenda-section{font-weight:700;margin:14px 0 6px}.agenda-section:first-child{margin-top:0}
+.agenda-item{display:flex;align-items:flex-start;gap:9px;width:100%;padding:9px 4px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;text-align:left;line-height:1.4;cursor:pointer}
+.agenda-item:last-child{border-bottom:0}.agenda-check{flex:none;width:17px;height:17px;margin-top:1px;border:2px solid var(--brand);border-radius:4px;background:var(--card);text-align:center;line-height:13px;font-weight:800;color:#fff}.agenda-item.done .agenda-check{background:var(--brand)}.agenda-item.done .agenda-text{text-decoration:line-through;color:var(--muted)}
+.agenda-label{min-width:0;flex:1}
+.agenda-item:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
 .t-meta .who{color:var(--c);font-weight:700}
 .tag{background:var(--soft);border-radius:6px;padding:1px 8px;font-weight:600}
 .p-High{color:var(--red);font-weight:700}
@@ -932,6 +942,7 @@ body.noscroll{overflow:hidden}
 .act-sel{display:flex;flex-direction:column;font-size:12px;font-weight:700;color:var(--muted);gap:2px;flex:1;max-width:260px}
 .act-sel select{margin:0}
 .sc-more{border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.sample-photo-list{display:grid;gap:6px;margin:10px 0}.sample-photo-row{display:flex;justify-content:space-between;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:8px;background:var(--soft);color:var(--ink);font:inherit;font-size:13px;text-align:left}.sample-photo-row[data-action]{cursor:pointer}.sample-photo-row[data-action]:focus-visible{outline:2px solid var(--brand);outline-offset:2px}.sample-photo-row .muted{white-space:nowrap}
 .goalrow{margin-top:12px;max-width:220px}
 /* tighter spacing on phones */
 @media (max-width:720px){
@@ -1787,8 +1798,22 @@ function vTasks() {
 }
 function meetingAgendaFallbackHtml() {
   if (S.data.members.some(m => m.tasks.some(t => t.task === NOV9_MEETING_TASK))) return '';
-  return '<div class="card" style="margin:0 0 14px"><b>Nov 9 · DahonMD team meeting</b><div class="small muted">Agenda for Fe Anne, Rho, and Cha · 25 items</div>' +
-    '<details class="task-agenda"><summary>View meeting agenda</summary><div class="task-agenda-body">' + esc(NOV9_MEETING_AGENDA) + '</div></details></div>';
+  return '<div class="card" style="margin:0 0 14px"><details class="task-agenda" data-agenda-key="agenda_fallback"' + (S.open.agenda_fallback ? ' open' : '') +
+    '><summary>Nov 9 · DahonMD team meeting <span class="task-agenda-hint">25 items</span></summary>' +
+    '<div class="task-agenda-body">' + meetingAgendaItemsHtml(NOV9_MEETING_AGENDA) + '</div></details></div>';
+}
+function meetingAgendaItemsHtml(notes, tab, row) {
+  return String(notes || '').split('\n').map((line, index) => {
+    const heading = line.match(/^\d+\.\s+(.+)$/), item = line.match(/^\[([ xX])\]\s+(.+)$/);
+    if (heading) return '<div class="agenda-section">' + esc(heading[0]) + '</div>';
+    if (item) {
+      const done = item[1].toLowerCase() === 'x';
+      const content = '<span class="agenda-check" aria-hidden="true">' + (done ? '✓' : '') + '</span><span class="agenda-text">' + esc(item[2]) + '</span>';
+      return tab && row ? '<button type="button" class="agenda-item' + (done ? ' done' : '') + '" data-action="agendaItem" data-tab="' + esc(tab) + '" data-row="' + row + '" data-line="' + index + '" aria-pressed="' + done + '">' + content + '</button>' :
+        '<div class="agenda-item' + (done ? ' done' : '') + '">' + content + '</div>';
+    }
+    return line.trim() && !/^DAHONMD THESIS TASK BOARD/.test(line) ? '<div class="small muted">' + esc(line) + '</div>' : '';
+  }).join('');
 }
 function renderTaskList() {
   const el = document.getElementById('taskList');
@@ -1810,13 +1835,17 @@ function renderTaskList() {
   let lastB = '';
   el.innerHTML = (list.length ? list.map(t => {
     const st = dueState(t), b = bucket(t);
-    const isMeetingAgenda = String(t.notes || '').startsWith('DAHONMD THESIS TASK BOARD — NOV 9, 2026');
+    const isMeetingAgenda = t.task === NOV9_MEETING_TASK || String(t.notes || '').startsWith('DAHONMD THESIS TASK BOARD — NOV 9, 2026');
+    const agendaKey = 'agenda_' + t.tab + '_' + t.row;
+    const agendaTitle = isMeetingAgenda ? '<details class="task-agenda" data-agenda-key="' + esc(agendaKey) + '"' + (S.open[agendaKey] ? ' open' : '') +
+      '><summary class="t-title"><span class="agenda-label">' + esc(t.task) + '</span><span class="task-agenda-hint">' + (String(t.notes || '').match(/^\[[ xX]\]/gm) || []).filter(s => s.toLowerCase() === '[x]').length + '/25</span></summary>' +
+      '<div class="task-agenda-body">' + meetingAgendaItemsHtml(t.notes || NOV9_MEETING_AGENDA, t.tab, t.row) + '</div></details>' : '<div class="t-title">' + esc(t.task) + '</div>';
     const head = b !== lastB ? '<div class="tgroup' + (b === 'Overdue' ? ' bad' : '') + '"><b>' + b + '</b><span>' + counts[b] + '</span></div>' + (b === 'Overdue' ? resched : '') : '';
     lastB = b;
     return head + '<div class="task ' + st + (t.status === 'Done' ? ' done' : '') + '" style="--c:' + t.color + '">' +
       '<select class="status s-' + slug(t.status) + '" data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="status" aria-label="Status"' + (t.tempId ? ' disabled' : '') + '>' +
       sts.map(s => '<option' + (s === t.status ? ' selected' : '') + '>' + s + '</option>').join('') + '</select>' +
-      '<div class="t-main"><div class="t-title">' + esc(t.task) + '</div><div class="t-meta">' +
+      '<div class="t-main">' + agendaTitle + '<div class="t-meta">' +
       (t.status !== 'Done' && t.due ? '<span class="due-pill">' + dueText(t) + '</span>' : '') +
       (S.member === 'All' ? '<span class="who"><i></i>' + esc(t.tab) + '</span>' : '') +
       (t.status === 'Done' && t.doneBy ? '<span class="doneby">' + ic('check') + ' Done by ' + esc(t.doneBy) + (t.doneBy !== t.tab ? ' (helped)' : '') + '</span>' : '') +
@@ -1827,7 +1856,7 @@ function renderTaskList() {
       (t.link ? '<a href="' + esc(t.link.url) + '" target="_blank" rel="noopener">' + esc(t.link.label) + ' ' + ic('open_in_new') + '</a>' : '') +
       (t.notes && !isMeetingAgenda ? '<span>' + esc(t.notes) + '</span>' : '') +
       (t.completed ? '<span>Done ' + fmt(t.completed) + '</span>' : '') + '</div>' +
-      (isMeetingAgenda ? '<details class="task-agenda"><summary>View meeting agenda · 25 items</summary><div class="task-agenda-body">' + esc(t.notes) + '</div></details>' : '') + '</div>' +
+      '</div>' +
       (t.due ? '<input type="date" value="' + esc(t.due) + '"' : '<input type="text" class="nodate" placeholder="No date" readonly onfocus="this.removeAttribute(\'readonly\');this.type=\'date\';try{this.showPicker()}catch(e){}"') +
         ' data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="due" aria-label="Due date" style="width:100%"' + (t.tempId ? ' disabled' : '') + '>' +
       (t.tempId ? '<span></span>' : '<button class="iconbtn' + (S.editTask === t.tab + '_' + t.row ? ' on' : '') + '" data-action="editTask" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" title="Edit" aria-label="Edit task">' + ic('edit') + '</button>') +
@@ -2020,11 +2049,11 @@ function newSample() {
   if (!IS_PHONE || S.cam) return;          // no double labels from a double tap
   const id = nextLabel(S.user);
   const lastSite = (samplesOf(S.user).filter(s => s.site).sort((a, b) => labelNum(b.id) - labelNum(a.id))[0] || {}).site || '';
-  S.data.samples.push({ row: 0, id, disease: '', date: localDay(), site: lastSite, by: S.user, photos: '',
+  S.data.samples.push({ row: 0, id, disease: '', date: '', site: lastSite, by: S.user, photos: '',
     cotton: false, bagged: false, submitted: '', validated: '', notes: '', folder: '', angles: [] });
   S.sampleFilter = S.user;
   captureGps(id);
-  save('createSample', [id, localDay()]).then(r => { if (r && sampleById(id)) sampleById(id).row = r.row; });
+  save('createSample', [id, '']).then(r => { if (r && sampleById(id)) sampleById(id).row = r.row; });
   if (lastSite) save('updateSample', [id, 'site', lastSite]);
   openCam(id);
 }
@@ -2173,7 +2202,7 @@ function sampleCard(x) {
   const key = 'smp_' + x.id, open = !!S.open[key];
   const deadline = ['today', 'tomorrow'].includes(f.st) ? freshPill(x) : '';
   const action = {
-    photos: IS_PHONE ? '<button class="btn act" data-action="cam" ' + at + '>' + ic('photo_camera') + ' Take photos · ' + Math.min(n + q, MAX_ANGLES) + ' of ' + MAX_ANGLES + '</button>'
+    photos: IS_PHONE ? '<button class="btn act" data-action="cam" ' + at + '>' + ic('photo_camera') + ' Take photos · ' + Math.min(n, MAX_ANGLES) + ' of ' + MAX_ANGLES + '</button>'
                      : '<span class="small muted">' + n + ' of ' + MAX_ANGLES + ' photos · finish on the phone</span>',
     bag: '<button class="btn act" data-action="smpBag" ' + at + '>' + ic('check') + ' Bagged & labeled</button>',
     send: '<button class="btn act" data-action="smpSent" ' + at + '>' + ic('check') + ' Sent to RCPC today</button>',
@@ -2181,7 +2210,13 @@ function sampleCard(x) {
     done: '<span class="tagp ok">' + ic('check_circle') + ' RCPC: ' + esc(x.validated) + '</span>',
     invalid: '<span class="small muted">' + (f.st === 'late' ? 'Sent ' + esc(fmt(x.submitted).replace(/^\w+, /, '')) + ', after the next-day deadline' : 'Not sent by ' + esc(fmt(f.due).replace(/^\w+, /, ''))) + '</span>',
   }[st];
-  const meta = [x.site || 'No site yet', x.date ? fmt(x.date).replace(/^\w+, /, '') : '', x.disease && !x.validated ? 'our guess: ' + x.disease : ''].filter(Boolean).map(esc).join(' · ');
+  const meta = [x.date ? 'Captured ' + fmt(x.date).replace(/^\w+, /, '') : 'Waiting for first photo', x.site || ''].filter(Boolean).map(esc).join(' · ');
+  const photoRows = angleNames().map((name, i) => {
+    const state = angleState(x, i + 1);
+    const status = { prep: 'Preparing', up: 'Uploading', q: 'Waiting for Drive', done: 'Saved to Drive' }[state] || 'Not taken';
+    const tag = IS_PHONE ? 'button' : 'div';
+    return '<' + tag + ' class="sample-photo-row"' + (IS_PHONE ? ' type="button" data-action="camAngle" data-id="' + esc(x.id) + '" data-angle="' + (i + 1) + '" aria-label="' + (state ? 'Retake ' : 'Take ') + esc(name) + '"' : '') + '><span>' + (i + 1) + '. ' + esc(name) + '</span><span class="muted">' + esc(status) + '</span></' + tag + '>';
+  }).join('');
   return '<div class="sc smp st-' + st + '" style="--c:' + m.color + '">' +
     '<div class="sc-top"><span class="lbl">' + esc(x.id) + '</span>' + (S.sampleFilter === 'All' || owner !== S.user ? '<span class="sc-own">' + esc(owner) + '</span>' : '') +
       '<span class="sp"></span>' + (q ? '<span class="qchip">' + ic('cloud_off') + ' ' + q + '</span>' : '') + deadline + '</div>' +
@@ -2189,21 +2224,13 @@ function sampleCard(x) {
     '<div class="meta">' + meta + '</div>' +
     '<div class="sc-act">' + action + '<span class="sp"></span>' +
       '<button class="iconbtn" data-action="toggleCard" data-v="' + esc(key) + '" aria-expanded="' + open + '" aria-label="' + (open ? 'Close details' : 'Details and edit') + '" title="Details">' + ic(open ? 'keyboard_arrow_up' : 'edit') + '</button></div>' +
-    (!open ? '' : '<div class="sc-more"><div class="sc-grid">' +
-      '<label>Our guess (optional)' + sel(x.disease, 'disease') + '</label>' +
-      '<label>Collected<input type="date" value="' + esc(x.date) + '" data-change="sample" ' + at + ' data-field="date"></label>' +
-      '<label class="wide">Site<input type="text" value="' + esc(x.site) + '" placeholder="Farm / barangay" data-change="sample" ' + at + ' data-field="site"></label>' +
-      '<label>Sent to RCPC<input type="date" value="' + esc(x.submitted) + '" data-change="sample" ' + at + ' data-field="submitted"></label>' +
-      '<label>RCPC result' + sel(x.validated, 'validated') + '</label>' +
-      '<label class="wide">Notes<input type="text" value="' + esc(x.notes) + '" placeholder="Anything RCPC or the team should know" data-change="sample" ' + at + ' data-field="notes"></label>' +
-    '</div>' +
-    '<div class="sc-foot">' +
-      '<label class="ck"><input type="checkbox" ' + (x.cotton ? 'checked' : '') + ' data-change="sample" ' + at + ' data-field="cotton">Wet cotton used (RCPC only)</label>' +
-      '<label class="ck"><input type="checkbox" ' + (x.bagged ? 'checked' : '') + ' data-change="sample" ' + at + ' data-field="bagged">Ziplock bag + label</label>' +
-      (IS_PHONE && st !== 'photos' ? '<button class="linkbtn" data-action="cam" ' + at + '>' + ic('photo_camera') + ' Retake photos</button>' : '') +
+    (!open ? '' : '<div class="sc-more"><b>Photos · ' + Math.min(n, MAX_ANGLES) + '/' + MAX_ANGLES + '</b>' +
+      '<div class="small muted">Captured on: ' + esc(x.date ? fmt(x.date) : 'shown after the first photo is saved') + '</div>' +
+      '<div class="sample-photo-list">' + photoRows + '</div>' +
+      '<div class="sc-foot">' +
+      (IS_PHONE ? '<button class="linkbtn" data-action="cam" ' + at + '>' + ic('photo_camera') + ' Take or retake photos</button>' : '') +
       (phoneCopies ? '<button class="linkbtn" data-action="camGallery" ' + at + '>' + (isIOS ? 'Save phone photos to Photos' : 'Download phone photos') + '</button>' : '') +
-      (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">' + ic('photo_library') + ' Photos in Drive</a>' : '') +
-      (gpsLink(x.gps) ? '<a href="' + esc(gpsLink(x.gps)) + '" target="_blank" rel="noopener">' + ic('location_on') + ' Map</a>' : '') +
+      (x.folder ? '<a href="' + esc(x.folder) + '" target="_blank" rel="noopener">' + ic('photo_library') + ' Open Drive photos</a>' : '<span class="small muted">Drive link appears after upload</span>') +
       '<span class="sp"></span>' + (IS_PHONE ? '<button class="btn text" style="color:var(--red)" data-action="delSample" ' + at + '>' + ic('delete') + ' Delete</button>' : '') +
     '</div></div>') + '</div>';
 }
@@ -2687,7 +2714,7 @@ async function sendPhoto(job) {
   if (job.kind === 'receipt') return sendReceipt(job, key);
   try {
     const sm = S.data && sampleById(job.id);
-    const patch = await call('uploadPhoto', job.id, job.angle, job.b64, sm ? sm.date : '');
+    const patch = await call('uploadPhoto', job.id, job.angle, job.b64, job.date || (sm ? sm.date : ''));
     if (sm && patch) { Object.assign(sm, patch); persist(); }
     if (!S.redo[key]) await PhotoQ.del(key);
     driveAuthorizationNoticeShown = false;
@@ -2755,6 +2782,20 @@ async function acceptShot(job, thumb, blob) {
     toast(fname(job.id, job.angle) + ' cannot upload offline. Free phone space and retake it.', 7000, true);
     delete S.thumbs[job.id + '_' + job.angle]; renderCam(); return;
   }
+  const sample = sampleById(job.id);
+  const alreadySaved = sample && ((sample.angles || []).length || Object.keys(S.queued).concat(Object.keys(S.waiting), Object.keys(S.uploading)).some(k => k.startsWith(job.id + '_')));
+  job.firstCapture = !!sample && !alreadySaved;
+  if (sample && (!sample.date || !alreadySaved)) {
+    sample.date = localDay(new Date(job.at || Date.now()));
+    persist();
+    if (!DEMO) {
+      const writes = outbox();
+      writes.push({ fn: 'updateSample', args: [job.id, 'date', sample.date], user: S.user, at: Date.now() });
+      setOutbox(writes);
+      flushOutbox();
+    }
+  }
+  job.date = sample ? sample.date : localDay(new Date(job.at || Date.now()));
   S.thumbs[job.id + '_' + job.angle] = thumb;
   if (navigator.vibrate) navigator.vibrate(40);       // little buzz = photo kept
   if (queued) await queuePhotoJob(job);
@@ -3233,6 +3274,7 @@ document.addEventListener('click', e => {
   else if (a === 'gallery') { S.gallery = v === '1'; if (S.gallery) { S.photoIndex = null; loadPhotoIndex(); } render(); }
   else if (a === 'newSample') { newSample(); }
   else if (a === 'cam') { openCam(el.dataset.id); }
+  else if (a === 'camAngle') { openCam(el.dataset.id); S.cam.target = +el.dataset.angle; renderCam(); }
   else if (a === 'camGallery') { openCam(el.dataset.id, 'finish'); }
   else if (a === 'camClose') {
     const x = sampleById(S.cam.id), n = takenSet(x).size;
@@ -3286,6 +3328,16 @@ document.addEventListener('click', e => {
   else if (a === 'camFinish') { const x = S.cam && sampleById(S.cam.id); if (x && photosReady(x)) { S.cam.stage = 'finish'; saveCamState(); renderCam(); } }
   else if (a === 'camDone') { if (S.cam && S.cam.stage === 'finish') markPacked(S.cam.id); closeCam(); }
   else if (a === 'camNextSample') { markPacked(S.cam.id); S.cam = null; store.del(CAM_STORE); newSample(); }   // camera stays on: next leaf opens instantly
+  else if (a === 'agendaItem') {
+    const tab = el.dataset.tab, row = +el.dataset.row, line = +el.dataset.line;
+    const t = member(tab).tasks.find(x => x.row === row);
+    if (!t) return;
+    const lines = String(t.notes || NOV9_MEETING_AGENDA).split('\n');
+    if (!/^\[[ xX]\]\s+/.test(lines[line] || '')) return;
+    lines[line] = lines[line].replace(/^\[([ xX])\]/, (_, state) => state.toLowerCase() === 'x' ? '[ ]' : '[x]');
+    const notes = lines.join('\n');
+    save('updateTask', [tab, row, 'notes', notes], () => { t.notes = notes; });
+  }
   else if (a === 'editTask') { const k = el.dataset.tab + '_' + el.dataset.row; S.editTask = S.editTask === k ? null : k; renderTaskList(); }
   else if (a === 'delTask') {
     const tab = el.dataset.tab, row = +el.dataset.row, t = member(tab).tasks.find(x => x.row === row);
@@ -3363,6 +3415,7 @@ document.addEventListener('change', e => {
 
 document.addEventListener('toggle', e => {
   if (!e.target.matches) return;
+  if (e.target.matches('details[data-agenda-key]')) S.open[e.target.dataset.agendaKey] = e.target.open;
   if (e.target.matches('details[data-action=paperToggle]')) S.paperOpen = e.target.open;
   if (e.target.matches('details[data-action=prefarmToggle]')) { S.prefarmOpen = e.target.open; if (e.target.open) store.del(PREFARM_CLOSED); else store.set(PREFARM_CLOSED, localDay()); }
 }, true);
