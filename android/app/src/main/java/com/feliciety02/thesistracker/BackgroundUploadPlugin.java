@@ -43,6 +43,12 @@ public class BackgroundUploadPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void readNamedPhoto(PluginCall call) {
+        try { call.resolve(new JSObject().put("b64", NamedGallery.readBase64(getContext(), call.getString("name", "")))); }
+        catch (Exception e) { call.reject("Could not preview named Gallery photo", e); }
+    }
+
+    @PluginMethod
     public void setSession(PluginCall call) {
         String token = call.getString("token", ""), url = call.getString("url", "");
         if (token.isEmpty() || !url.matches("https://script\\.google\\.com/macros/s/[^/]+/exec")) {

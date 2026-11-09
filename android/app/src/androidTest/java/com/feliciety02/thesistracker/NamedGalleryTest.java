@@ -58,4 +58,14 @@ public class NamedGalleryTest {
             }
         }
     }
+
+    @Test public void canReopenANamedCaptureForReview() throws Exception {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        String name = "ZZ-999_03.jpg", photo = samplePhoto();
+        NamedGallery.save(context, name, "", photo);
+        try {
+            assertTrue(NamedGallery.readBase64(context, name).length() > 100);
+        } finally { NamedGallery.delete(context, name); }
+        assertEquals("", NamedGallery.readBase64(context, name));
+    }
 }

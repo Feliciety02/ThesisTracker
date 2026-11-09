@@ -42,7 +42,7 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Hanken Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Hanken Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:contain}
 body{overflow-x:hidden}
 a{color:var(--brand)}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -300,6 +300,18 @@ tr.filled td.id{color:var(--ok)}
 .shutter:active i{transform:scale(.86)}
 .vf-done{justify-self:end;background:#c9e79a;color:#1f3b33;border:0;border-radius:999px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer}
 .vf-wait{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+.cam-preview{position:absolute;inset:0;z-index:3;background:#101a16;color:#fff;display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));gap:12px}
+.cam-preview[hidden]{display:none}
+.cam-preview-head{display:flex;align-items:flex-start;gap:12px}.cam-preview-head .iconbtn{color:#fff;margin-left:auto}
+.cam-preview-photo{flex:1;min-height:0;display:grid;place-items:center;background:#080d0b;border-radius:16px;overflow:hidden}
+.cam-preview-photo img{width:100%;height:100%;object-fit:contain}
+.cam-preview .quality{background:#47361b;color:#ffe6ae;border-radius:10px;padding:9px 12px;font-size:13px}
+.cam-preview-angles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.cam-preview-angles button{border:1px solid #64746a;background:#23372d;color:#fff;border-radius:10px;padding:5px 2px;min-width:0;font-size:11px;cursor:pointer}
+.cam-preview-angles button.on{border-color:#c9e79a;background:#385d43}.cam-preview-angles button:disabled{opacity:.45;cursor:default}
+.cam-preview-angles img{display:block;width:38px;height:38px;max-width:100%;margin:0 auto 3px;border-radius:6px;object-fit:cover}
+.cam-preview-actions{display:flex;gap:8px}.cam-preview-actions .btn{flex:1}
+.cam-preview-actions .btn.ghost{color:#fff;border-color:#64746a}
 .strip3{display:flex;gap:8px;margin-top:10px}
 .strip3 button{width:64px;height:64px;border-radius:12px;border:1px solid var(--line);background:var(--soft);padding:0;overflow:hidden;position:relative;cursor:pointer;font-weight:800;color:var(--muted)}
 .strip3 img{width:100%;height:100%;object-fit:cover}
@@ -1039,6 +1051,7 @@ body.noscroll{overflow:hidden}
 <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="cam" class="cam" hidden>
   <div class="cam-sheet" role="dialog" aria-modal="true" aria-label="Sample photos"><div id="camBody"></div></div>
+  <div id="camPreview" class="cam-preview" role="dialog" aria-modal="true" aria-label="Photo preview" hidden></div>
 </div>
 <div id="ov" class="cam" hidden>
   <div class="cam-sheet wide" role="dialog" aria-modal="true"><div id="ovBody"></div></div>
@@ -1328,7 +1341,7 @@ const Demo = (() => {
 /* =========================================================
    State + helpers
    ========================================================= */
-const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'NC', panelTab: 'rev', revSelecting: false, ngFilter: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, redo: {}, preparing: {}, thumbs: {}, shots: {}, phonePending: {}, issues: {}, open: {}, more: 'training', ov: null, gallery: false, photoIndex: null };
+const S = { user: null, data: null, view: 'overview', member: 'All', status: 'Open', q: '', revOwner: 'All', revStatus: 'NC', panelTab: 'rev', revSelecting: false, ngFilter: 'All', sampleFilter: null, editTask: null, revSel: {}, paperOpen: false, addTaskOpen: false, addExpOpen: false, cam: null, uploading: {}, waiting: {}, queued: {}, redo: {}, preparing: {}, thumbs: {}, previews: {}, shots: {}, phonePending: {}, issues: {}, open: {}, more: 'training', ov: null, gallery: false, photoIndex: null };
 const VIEWS = [['overview','Home'],['tasks','Tasks'],['revisions','Panel'],['samples','Samples'],['supplies','Expenses']];
 const MORE = [['training', 'Training runs', 'table_chart'], ['sources', 'Dataset sources', 'dataset'], ['consults', 'Consultations', 'school'], ['defense', 'Final defense', 'event'], ['links', 'Links', 'link']];
 const recs = kind => ((S.data && S.data.records) || {})[kind] || [];
@@ -1617,6 +1630,9 @@ function save(fn, args, apply, onQueued) {
    ========================================================= */
 function render() {
   if (!S.data) return;
+  const app = document.getElementById('app');
+  const keepTaskScroll = S.view === 'tasks' && app.dataset.view === 'tasks';
+  const taskScroll = keepTaskScroll ? window.scrollY : 0;
   const d = S.data;
   document.getElementById('thesis').textContent = d.thesisTitle;
   const n = daysUntil(d.rcpcDate);
@@ -1640,9 +1656,11 @@ function render() {
   mb.hidden = false; mb.classList.toggle('on', S.view === 'more');
   renderDrawer(); renderFab();
   const fn = { overview: vOverview, tasks: vTasks, revisions: vRevisions, samples: vSamples, supplies: vSupplies, more: vMore }[S.view] || vOverview;
-  document.getElementById('app').innerHTML = fn();
+  app.innerHTML = fn();
+  app.dataset.view = S.view;
   if (S.view === 'tasks') renderTaskList();
   markScrollers();
+  if (keepTaskScroll && Math.abs(window.scrollY - taskScroll) > 2) window.scrollTo(0, taskScroll);
 }
 /* ---------- side menu: profile + the less-used sections ---------- */
 function openDrawer(open) {
@@ -2303,6 +2321,7 @@ function galleryHtml(rows) {
 /* ---------- camera (inside DA RCPC Samples): five photos per leaf, then label reminder ---------- */
 function openCam(id, stage) {
   if (!IS_PHONE) { toast('Take photos with the app on your phone.', 2500); return; }
+  Object.keys(S.previews).filter(k => !k.startsWith(id + '_')).forEach(forgetPhotoPreview);
   S.cam = { id: id, stage: stage || 'shoot', more: false };
   Object.keys(S.shots).forEach(k => { if (S.shots[k].id !== id && S.shots[k].id.indexOf('rcpt_') !== 0) delete S.shots[k]; });   // one leaf's photos in memory at a time
   saveCamState();
@@ -2311,7 +2330,66 @@ function openCam(id, stage) {
   restorePhoneShots(id);
   keepAwake(true);
 }
-function closeCam() { S.cam = null; store.del(CAM_STORE); keepAwake(false); stopStream(); const c = document.getElementById('cam'); c.hidden = true; c.classList.remove('live'); document.getElementById('camBody').innerHTML = ''; render(); }
+function closeCam() { if (S.cam) clearPhotoPreviews(S.cam.id); closePhotoPreview(); S.cam = null; store.del(CAM_STORE); keepAwake(false); stopStream(); const c = document.getElementById('cam'); c.hidden = true; c.classList.remove('live'); document.getElementById('camBody').innerHTML = ''; render(); }
+function forgetPhotoPreview(key) {
+  const src = S.previews[key];
+  if (src && src.startsWith('blob:')) URL.revokeObjectURL(src);
+  delete S.previews[key];
+}
+function clearPhotoPreviews(id) { Object.keys(S.previews).filter(k => k.startsWith(id + '_')).forEach(forgetPhotoPreview); }
+function rememberPhotoPreview(id, angle, blob) {
+  if (!blob) return;
+  const key = id + '_' + angle;
+  forgetPhotoPreview(key);
+  S.previews[key] = URL.createObjectURL(blob);
+}
+function closePhotoPreview() {
+  if (S.cam) { S.cam.preview = 0; S.cam.previewLoading = false; }
+  const modal = document.getElementById('camPreview');
+  modal.hidden = true; modal.innerHTML = '';
+}
+function renderPhotoPreview() {
+  if (!S.cam || !S.cam.preview) return;
+  const x = sampleById(S.cam.id);
+  if (!x) { closePhotoPreview(); return; }
+  const angle = S.cam.preview, key = x.id + '_' + angle;
+  const modal = document.getElementById('camPreview');
+  const source = S.previews[key] || S.thumbs[key] || '';
+  const image = (x.images || []).find(p => p.angle === angle);
+  const issue = S.issues[key];
+  modal.innerHTML = '<div class="cam-preview-head"><div><b>' + esc(x.id) + ' · Photo ' + angle + '/' + MAX_ANGLES + '</b><div class="small">' + esc(angleNames()[angle - 1]) + '</div></div>' +
+    '<button class="iconbtn" data-action="previewClose" aria-label="Close photo preview">' + ic('close') + '</button></div>' +
+    '<div class="cam-preview-photo">' + (source ? '<img src="' + esc(source) + '" alt="Photo ' + angle + ': ' + esc(angleNames()[angle - 1]) + '">' : '<span class="small">' + (S.cam.previewLoading ? 'Loading photo…' : 'Full photo is not available on this phone.') + '</span>') + '</div>' +
+    (issue ? '<div class="quality">' + ic('warning') + ' Quality check: ' + esc(issue) + '. Retake this view if possible.</div>' : '') +
+    '<div class="cam-preview-angles">' + angleNames().map((name, i) => { const a = i + 1, k = x.id + '_' + a, available = !!(angleState(x, a) || S.thumbs[k]);
+      return '<button data-action="previewAngle" data-v="' + a + '" class="' + (a === angle ? 'on' : '') + '"' + (available ? '' : ' disabled') + ' aria-label="Review ' + esc(name) + '">' +
+        (S.thumbs[k] ? '<img src="' + esc(S.thumbs[k]) + '" alt="">' : '<span class="small">' + a + '</span>') + esc(name) + '</button>'; }).join('') + '</div>' +
+    '<div class="cam-preview-actions"><button class="btn ghost" data-action="previewClose">Back to camera</button>' +
+    '<button class="btn" data-action="previewRetake"' + (S.preparing[key] ? ' disabled' : '') + '>' + ic('photo_camera') + ' Retake</button></div>' +
+    (!source && image && image.url ? '<a class="small" style="color:#c9e79a;text-align:center" href="' + esc(image.url) + '" target="_blank" rel="noopener">Open this image in Drive</a>' : '');
+}
+async function openPhotoPreview(angle) {
+  if (!S.cam || !(angle >= 1 && angle <= MAX_ANGLES)) return;
+  const id = S.cam.id, x = sampleById(id), key = id + '_' + angle;
+  if (!x || (!angleState(x, angle) && !S.thumbs[key])) return;
+  S.cam.preview = angle; S.cam.previewLoading = !S.previews[key];
+  document.getElementById('camPreview').hidden = false;
+  renderPhotoPreview();
+  if (S.previews[key]) return;
+  try {
+    const shot = S.shots[key] || await PhotoQ.galleryGet(key).catch(() => null);
+    if (shot && shot.blob) rememberPhotoPreview(id, angle, shot.blob);
+    else if (nativeCameraAvailable() && window.ThesisBackgroundUpload.readNamedPhoto) {
+      const result = await window.ThesisBackgroundUpload.readNamedPhoto(fname(id, angle)).catch(() => null);
+      if (result && result.b64) S.previews[key] = 'data:image/jpeg;base64,' + result.b64;
+    }
+    if (!S.previews[key]) {
+      const job = S.queued[key] || await PhotoQ.get(key).catch(() => null);
+      if (job && job.b64) S.previews[key] = 'data:image/jpeg;base64,' + job.b64;
+    }
+  } catch (e) { /* The thumbnail and Drive link remain available. */ }
+  if (S.cam && S.cam.id === id && S.cam.preview === angle) { S.cam.previewLoading = false; renderPhotoPreview(); }
+}
 // Remember where we are, so if Android closes the app while the camera is open we come straight back to this sample.
 function saveCamState(waitingForShot) {
   if (!S.cam) return;
@@ -2384,10 +2462,12 @@ function renderCam() {
   const box = document.getElementById('cam'), body = document.getElementById('camBody');
   const live = S.cam.stage !== 'finish' && S.cam.live !== false && liveCamOK();
   box.classList.toggle('live', live);
-  box.querySelector('.cam-sheet').scrollTop = 0;
   if (!live) {
     if (S.cam.stage !== 'finish') stopStream();      // keep the camera warm on the label screen so "Next sample" opens instantly
+    const sheet = box.querySelector('.cam-sheet'), scroll = sheet.scrollTop;
     body.innerHTML = S.cam.stage === 'finish' ? camFinishHtml(x) : camShootHtml(x);
+    sheet.scrollTop = scroll;
+    renderPhotoPreview();
     return;
   }
   if (!document.getElementById('vfVideo')) {          // build the viewfinder once; later updates only touch the overlays
@@ -2401,16 +2481,17 @@ function renderCam() {
   const names = angleNames(), target = S.cam.target || nextAngle(x), n = takenSet(x).size;
   document.getElementById('vfTop').innerHTML = '<span class="tag">' + esc(x.id) + '</span><div style="min-width:0">' +
     (target ? '<b>Photo ' + target + '/' + MAX_ANGLES + ' · ' + esc(names[target - 1]) + '</b><div class="small">' + esc(ANGLE_HINTS[target - 1] || '') + '</div>'
-            : '<b>' + MAX_ANGLES + '/' + MAX_ANGLES + ' photos taken ' + ic('check') + '</b><div class="small">Tap a thumbnail to retake</div>') + '</div>' +
+            : '<b>' + MAX_ANGLES + '/' + MAX_ANGLES + ' photos taken ' + ic('check') + '</b><div class="small">Tap a thumbnail to review or retake</div>') + '</div>' +
     '<button class="vf-x" data-action="camClose" aria-label="Close">' + ic('close') + '</button>';
   document.getElementById('vfBot').innerHTML = '<div class="vf-tiles">' + names.map((nm, i) => {
       const a = i + 1, k = x.id + '_' + a, st = angleState(x, a), th = S.thumbs[k];
       const w = S.issues[k] ? '' + ic('warning') + '' : st === 'q' ? '' + ic('cloud_off') + '' : st === 'done' && !th ? '' : '';
-      return '<button class="vf-tile' + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '"><span class="im">' +
+      return '<button class="vf-tile' + (a === target ? ' cur' : '') + '" data-action="' + (st || th ? 'camPreview' : 'camShot') + '" data-v="' + a + '" aria-label="' + (st || th ? 'Review ' : 'Take ') + esc(nm) + '"><span class="im">' +
         (th ? '<img src="' + th + '" alt="">' : st === 'done' ? '' + ic('check') + '' : a) + (w ? '<span class="w">' + w + '</span>' : '') + '</span></button>';
     }).join('') + '</div>' +
     '<div class="vf-row"><span></span><button class="shutter" data-action="snap" aria-label="Take photo"><i></i></button>' +
       (photosReady(x) ? '<button class="vf-done" data-action="camFinish">Done ' + ic('check') + '</button>' : '<span></span>') + '</div>';
+  renderPhotoPreview();
 }
 /** Grab the photo straight from the live preview: instant, like the phone's camera. Heavy work runs right after. */
 function snap() {
@@ -2440,7 +2521,7 @@ function snap() {
     S.thumbs[key] = t.toDataURL('image/jpeg', 0.7); renderCam();
     setTimeout(() => {                       // quality check + save, after the thumbnail shows
       const iss = photoIssues(c);
-      if (iss.length) { S.issues[key] = iss.join(' and '); toast('Photo ' + a + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); renderCam(); }
+      if (iss.length) { S.issues[key] = iss.join(' and '); renderCam(); }
       c.toBlob(b => {
         if (!b) { delete S.preparing[key]; delete S.thumbs[key]; toast('Photo ' + a + ' could not be saved. Take it again.', 4000, true); renderCam(); return; }
         keepShot(x.id, a, b);
@@ -2448,8 +2529,10 @@ function snap() {
         r.onload = async () => {
           try {
             await acceptShot({ id: x.id, angle: a, b64: String(r.result).split(',')[1], at: Date.now() }, S.thumbs[key], b);
+            rememberPhotoPreview(x.id, a, b);
             delete S.preparing[key]; renderCam();
-            if (S.cam && S.cam.id === x.id && photosReady(x) && !S.cam.target) {
+            if (S.cam && S.cam.id === x.id && S.issues[key]) openPhotoPreview(a);
+            else if (S.cam && S.cam.id === x.id && photosReady(x) && !S.cam.target) {
               S.cam.stage = 'finish'; saveCamState(); renderCam();
             }
           }
@@ -2466,7 +2549,7 @@ function camShootHtml(x) {          // used only when the in-app camera isn't av
   const tiles = names.map((nm, i) => {
     const a = i + 1, st = angleState(x, a), thumb = S.thumbs[x.id + '_' + a], k = x.id + '_' + a;
     const badge = S.issues[k] ? '' + ic('warning') + '' : st === 'prep' || st === 'up' ? SPIN : st === 'q' ? '' + ic('cloud_off') + '' : st === 'done' ? '' + ic('check') + '' : '';
-    return '<button class="tile' + (a === target ? ' cur' : '') + '" data-action="camShot" data-v="' + a + '" aria-label="' + (st ? 'Retake ' : 'Take ') + esc(nm) + '">' +
+    return '<button class="tile' + (a === target ? ' cur' : '') + '" data-action="' + (st || thumb ? 'camPreview' : 'camShot') + '" data-v="' + a + '" aria-label="' + (st || thumb ? 'Review ' : 'Take ') + esc(nm) + '">' +
       (thumb ? '<img src="' + thumb + '" alt="">' : st === 'done' ? '' + ic('check') + '' : a) + (badge ? '<span class="badge">' + badge + '</span>' : '') + '</button>';
   }).join('');
   return '<div class="cam-head"><div style="min-width:0"><div class="eyebrow">' + (target ? 'Photo ' + target + ' of ' + MAX_ANGLES : 'All ' + MAX_ANGLES + ' photos taken') + '</div><div class="cam-id">' + esc(x.id) + '</div></div>' +
@@ -2476,7 +2559,7 @@ function camShootHtml(x) {          // used only when the in-app camera isn't av
       (nativeCameraAvailable() ? '<button class="btn bigcam ghost" data-action="camUseGallery" data-v="' + target + '">' + ic('photo_library') + ' Use a Gallery photo</button>' : '') : '') +
     (photosReady(x) ? '<button class="btn bigcam' + (target ? ' ghost' : '') + '" data-action="camFinish">' + ic('check') + ' Done</button>' : '') +
     '<div class="strip">' + tiles + '</div>' +
-    '<p class="small muted" style="margin:10px 0 0">' + n + '/' + MAX_ANGLES + ' photos · Tap a thumbnail to retake. ' + photoStatusLine(x) + '</p>';
+    '<p class="small muted" style="margin:10px 0 0">' + n + '/' + MAX_ANGLES + ' photos · Tap a thumbnail to review or retake. ' + photoStatusLine(x) + '</p>';
 }
 function camFinishHtml(x) {          // instructions only: nothing to tick or type
   const me = S.user;
@@ -2490,7 +2573,7 @@ function camFinishHtml(x) {          // instructions only: nothing to tick or ty
       '<li><span class="n">3</span><span>Seal the sample as RCPC instructs.</span></li>' +
       '<li><span class="n">4</span><span>Stick the <b>' + esc(x.id) + '</b> tape on the bag.</span></li>' +
       '<li><span class="n">5</span><span>Bring it to DA RCPC by <b>' + esc(x.date ? fmt(addDays(x.date, 1)) : 'tomorrow') + '</b> (the next day).</span></li>' +
-    '</ol>' + camGalleryHtml(x) +
+    '</ol><button class="btn bigcam ghost" data-action="camPreview" data-v="1">' + ic('photo_library') + ' Review five photos</button>' + camGalleryHtml(x) +
     '<button class="btn bigcam" data-action="camNextSample">' + ic('photo_camera') + ' Bagged · next leaf (' + esc(nextLabel(me)) + ')</button>' +
     '<button class="btn bigcam ghost" data-action="camDone">Bagged · done for now</button>';
 }
@@ -2625,11 +2708,13 @@ const PhotoQ = (() => {
   }));
   return {
     put: (k, v) => run('q', 'readwrite', st => st.put(v, k)),      // errors bubble up: a photo must never vanish silently
+    get: k => run('q', 'readonly', st => st.get(k)),
     del: k => run('q', 'readwrite', st => st.delete(k)).catch(() => {}),
     delStrict: k => run('q', 'readwrite', st => st.delete(k)),
     all: () => run('q', 'readonly', st => st.getAll()).catch(() => []),
     allStrict: () => run('q', 'readonly', st => st.getAll()),
     galleryPut: (k, v) => run('gallery', 'readwrite', st => st.put(v, k)),
+    galleryGet: k => run('gallery', 'readonly', st => st.get(k)),
     galleryDel: k => run('gallery', 'readwrite', st => st.delete(k)),
     galleryKeys: () => run('gallery', 'readonly', st => st.getAllKeys()),
     galleryFor: id => run('gallery', 'readonly', st => st.getAll(IDBKeyRange.bound(id + '_', id + '_\uffff'))),
@@ -2662,6 +2747,7 @@ async function syncNativePhotos() {
   if (nativeSync) return nativeSync;
   nativeSync = (async () => {
     if (!S.user || !await nativeSessionReady) return;
+    let changed = false;
     const state = await window.ThesisBackgroundUpload.status();
     const jobs = await PhotoQ.allStrict();
     const byKey = new Map(jobs.map(j => [jobKey(j), j]));
@@ -2676,12 +2762,14 @@ async function syncNativePhotos() {
         await PhotoQ.delStrict(done.key);
         byKey.delete(done.key);
         delete S.queued[done.key];
+        changed = true;
         toast('Google Drive upload successful' + (job.kind === 'receipt' ? ': receipt' : ': ' + fname(job.id, job.angle)), 2800);
       }
       await window.ThesisBackgroundUpload.acknowledge(done.key, done.at);
     }
     for (const job of byKey.values()) {
       const key = jobKey(job), prior = pending.get(key);
+      if (!S.queued[key]) changed = true;
       S.queued[key] = job;
       if (S.uploading[key] || S.waiting[key]) continue;
       if (!prior || Number(prior.at) !== Number(job.at)) await window.ThesisBackgroundUpload.enqueue(preparedNativeJob(job));
@@ -2689,7 +2777,7 @@ async function syncNativePhotos() {
       else if (/Please sign in/i.test(prior.error || '')) { lock('Sign in again to finish pending Google Drive uploads.'); return; }
     }
     updateSyncChip();
-    if (S.data && !isTyping()) render();
+    if (changed && S.data && S.view !== 'tasks' && !isTyping()) render();
   })().catch(e => { toast('Could not check background uploads: ' + (e.message || e), 4000, true); })
     .finally(() => { nativeSync = null; });
   return nativeSync;
@@ -2827,13 +2915,15 @@ async function processSamplePhoto(id, angle, file, savedInGallery) {
   try {
     const p = await shrinkPhoto(file);
     const job = { id, angle, b64: p.full.split(',')[1], at: Date.now() };
-    if (p.issues.length) { S.issues[key] = p.issues.join(' and '); toast('Photo ' + angle + ' ' + S.issues[key] + '. Tap it to retake.', 3500, true); } else delete S.issues[key];
+    if (p.issues.length) S.issues[key] = p.issues.join(' and '); else delete S.issues[key];
     const blob = await fetch(p.full).then(r => r.blob());
     if (!savedInGallery) keepShot(id, angle, blob);
     await acceptShot(job, p.thumb, savedInGallery ? null : blob);
+    rememberPhotoPreview(id, angle, blob);
     delete S.preparing[key];
     renderCam();
-    if (S.cam && S.cam.id === id && photosReady(sampleById(id)) && !S.cam.target) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }
+    if (S.cam && S.cam.id === id && S.issues[key]) openPhotoPreview(angle);
+    else if (S.cam && S.cam.id === id && photosReady(sampleById(id)) && !S.cam.target) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }
   } catch (err) { delete S.preparing[key]; renderCam(); toast((savedInGallery ? 'Saved in Gallery, but Drive upload could not be prepared: ' : '') + (err.message || String(err)), 5000, true); }
 }
 document.getElementById('camInput').addEventListener('change', async e => {
@@ -3314,8 +3404,17 @@ document.addEventListener('click', e => {
   else if (a === 'gallery') { S.gallery = v === '1'; if (S.gallery) { S.photoIndex = null; loadPhotoIndex(); } render(); }
   else if (a === 'newSample') { newSample(); }
   else if (a === 'cam') { openCam(el.dataset.id); }
-  else if (a === 'camAngle') { openCam(el.dataset.id); S.cam.target = +el.dataset.angle; renderCam(); }
+  else if (a === 'camAngle') { openCam(el.dataset.id); S.cam.target = +el.dataset.angle; renderCam(); if (angleState(sampleById(el.dataset.id), S.cam.target)) openPhotoPreview(S.cam.target); }
   else if (a === 'camGallery') { openCam(el.dataset.id, 'finish'); }
+  else if (a === 'camPreview' || a === 'previewAngle') { openPhotoPreview(+v); }
+  else if (a === 'previewClose') { closePhotoPreview(); }
+  else if (a === 'previewRetake') {
+    if (!S.cam || !S.cam.preview) return;
+    const angle = S.cam.preview, key = S.cam.id + '_' + angle;
+    if (S.preparing[key]) return;
+    closePhotoPreview(); S.cam.stage = 'shoot'; S.cam.target = angle; saveCamState(); renderCam();
+    if (S.cam.live === false || !liveCamOK()) takeShot(angle);
+  }
   else if (a === 'camClose') {
     const x = sampleById(S.cam.id), n = takenSet(x).size;
     if (photosReady(x)) { S.cam.stage = 'finish'; saveCamState(); renderCam(); }   // never skip the labeling reminder
@@ -3367,7 +3466,7 @@ document.addEventListener('click', e => {
   }
   else if (a === 'camFinish') { const x = S.cam && sampleById(S.cam.id); if (x && photosReady(x)) { S.cam.stage = 'finish'; saveCamState(); renderCam(); } }
   else if (a === 'camDone') { if (S.cam && S.cam.stage === 'finish') markPacked(S.cam.id); closeCam(); }
-  else if (a === 'camNextSample') { markPacked(S.cam.id); S.cam = null; store.del(CAM_STORE); newSample(); }   // camera stays on: next leaf opens instantly
+  else if (a === 'camNextSample') { markPacked(S.cam.id); clearPhotoPreviews(S.cam.id); closePhotoPreview(); S.cam = null; store.del(CAM_STORE); newSample(); }   // camera stays on: next leaf opens instantly
   else if (a === 'agendaItem') {
     const tab = el.dataset.tab, row = +el.dataset.row, line = +el.dataset.line;
     const t = member(tab).tasks.find(x => x.row === row);
@@ -3376,6 +3475,7 @@ document.addEventListener('click', e => {
     if (!/^\[[ xX]\]\s+/.test(lines[line] || '')) return;
     lines[line] = lines[line].replace(/^\[([ xX])\]/, (_, state) => state.toLowerCase() === 'x' ? '[ ]' : '[x]');
     const notes = lines.join('\n');
+    S.open['agenda_' + tab + '_' + row] = true;
     save('updateTask', [tab, row, 'notes', notes], () => { t.notes = notes; });
   }
   else if (a === 'editTask') { const k = el.dataset.tab + '_' + el.dataset.row; S.editTask = S.editTask === k ? null : k; renderTaskList(); }
@@ -3455,13 +3555,14 @@ document.addEventListener('change', e => {
 
 document.addEventListener('toggle', e => {
   if (!e.target.matches) return;
-  if (e.target.matches('details[data-agenda-key]')) S.open[e.target.dataset.agendaKey] = e.target.open;
+  if (e.target.isConnected && e.target.matches('details[data-agenda-key]')) S.open[e.target.dataset.agendaKey] = e.target.open;
   if (e.target.matches('details[data-action=paperToggle]')) S.paperOpen = e.target.open;
   if (e.target.matches('details[data-action=prefarmToggle]')) { S.prefarmOpen = e.target.open; if (e.target.open) store.del(PREFARM_CLOSED); else store.set(PREFARM_CLOSED, localDay()); }
 }, true);
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[role=button][data-action]')) { e.preventDefault(); e.target.click(); }
   if (e.key === 'Escape') {                       // Esc closes whatever is open (not the camera)
+    if (S.cam && S.cam.preview) { closePhotoPreview(); return; }
     if (S.drawer) { openDrawer(false); return; }
     if (S.ov) { closeOv(); return; }
     if (S.editTask) { S.editTask = null; render(); return; }

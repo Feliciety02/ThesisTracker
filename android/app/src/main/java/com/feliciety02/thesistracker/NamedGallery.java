@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -93,6 +94,30 @@ final class NamedGallery {
         } catch (SecurityException e) {
             throw new IOException("Cannot delete Gallery photo", e);
         }
+    }
+
+    static String readBase64(Context context, String name) throws IOException {
+        if (name == null || !name.matches("[A-Za-z0-9_-]{1,95}\\.jpg")) throw new IOException("Invalid Gallery filename");
+        InputStream in;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            File file = new File(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Banana Thesis Tracker"), name);
+            if (!file.isFile()) return "";
+            in = new FileInputStream(file);
+        } else {
+            String saved = context.getSharedPreferences("named-gallery", Context.MODE_PRIVATE).getString(name, "");
+            if (saved.isEmpty()) return "";
+            in = context.getContentResolver().openInputStream(Uri.parse(saved));
+            if (in == null) return "";
+        }
+        try (InputStream source = in; ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] bytes = new byte[16384];
+            int n;
+            while ((n = source.read(bytes)) != -1) {
+                if (out.size() + n > 20 * 1024 * 1024) throw new IOException("Gallery photo is too large to preview");
+                out.write(bytes, 0, n);
+            }
+            return Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+        } catch (SecurityException e) { throw new IOException("Cannot read Gallery photo", e); }
     }
 
     private static void copy(InputStream in, OutputStream out) throws IOException {

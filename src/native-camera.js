@@ -85,4 +85,5 @@ window.ThesisBackgroundUpload = {
   cancel: key => BackgroundUpload.cancel({ key }),
   saveNamedPhoto: (name, b64) => BackgroundUpload.saveNamedPhoto({ name, b64 }),
   deleteNamedPhoto: name => BackgroundUpload.deleteNamedPhoto({ name }),
+  readNamedPhoto: name => BackgroundUpload.readNamedPhoto({ name }),
 };
