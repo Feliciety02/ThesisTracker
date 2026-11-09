@@ -52,7 +52,7 @@ If the older deployed script says `Cannot call SpreadsheetApp.getUi() from this 
 4. After about a minute, the app is live at `https://<your-username>.github.io/<repo-name>/`.
 
 ### 3. Install on phones
-- **Android native app (named Gallery photos and background Drive upload):** download the [signed team APK](https://github.com/Feliciety02/ThesisTracker/releases/download/android-team-1.0.15-2026-11-09/Banana-Thesis-Tracker-Android-1.0.15.apk). Its launcher icon matches the green leaf used by the website. Installing the website from Chrome does not give it native Gallery access or Android background uploads.
+- **Android native app (named Gallery photos and background Drive upload):** download the [signed team APK](https://github.com/Feliciety02/ThesisTracker/releases/download/android-team-1.0.16-2026-11-10/Banana-Thesis-Tracker-Android-1.0.16.apk). Its launcher icon matches the green leaf used by the website. Installing the website from Chrome does not give it native Gallery access or Android background uploads.
 - **Android web app (Chrome):** open the link, then tap **Install** on the first screen, or on the Home card that shows until the app is installed (or ⋮ → Install app).
 - **iPhone (Safari):** open the link, then Share → **Add to Home Screen**.
 - **Laptop (Chrome / Edge):** use the install icon in the address bar.

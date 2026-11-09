@@ -140,7 +140,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);b
 .task-agenda summary:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
 .task-agenda-hint{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
 .task-agenda-body{margin-top:8px;padding:12px;border-radius:10px;background:var(--soft);max-height:55vh;overflow:auto}
-.agenda-section{font-weight:700;margin:14px 0 6px}.agenda-section:first-child{margin-top:0}
+.agenda-section{display:flex;align-items:center;gap:8px;font-weight:700;margin:16px 0 6px}.agenda-section:first-child{margin-top:0}
+.agenda-section-num{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:7px;background:var(--card);color:var(--brand);font-size:12px}
 .agenda-item{display:flex;align-items:flex-start;gap:9px;width:100%;padding:9px 4px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;text-align:left;line-height:1.4;cursor:pointer}
 .agenda-item:last-child{border-bottom:0}.agenda-check{flex:none;width:17px;height:17px;margin-top:1px;border:2px solid var(--brand);border-radius:4px;background:var(--card);text-align:center;line-height:13px;font-weight:800;color:#fff}.agenda-item.done .agenda-check{background:var(--brand)}.agenda-item.done .agenda-text{text-decoration:line-through;color:var(--muted)}
 .agenda-label{min-width:0;flex:1}
@@ -261,6 +262,9 @@ tr.filled td.id{color:var(--ok)}
 .sc-sum:hover{background:var(--soft)}
 .sc-sum .ttl{font-weight:700;font-size:15px}
 .sc-sum .meta{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--muted)}
+.record-note{margin-top:8px;padding-left:10px;border-left:2px solid var(--line);font-size:14px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
+.record-note .note-label{display:block;margin-bottom:2px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.record-note .note-copy{display:block;white-space:pre-line}
 .tagp{background:var(--soft);border-radius:999px;padding:2px 9px;font-weight:600;font-size:12px;color:var(--ink)}
 .tagp.ok{background:var(--ok-soft);color:var(--ok)}
 .tagp.warn{background:var(--amber-soft);color:var(--amber)}
@@ -1349,6 +1353,8 @@ const recs = kind => ((S.data && S.data.records) || {})[kind] || [];
 const settings = () => (S.data && S.data.settings) || {};
 const ic = (n, c) => '<svg class="ic' + (c ? ' ' + c : '') + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const textNoteHtml = (label, value) => String(value == null ? '' : value).trim() ?
+  '<div class="record-note"><span class="note-label">' + esc(label) + '</span><span class="note-copy">' + esc(value) + '</span></div>' : '';
 const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 const toDate = s => s ? new Date(s + 'T00:00:00') : null;
 const daysUntil = s => s ? Math.round((toDate(s) - today()) / 864e5) : null;
@@ -1832,8 +1838,8 @@ function meetingAgendaFallbackHtml() {
 }
 function meetingAgendaItemsHtml(notes, tab, row) {
   return String(notes || '').split('\n').map((line, index) => {
-    const heading = line.match(/^\d+\.\s+(.+)$/), item = line.match(/^\[([ xX])\]\s+(.+)$/);
-    if (heading) return '<div class="agenda-section">' + esc(heading[0]) + '</div>';
+    const heading = line.match(/^(\d+)\.\s+(.+)$/), item = line.match(/^\[([ xX])\]\s+(.+)$/);
+    if (heading) return '<div class="agenda-section"><span class="agenda-section-num">' + esc(heading[1]) + '</span>' + esc(heading[2]) + '</div>';
     if (item) {
       const done = item[1].toLowerCase() === 'x';
       const content = '<span class="agenda-check" aria-hidden="true">' + (done ? '✓' : '') + '</span><span class="agenda-text">' + esc(item[2]) + '</span>';
@@ -1882,8 +1888,8 @@ function renderTaskList() {
       '<span class="tid">' + (t.tempId ? '' + ic('hourglass_empty') + ' waiting to sync' : esc(t.id)) + '</span>' +
       (t.priority && t.priority !== 'High' ? '<span class="tid">' + esc(t.priority) + '</span>' : '') +
       (t.link ? '<a href="' + esc(t.link.url) + '" target="_blank" rel="noopener">' + esc(t.link.label) + ' ' + ic('open_in_new') + '</a>' : '') +
-      (t.notes && !isMeetingAgenda ? '<span>' + esc(t.notes) + '</span>' : '') +
       (t.completed ? '<span>Done ' + fmt(t.completed) + '</span>' : '') + '</div>' +
+      (!isMeetingAgenda && S.editTask !== t.tab + '_' + t.row ? textNoteHtml('Notes', t.notes) : '') +
       '</div>' +
       (t.due ? '<input type="date" value="' + esc(t.due) + '"' : '<input type="text" class="nodate" placeholder="No date" readonly onfocus="this.removeAttribute(\'readonly\');this.type=\'date\';try{this.showPicker()}catch(e){}"') +
         ' data-change="task" data-tab="' + esc(t.tab) + '" data-row="' + t.row + '" data-field="due" aria-label="Due date" style="width:100%"' + (t.tempId ? ' disabled' : '') + '>' +
@@ -1937,7 +1943,7 @@ function vRevList() {
       return '<div class="ritem ' + esc(r.status) + (sel ? ' sel' : '') + '">' + (sel ? '<input type="checkbox" class="pick" data-change="revsel" data-row="' + r.row + '"' + (S.revSel[r.row] ? ' checked' : '') + ' aria-label="Select item">' : '') +
         '<div class="rbody"><div class="' + (warn ? 'warn' : '') + '">' + (warn ? ic('warning') + ' ' : '') + esc(comment) + '</div>' +
         '<div class="small muted">' + esc(r.section) + ' · <span class="own" style="color:' + ownerColor(r.owner) + '">' + esc(r.owner) + '</span>' + (r.status === 'C' && r.doneBy ? ' · <span class="doneby">' + ic('check') + ' ' + esc(r.doneBy) + '</span>' : '') + '</div>' +
-        (r.notes ? '<div class="small" style="margin-top:4px;color:var(--ink)">' + esc(r.notes) + '</div>' : '') + act + '</div></div>';
+        textNoteHtml('Notes', r.notes) + act + '</div></div>';
     }).join('') + '</div>').join('') : '<div class="empty">' + (S.revStatus === 'NC' ? 'Nothing left to do here.' : 'No items match these filters.') + '</div>';
   const nSel = Object.keys(S.revSel).length;
   const bulk = sel ? '<div class="bulk"><b>' + nSel + ' selected</b><span class="sp"></span>' +
@@ -1965,7 +1971,8 @@ function vNG() {
     const m = TEAM.find(t => t.tab === x.who), open = S.open['ng_' + x.row];
     return '<div class="drow' + (x.done ? ' done' : '') + '"><input type="checkbox" data-change="rec" data-kind="ng" data-row="' + x.row + '" data-field="done"' + (x.done ? ' checked' : '') + (x.tempId ? ' disabled' : '') + ' aria-label="Done">' +
       '<div style="flex:1;min-width:0"><div class="ditem">' + esc(x.item) + '</div><div class="small muted"><span class="who" style="--c:' + (m ? m.color : 'var(--muted)') + '"><i></i>' + esc(x.who || 'Team') + '</span>' +
-      (x.done && x.doneBy ? ' · <span class="doneby">' + ic('check') + ' ' + esc(x.doneBy) + '</span>' : '') + (x.notes && !open ? ' · ' + esc(x.notes) : '') + '</div>' +
+      (x.done && x.doneBy ? ' · <span class="doneby">' + ic('check') + ' ' + esc(x.doneBy) + '</span>' : '') + '</div>' +
+      (!open ? textNoteHtml('Notes', x.notes) : '') +
       (open ? '<div class="sc-grid" style="margin-top:8px">' + recField('ng', x, 'notes', 'Notes', 'area') + '</div>' : '') + '</div>' + recTools('ng', x) + '</div>';
   };
   const secs = ['A1', 'A2', 'A3', 'B'].map(k => {
@@ -3138,7 +3145,7 @@ function vTraining() {
     return '<div class="sc" style="--c:var(--brand)"><div><b>' + esc(r.model || 'Model') + '</b><div class="small muted">' + esc([r.run, r.date ? fmt(r.date) : '', r.dataset].filter(Boolean).join(' · ')) + '</div></div>' +
       '<div class="metrics">' + METRICS.filter(m => r[m[0]] !== '' && r[m[0]] != null).map(m => '<span class="tagp">' + m[1] + ' ' + esc(r[m[0]]) + m[2] + '</span>').join('') +
         (r.epochs ? '<span class="tagp">' + esc(r.epochs) + ' epochs</span>' : '') + '</div>' +
-      (r.notes && !open ? '<div class="small">' + esc(r.notes) + '</div>' : '') +
+      (!open ? textNoteHtml('Notes', r.notes) : '') +
       (open ? '<div class="sc-grid">' + recField('training', r, 'model', 'Model', 'text', ' list="modelList"') + recField('training', r, 'run', 'Run name') +
         recField('training', r, 'date', 'Date', 'date') + recField('training', r, 'dataset', 'Dataset / split') + recField('training', r, 'epochs', 'Epochs', 'number') +
         METRICS.map(m => recField('training', r, m[0], m[1] + ' (' + m[2].trim() + ')', 'number')).join('') + recField('training', r, 'notes', 'Notes', 'area') + '</div>' : '') +
@@ -3178,6 +3185,7 @@ function vSources() {
     return '<div class="sc" style="--c:var(--leaf)"><div><b>' + esc(x.name || 'Source') + '</b><div class="small muted">' + esc([x.type, x.date ? fmt(x.date) : '', x.license].filter(Boolean).join(' · ')) + '</div></div>' +
       '<div class="metrics">' + SRC_CLS.filter(([k]) => +x[k]).map(([k, l]) => '<span class="tagp">' + l + ' ' + (+x[k]) + '</span>').join('') + '<span class="tagp ok">Total ' + srcTotal(x) + '</span></div>' +
       (x.link ? '<a class="small" href="' + esc(x.link) + '" target="_blank" rel="noopener">' + ic('link') + ' Open source</a>' : '<span class="small" style="color:var(--red)">' + ic('warning') + ' Add the link or Drive folder</span>') +
+      (!open ? textNoteHtml('Notes', x.notes) : '') +
       (open ? '<div class="sc-grid">' + recField('sources', x, 'name', 'Name') + recField('sources', x, 'link', 'Link or Drive folder', 'url') +
         '<label>Type<select data-change="rec" data-kind="sources" data-row="' + x.row + '" data-field="type">' + types.map(t => '<option' + (t === x.type ? ' selected' : '') + '>' + esc(t) + '</option>').join('') + '</select></label>' +
         SRC_CLS.map(([k, l]) => recField('sources', x, k, l, 'number')).join('') + recField('sources', x, 'license', 'License / how to cite') + recField('sources', x, 'date', 'Date downloaded', 'date') +
@@ -3203,7 +3211,7 @@ function vConsults() {
     return '<div class="sc' + (done ? ' sub' : '') + '" style="--c:var(--leaf)"><div class="sc-top"><b>' + esc(c.with || '—') + '</b><span class="small muted">' + esc(c.date ? fmt(c.date) : '') + '</span><span class="sp"></span>' +
         '<button class="tagp ' + (done ? 'ok' : 'warn') + '" style="border:0;cursor:pointer" data-action="recSet" data-kind="consults" data-row="' + c.row + '" data-field="status" data-v="' + (done ? 'Open' : 'Done') + '"' + (c.tempId ? ' disabled' : '') + '>' + (done ? '' + ic('check') + ' Done' : 'Open') + '</button></div>' +
       '<div class="sc-sum" style="cursor:default"><div class="ttl">' + esc(c.topic || 'Consultation') + '</div>' +
-        (c.feedback && !open ? '<div class="small">' + esc(c.feedback) + '</div>' : '') + (c.action && !open ? '<div class="small muted">What we did: ' + esc(c.action) + '</div>' : '') + '</div>' +
+        (!open ? textNoteHtml('Feedback', c.feedback) + textNoteHtml('What we did', c.action) : '') + '</div>' +
       (open ? '<div class="sc-grid">' + recField('consults', c, 'with', 'With', 'text', ' list="peopleList"') + recField('consults', c, 'date', 'Date', 'date') +
         recField('consults', c, 'topic', 'Topic') + '<span></span>' + recField('consults', c, 'feedback', 'Feedback', 'area') + recField('consults', c, 'action', 'What we did', 'area') + '</div>' : '') +
       '<div class="sc-foot"><label class="ck"><input type="checkbox" data-change="rec" data-kind="consults" data-row="' + c.row + '" data-field="signed"' + (c.signed ? ' checked' : '') + (c.tempId ? ' disabled' : '') + '>Signed</label>' +
@@ -3219,7 +3227,8 @@ function vDefense() {
   const rows = items.map(x => {
     const open = S.open['defense_' + x.row];
     return '<div class="drow' + (x.done ? ' done' : '') + '"><input type="checkbox" data-change="rec" data-kind="defense" data-row="' + x.row + '" data-field="done"' + (x.done ? ' checked' : '') + (x.tempId ? ' disabled' : '') + ' aria-label="Done">' +
-      '<div style="flex:1;min-width:0"><div class="ditem">' + esc(x.item) + '</div><div class="small muted">' + esc(x.owner || '') + (x.done && x.doneBy ? ' · <span class="doneby">' + ic('check') + ' ' + esc(x.doneBy) + '</span>' : '') + (x.notes ? ' · ' + esc(x.notes) : '') + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="ditem">' + esc(x.item) + '</div><div class="small muted">' + esc(x.owner || '') + (x.done && x.doneBy ? ' · <span class="doneby">' + ic('check') + ' ' + esc(x.doneBy) + '</span>' : '') + '</div>' +
+      (!open ? textNoteHtml('Notes', x.notes) : '') +
       (open ? '<div class="sc-grid" style="margin-top:8px">' + recField('defense', x, 'item', 'Item') + '<label>Owner<select data-change="rec" data-kind="defense" data-row="' + x.row + '" data-field="owner">' +
         owners.map(o => '<option' + (o === x.owner ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>' + recField('defense', x, 'notes', 'Notes', 'area') +
         '</div><div class="row" style="margin-top:8px"><button class="btn ghost" style="color:var(--red)" data-action="recDel" data-kind="defense" data-row="' + x.row + '">' + ic('delete') + ' Delete</button></div>' : '') + '</div>' +
