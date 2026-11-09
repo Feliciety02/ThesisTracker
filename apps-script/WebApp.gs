@@ -433,7 +433,7 @@ function ensureSampleImageRows_(sh, id, parentHint) {
     const values = cells.getValues()[0];
     const label = imageRowLabel_(angle);
     if (String(values[0] || '') !== label || String(values[14] || '') !== String(angle)) {
-      if (!emptySampleSlot_(values) && !(String(values[0] || '') === label && !values[14])) sh.insertRowsBefore(row);
+      if (!emptySampleSlot_(values) && !(String(values[0] || '') === label && !values[14])) sh.insertRowsBefore(row, 1);
       const target = sh.getRange(row, 1, 1, 16);
       target.clearContent().clearDataValidations();
       sh.getRange(row, 7).setValue(name);

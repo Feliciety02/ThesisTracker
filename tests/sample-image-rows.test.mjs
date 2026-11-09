@@ -13,7 +13,11 @@ function fakeSheet() {
     rows, formulas,
     getMaxRows: () => rows.length,
     getLastRow: () => Math.max(3, rows.findLastIndex(r => r.some(v => v !== '' && v !== false)) + 1),
-    insertRowsBefore(row, count = 1) { rows.splice(row - 1, 0, ...Array.from({ length: count }, blank)); formulas.splice(row - 1, 0, ...Array.from({ length: count }, blank)); },
+    insertRowsBefore(row, count) {
+      if (arguments.length !== 2 || !Number.isInteger(count)) throw new Error('insertRowsBefore requires a position and count');
+      rows.splice(row - 1, 0, ...Array.from({ length: count }, blank));
+      formulas.splice(row - 1, 0, ...Array.from({ length: count }, blank));
+    },
     insertRowsAfter(row, count = 1) { rows.splice(row, 0, ...Array.from({ length: count }, blank)); formulas.splice(row, 0, ...Array.from({ length: count }, blank)); },
     deleteRows(row, count) { rows.splice(row - 1, count); formulas.splice(row - 1, count); },
     setRowHeight() {},
